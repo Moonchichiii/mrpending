@@ -1,8 +1,10 @@
-import { Build, CONTRACT_VERSION, DesignReply, MAX_ATTEMPTS, RepairReply } from '@pending/contract';
-import type { Attempt, Blueprint, Form, Model, Patch } from '@pending/contract';
+import { Build, CONTRACT_VERSION, DesignReply, Line, MAX_ATTEMPTS, RepairReply } from '@pending/contract';
+import type { Attempt, Blueprint, Form, Model, Patch, StreamEvent } from '@pending/contract';
 import { RULES_VERSION, applyPatch, report, simulate, validate } from '@pending/machine';
 import type * as z from 'zod';
 import type { Call, CallKind, Infer, Timing } from '../models/ollama';
+import * as beats from './beats';
+import type { Draft } from './beats';
 import { designPrompt, failureBrief } from './brief';
 
 // SECURITY-AND-FAILURE-CONTRACT section 4 and MACHINE-RULES section 6.
@@ -30,6 +32,10 @@ export class BuildInterrupted extends Error {
   }
 }
 
+// What the loop streams as it goes; the route adds the requestId, and done or error, around it.
+type Unstamped<E> = E extends unknown ? Omit<E, 'requestId'> : never;
+export type Emitted = Unstamped<Extract<StreamEvent, { type: 'line' | 'attempt' | 'patch' }>>;
+
 export type BuildInput = {
   id: string;
   form: Form;
@@ -40,6 +46,7 @@ export type BuildInput = {
   infer: Infer;
   signal: AbortSignal;
   now: () => Date;
+  emit?: (event: Emitted) => void;
 };
 
 const issuesOf = (error: z.ZodError): string[] =>
@@ -108,6 +115,24 @@ export async function runBuild(input: BuildInput): Promise<BuildRun> {
 
 async function loop(input: BuildInput, calls: CallRecord[], attempts: Attempt[]): Promise<BuildRun> {
   const { form, system } = input;
+  const emit = input.emit ?? (() => undefined);
+  const lines: Line[] = [];
+  const say = (drafts: Draft[]) => {
+    for (const draft of drafts) {
+      const line = Line.parse({ id: `l${lines.length + 1}`, ...draft });
+      lines.push(line);
+      emit({ type: 'line', line });
+    }
+  };
+  const limit = Math.min(1 + input.repairs, MAX_ATTEMPTS);
+  const ran = (attempt: Attempt) => {
+    emit({ type: 'attempt', attempt });
+    const repairFollows = attempt.outcome !== 'pressed' && attempt.n < limit;
+    say(beats.trial(attempt, attempts, repairFollows));
+    attempts.push(attempt);
+  };
+
+  say(beats.opening());
   const design: CallRecord = { kind: 'design', attempt: 1, tries: [], parsed: false };
   calls.push(design);
   const designed = await ask(
@@ -119,10 +144,10 @@ async function loop(input: BuildInput, calls: CallRecord[], attempts: Attempt[])
   if (designed === undefined) return { end: 'MODEL_INVALID', attempts: [], calls };
 
   let last = trial(1, designed.blueprint, validate(designed.blueprint, form));
-  attempts.push(last);
+  say(beats.designed(designed.memo, last));
+  ran(last);
   // Every id ever added in this build, including one added and removed within a single patch, stays used.
   const used = new Set(designed.blueprint.parts.map((p) => p.id));
-  const limit = Math.min(1 + input.repairs, MAX_ATTEMPTS);
   while (last.outcome !== 'pressed' && attempts.length < limit) {
     const n = attempts.length + 1;
     const record: CallRecord = { kind: 'repair', attempt: n, tries: [], parsed: false };
@@ -137,8 +162,11 @@ async function loop(input: BuildInput, calls: CallRecord[], attempts: Attempt[])
     // The model's patch is applied as given: nothing here selects, ranks or rewrites it.
     const next = applyPatch(last.blueprint, repaired.patch, used, form);
     for (const op of repaired.patch) if (op.op === 'add') used.add(op.part.id);
+    const previous = last;
     last = trial(n, next.blueprint, next.violations, repaired.patch);
-    attempts.push(last);
+    emit({ type: 'patch', n, patch: repaired.patch });
+    say(beats.repaired(repaired.memo, previous, last));
+    ran(last);
   }
 
   const build = Build.parse({
@@ -152,7 +180,7 @@ async function loop(input: BuildInput, calls: CallRecord[], attempts: Attempt[])
     report: report(attempts),
     createdAt: input.now().toISOString(),
     attempts,
-    lines: [], // the narration table arrives with the routes (#9)
+    lines,
   });
   return { end: 'done', build, calls };
 }

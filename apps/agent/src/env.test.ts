@@ -7,6 +7,7 @@ test('a local environment gets the loopback Ollama and one build at a time', () 
   expect(parseEnv(local)).toEqual({
     ...local,
     OLLAMA_URL: 'http://127.0.0.1:11434',
+    PORT: 4111,
     MAX_CONCURRENT_BUILDS: 1,
   });
 });
