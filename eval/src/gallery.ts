@@ -82,9 +82,10 @@ export type GalleryPlan = {
 export function galleryPlan(
   m: Matrix,
   configs: readonly Results[],
-  headline: readonly Pick<Scenario, 'id' | 'form'>[],
+  scenarios: readonly Pick<Scenario, 'id' | 'role' | 'form'>[],
   shipped: Shipped,
 ): GalleryPlan {
+  const headline = scenarios.filter((s) => s.role === 'headline');
   if (m.status !== 'complete' && m.status !== 'stopped-at-deadline')
     throw new Error(`the matrix is ${m.status}; the gallery needs complete or stopped-at-deadline`);
   if (configs.length !== m.configurations.length)
@@ -101,17 +102,25 @@ export function galleryPlan(
     c.results.model.id === shipped.model &&
     c.results.promptVersion === shipped.promptVersion;
   const ship = declared.find(isShipped);
-  // Finished means the matrix's plan, not the results file's: its k, and each headline form once per repetition.
-  const planned = m.k.headline * headline.length + m.k.heldOut + m.k.trap + m.k.optionalTrap;
+  // Finished means the matrix's plan, not the results file's: its k, and every scenario of every role once per
+  // repetition that k plans for it, the held-out form and the traps included.
+  const kOf: Record<Scenario['role'], number> = {
+    headline: m.k.headline,
+    'held-out': m.k.heldOut,
+    trap: m.k.trap,
+    'optional-trap': m.k.optionalTrap,
+  };
+  const planned = new Set(
+    scenarios.flatMap((s) => Array.from({ length: kOf[s.role] }, (_, i) => `${s.id}#${i + 1}`)),
+  );
   const labels = new Set(ship?.results.runs.map((x) => x.scenario));
-  const reps = Array.from({ length: m.k.headline }, (_, i) => i + 1);
   if (
     ship === undefined ||
     ship.results.stoppedAtDeadline ||
     !same(ship.results.k, m.k) ||
-    ship.results.runs.length !== planned ||
-    labels.size !== planned ||
-    !headline.every((s) => reps.every((rep) => labels.has(`${s.id}#${rep}`)))
+    ship.results.runs.length !== planned.size ||
+    labels.size !== planned.size ||
+    ![...planned].every((label) => labels.has(label))
   )
     throw new Error(
       `the shipped configuration (${shipped.model} ${shipped.promptVersion}) did not finish all its builds`,

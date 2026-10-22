@@ -338,8 +338,7 @@ async function gallery(file: string) {
   const configs = await Promise.all(
     m.configurations.map(async (c) => Results.parse(await readJson(new URL(c.file, matrixUrl)))),
   );
-  const headline = (await loadScenarios()).filter((s) => s.role === 'headline');
-  const { picks, missing, mismatches } = galleryPlan(m, configs, headline, {
+  const { picks, missing, mismatches } = galleryPlan(m, configs, await loadScenarios(), {
     model: E2B,
     promptVersion: PROMPT_VERSION,
   });

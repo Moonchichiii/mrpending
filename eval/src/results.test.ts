@@ -100,6 +100,17 @@ test('the schema refuses a record without a press origin, a share above its n, o
   const over = { ...r.headline, simulator: { ...r.headline.simulator, pressedRate: { hits: 2, n: 1 } } };
   expect(Results.safeParse({ ...r, headline: over }).success).toBe(false);
   expect(Results.safeParse({ ...r, model: { ...r.model, digest: 'latest' } }).success).toBe(false);
+  // The violation kinds are the five summarize() counts: an invented kind or a missing one is refused.
+  const kinds = (violationKinds: Record<string, number>) => ({
+    ...r,
+    headline: { ...r.headline, catalogue: { ...r.headline.catalogue, violationKinds } },
+  });
+  const { overlap, ...missing } = r.headline.catalogue.violationKinds;
+  expect(overlap).toBe(0);
+  expect(Results.safeParse(kinds({ ...r.headline.catalogue.violationKinds, invented: 1 })).success).toBe(
+    false,
+  );
+  expect(Results.safeParse(kinds(missing)).success).toBe(false);
 });
 
 test('a matrix over budget carries its shortfall and no configuration; a complete one carries all three', async () => {

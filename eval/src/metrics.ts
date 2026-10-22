@@ -2,9 +2,11 @@ import { BuildInterrupted } from '@pending/agent';
 import type { BuildRun, CallKind, CallRecord } from '@pending/agent';
 import type { Attempt } from '@pending/contract';
 import { handovers, simulate } from '@pending/machine';
+import * as z from 'zod';
 
 // Kinds follow the order of validate(): placement, then wind, then the Form, then the schema-level part fields.
-export type ViolationKind = 'overlap' | 'footprint' | 'constraint' | 'patch' | 'parameter';
+export const ViolationKind = z.enum(['overlap', 'footprint', 'constraint', 'patch', 'parameter']);
+export type ViolationKind = z.infer<typeof ViolationKind>;
 export function violationKind(violation: string): ViolationKind {
   if (violation.startsWith('the patch ')) return 'patch';
   if (/ overlaps /.test(violation)) return 'overlap';

@@ -16,8 +16,12 @@ import { parseScenarios } from './scenarios';
 import type { Role } from './scenarios';
 
 const form = Form.parse(lostForm);
-// Two headline forms as scenarios.json declares them; scenic is the form the fixtures were built for.
-const headline = parseScenarios(scenariosFile).filter((s) => s.id === 'scenic' || s.id === 'thrown');
+// Two headline forms and every other role as scenarios.json declares them; scenic is the form the fixtures were
+// built for.
+const scenarios = parseScenarios(scenariosFile).filter(
+  (s) => s.role !== 'headline' || s.id === 'scenic' || s.id === 'thrown',
+);
+const headline = scenarios.filter((s) => s.role === 'headline');
 const formOf = (id: string) => headline.find((s) => s.id === id)?.form ?? form;
 const memo = 'More catapult.';
 const digest = `sha256:${'a'.repeat(64)}`;
@@ -164,14 +168,14 @@ test('a corrupted results file loses its gallery record: a patch, a blueprint, a
   ];
   for (const r of corrupted) {
     expect(r.runs[0]?.run.end).toBe('done');
-    expect(galleryPlan(matrix('complete', 3), [r, r, r], headline, shipped)).toEqual({
+    expect(galleryPlan(matrix('complete', 3), [r, r, r], scenarios, shipped)).toEqual({
       picks: [],
       missing: ['scenic', 'thrown'],
       mismatches: [],
     });
   }
   const clean = Results.parse(JSON.parse(file));
-  const plan = galleryPlan(matrix('complete', 3), [clean, clean, clean], headline, shipped);
+  const plan = galleryPlan(matrix('complete', 3), [clean, clean, clean], scenarios, shipped);
   expect(plan.picks.map((p) => [p.form, p.build.id, p.build.report.pressed])).toEqual([
     ['scenic', 'B-2026-10-22-scenic-1', true],
   ]);
@@ -180,15 +184,15 @@ test('a corrupted results file loses its gallery record: a patch, a blueprint, a
 
 test('the gallery reads a matrix stopped at the deadline once the shipped configuration finished, and refuses the rest', async () => {
   const finished = await results();
-  const plan = galleryPlan(matrix('stopped-at-deadline', 1), [finished], headline, shipped);
+  const plan = galleryPlan(matrix('stopped-at-deadline', 1), [finished], scenarios, shipped);
   expect(plan.picks.map((p) => p.form)).toEqual(['scenic']);
   // The shipped configuration was cut, or lost a build, or never ran.
   const cut = await results(true);
-  expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [cut], headline, shipped)).toThrow(
+  expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [cut], scenarios, shipped)).toThrow(
     /did not finish all its builds/,
   );
   const short = { ...finished, runs: finished.runs.slice(1) };
-  expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [short], headline, shipped)).toThrow(
+  expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [short], scenarios, shipped)).toThrow(
     /did not finish all its builds/,
   );
   // The results file declares its own k, or repeats one build in place of another.
@@ -199,22 +203,36 @@ test('the gallery reads a matrix stopped at the deadline once the shipped config
     k: { ...finished.k, optionalTrap: 1 as const },
     runs: [...finished.runs, { ...trap, scenario: 'sloth#1' }],
   };
-  expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [ownK], headline, shipped)).toThrow(
+  expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [ownK], scenarios, shipped)).toThrow(
     /did not finish all its builds/,
   );
   const repeated = {
     ...finished,
     runs: finished.runs.map((x) => (x.scenario === 'thrown#2' ? { ...x, scenario: 'scenic#1' } : x)),
   };
-  expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [repeated], headline, shipped)).toThrow(
+  expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [repeated], scenarios, shipped)).toThrow(
+    /did not finish all its builds/,
+  );
+  // The held-out form and the trap never ran: two other unique labels stand in their place.
+  const renamed = {
+    ...finished,
+    runs: finished.runs.map((x) =>
+      x.scenario === 'downhill#1'
+        ? { ...x, scenario: 'scenic#3' }
+        : x.scenario === 'trap#1'
+          ? { ...x, scenario: 'thrown#3' }
+          : x,
+    ),
+  };
+  expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [renamed], scenarios, shipped)).toThrow(
     /did not finish all its builds/,
   );
   const v1 = { ...finished, promptVersion: 'v1' as const };
-  expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [v1], headline, shipped)).toThrow(
+  expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [v1], scenarios, shipped)).toThrow(
     /did not finish all its builds/,
   );
   for (const status of ['stopped-in-pilot', 'stopped-over-budget'])
-    expect(() => galleryPlan(matrix(status, 0), [], headline, shipped)).toThrow(new RegExp(status));
+    expect(() => galleryPlan(matrix(status, 0), [], scenarios, shipped)).toThrow(new RegExp(status));
 });
 
 test('a build listed under the wrong scenario is no candidate for that form, and the mismatch is reported', async () => {
@@ -225,7 +243,7 @@ test('a build listed under the wrong scenario is no candidate for that form, and
       ? scenario.replace('scenic#', 'thrown#')
       : scenario.replace('thrown#', 'scenic#');
   const swapped = { ...r, runs: r.runs.map((x) => ({ ...x, scenario: relabel(x.scenario) })) };
-  const plan = galleryPlan(matrix('stopped-at-deadline', 1), [swapped], headline, shipped);
+  const plan = galleryPlan(matrix('stopped-at-deadline', 1), [swapped], scenarios, shipped);
   expect(plan.picks).toEqual([]);
   expect(plan.missing).toEqual(['scenic', 'thrown']);
   expect(plan.mismatches).toEqual([
@@ -242,7 +260,7 @@ test('a build listed under the wrong configuration is no candidate for it, and t
   const claimed = read();
   claimed.experiment = 'D';
   claimed.model.id = 'gemma4:e4b';
-  const plan = galleryPlan(matrix('stopped-at-deadline', 2, [B, e4b]), [read(), claimed], headline, shipped);
+  const plan = galleryPlan(matrix('stopped-at-deadline', 2, [B, e4b]), [read(), claimed], scenarios, shipped);
   expect(plan.picks.map((p) => p.build.id)).toEqual(['B-2026-10-22-scenic-1']);
   expect(plan.mismatches).toEqual([
     '2026-10-22-config-2.json scenic#1 (B-2026-10-22-scenic-1): built by gemma4:e2b v2, the matrix declares D as gemma4:e4b v2',
@@ -251,7 +269,7 @@ test('a build listed under the wrong configuration is no candidate for it, and t
   // The shipped slot holds builds another model made: none of them stands in for the shipped configuration.
   const foreign = read();
   for (const x of foreign.runs) if (x.run.end === 'done') x.run.build.model.id = 'gemma4:e4b';
-  const misfiled = galleryPlan(matrix('stopped-at-deadline', 1), [foreign], headline, shipped);
+  const misfiled = galleryPlan(matrix('stopped-at-deadline', 1), [foreign], scenarios, shipped);
   expect(misfiled.picks).toEqual([]);
   expect(misfiled.missing).toEqual(['scenic', 'thrown']);
   expect(misfiled.mismatches).toEqual([

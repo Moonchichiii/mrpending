@@ -5,7 +5,7 @@ import * as z from 'zod';
 import { HEADLINE_K } from './budget';
 import type { HeadlineK } from './budget';
 import type { desktop, hardware } from './host';
-import { attemptsOf, pressOrigin, replaysIdentically, summarize } from './metrics';
+import { ViolationKind, attemptsOf, pressOrigin, replaysIdentically, summarize } from './metrics';
 import type { ScenarioRun } from './metrics';
 import { Role } from './scenarios';
 import type { Scenario } from './scenarios';
@@ -32,7 +32,11 @@ const Iso = z.iso.datetime();
 // The four groups the issue keeps apart: schema, catalogue, simulator-derived, latency.
 export const Group = z.object({
   schema: z.object({ designReplies: Share, repairReplies: Share, scenariosDesigned: Share }),
-  catalogue: z.object({ firstTime: Share, withinBudget: Share, violationKinds: z.record(z.string(), int) }),
+  catalogue: z.object({
+    firstTime: Share,
+    withinBudget: Share,
+    violationKinds: z.record(ViolationKind, int),
+  }),
   simulator: z.object({
     simulatedFailures: int,
     outcomeChangingRepairs: int,
