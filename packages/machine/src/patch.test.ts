@@ -1,4 +1,4 @@
-import { Blueprint, Form, Patch } from '@pending/contract';
+import { Blueprint, Form, MAX_PARTS, Patch } from '@pending/contract';
 import { expect, test } from 'vitest';
 import catapultBlueprint from '../fixtures/catapult/blueprint.json';
 import catapultRepairedBlueprint from '../fixtures/catapult-repaired/blueprint.json';
@@ -64,6 +64,27 @@ test('an id used by an earlier attempt but no longer on the board cannot be adde
     new Set([...firstIds, 'p9']),
   );
   expect(violations).toEqual(['the patch adds p9, an id already used in this build']);
+});
+
+test('an add that would exceed MAX_PARTS is skipped and reported', () => {
+  const fans = Array.from({ length: MAX_PARTS - catapult.parts.length }, (_, i) => ({
+    id: `p${i + 6}`,
+    kind: 'fan' as const,
+    cell: `${'BCDEFGHIJ'[i]}1`,
+    dir: 'east' as const,
+    power: 1,
+  }));
+  const full = Blueprint.parse({ title: catapult.title, parts: [...catapult.parts, ...fans] });
+  const { blueprint, violations } = applyPatch(
+    full,
+    Patch.parse([{ op: 'add', part: { id: 'p15', kind: 'fan', cell: 'K1', dir: 'east', power: 1 } }]),
+    new Set(full.parts.map((p) => p.id)),
+    form,
+  );
+  expect(blueprint.parts).toEqual(full.parts);
+  expect(violations).toEqual([
+    'the patch adds p15, which would leave 15 parts on the board; the limit is 14',
+  ]);
 });
 
 test('moving or removing an unknown id is a violation, including one removed by an earlier op', () => {

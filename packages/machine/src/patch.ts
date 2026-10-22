@@ -1,9 +1,9 @@
-import type { Blueprint, Form, Part, Patch } from '@pending/contract';
+import { type Blueprint, type Form, MAX_PARTS, type Part, type Patch } from '@pending/contract';
 import { validate } from './validate';
 
 export type Repair = { blueprint: Blueprint; violations: string[] };
 
-// Ops apply in order (MACHINE-RULES section 6); an op naming an unknown or reused id is skipped and reported.
+// Ops apply in order (MACHINE-RULES section 6); an op naming an unknown or reused id, or an add past MAX_PARTS, is skipped and reported.
 export function applyPatch(
   blueprint: Blueprint,
   patch: Patch,
@@ -19,6 +19,10 @@ export function applyPatch(
       case 'add':
         if (used.has(op.part.id)) {
           violations.push(`the patch adds ${op.part.id}, an id already used in this build`);
+        } else if (parts.length >= MAX_PARTS) {
+          violations.push(
+            `the patch adds ${op.part.id}, which would leave ${parts.length + 1} parts on the board; the limit is ${MAX_PARTS}`,
+          );
         } else {
           used.add(op.part.id);
           parts = [...parts, op.part];
