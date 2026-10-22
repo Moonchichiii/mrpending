@@ -9,6 +9,7 @@
   "dependencies": {
     "@pending/agent": "workspace:*",
     "@pending/contract": "workspace:*",
-    "@pending/machine": "workspace:*"
+    "@pending/machine": "workspace:*",
+    "zod": "4.6.7"
   }
 }
