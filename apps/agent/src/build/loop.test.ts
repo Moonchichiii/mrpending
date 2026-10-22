@@ -6,6 +6,7 @@ import invalidForm from '../../../../packages/machine/fixtures/invalid/form.json
 import lostBlueprint from '../../../../packages/machine/fixtures/lost/blueprint.json';
 import lostEvents from '../../../../packages/machine/fixtures/lost/events.json';
 import lostForm from '../../../../packages/machine/fixtures/lost/form.json';
+import pressedBlueprint from '../../../../packages/machine/fixtures/pressed/blueprint.json';
 import repairedPatch from '../../../../packages/machine/fixtures/repaired/patch.json';
 import type { Call, Infer } from '../models/ollama';
 import { runBuild } from './loop';
@@ -150,4 +151,35 @@ test('an invalid blueprint is an attempt that is not run, and repairs stop at th
   expect(run.build.attempts[1]?.violations[0]).toBe('the patch moves p9, which is not on the board');
   expect(calls[1]?.prompt).toContain('forbids fan parts');
   expect(run.build.report).toMatchObject({ attempts: 3, pressed: false });
+});
+
+test('the cameo appears once, right after the first failure, while the first repair is awaited', async () => {
+  const unknownMove = { patch: [{ op: 'move', id: 'p9', cell: 'B5' }], memo };
+  const { infer } = scripted([{ blueprint: Blueprint.parse(lostBlueprint), memo }, unknownMove, unknownMove]);
+  const run = await runBuild(input(lostForm, infer, 2));
+  if (run.end !== 'done') throw new Error(`expected a build, got ${run.end}`);
+  const beats = run.build.lines.map((l) => `${l.at.attempt}:${l.beat}`);
+  expect(beats.filter((b) => b.endsWith(':cameo'))).toEqual(['1:cameo']);
+  const cameo = beats.indexOf('1:cameo');
+  expect(run.build.lines[cameo - 1]?.text).toBe('A correction will be issued.');
+  expect(beats[cameo + 1]).toBe('2:repaired');
+  expect(run.build.lines.at(-1)).toMatchObject({ beat: 'exhausted', at: { attempt: 3 } });
+});
+
+test('a build that presses at attempt 1 has no failure and no cameo', async () => {
+  const { infer } = scripted([{ blueprint: Blueprint.parse(pressedBlueprint), memo }]);
+  const run = await runBuild(input(lostForm, infer, 2));
+  if (run.end !== 'done') throw new Error(`expected a build, got ${run.end}`);
+  expect(run.build.lines.map((l) => l.beat)).toEqual([
+    'intake',
+    'designing',
+    'designed',
+    'designed',
+    'running',
+    'handoff',
+    'pressed',
+    'pressed',
+    'pressed',
+  ]);
+  expect(run.build.lines.at(-1)?.text).toBe(run.build.report.verdict);
 });

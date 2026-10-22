@@ -1,5 +1,3 @@
-import { RULES_VERSION } from '@pending/machine';
-
 export { parseEnv } from './env';
 export type { Env } from './env';
 export { PROMPT_VERSION, PROMPT_VERSIONS, instructions, pendingAgent } from './agents/pending';
@@ -16,8 +14,5 @@ export type { Call, CallKind, Infer, Reply, Timing } from './models/ollama';
 export { APP_REPAIRS, BuildInterrupted, EVAL_REPAIRS, runBuild } from './build/loop';
 export { designPrompt } from './build/brief';
 export type { BuildRun, CallRecord, Try } from './build/loop';
-
-// The routes and the beats arrive in issue #9.
-export function healthz(): { ok: true; rulesVersion: typeof RULES_VERSION } {
-  return { ok: true, rulesVersion: RULES_VERSION };
-}
+export { agentServer, healthz } from './http/server';
+export type { AgentDeps } from './http/server';

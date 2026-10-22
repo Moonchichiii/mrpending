@@ -11,6 +11,7 @@ export const Env = z
       .max(200)
       .default('http://127.0.0.1:11434'),
     WEB_ORIGIN: z.url({ protocol: /^https?$/ }).max(200),
+    PORT: z.coerce.number().int().min(1).max(65_535).default(4111),
     // Until the identity probe has run, identity is the socket address (section 5).
     IDENTITY_HEADER: z
       .string()
