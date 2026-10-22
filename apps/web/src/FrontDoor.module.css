@@ -1,0 +1,57 @@
+.page {
+  display: grid;
+  gap: var(--space-5);
+  width: min(100% - 2 * var(--space-3), 72rem);
+  margin-inline: auto;
+  padding-block: var(--space-5);
+}
+
+.intro,
+.section {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.name {
+  font-size: var(--text-title);
+}
+
+.lede {
+  max-width: var(--measure);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  min-height: var(--target);
+  padding: var(--space-2) var(--space-4);
+  font-weight: 700;
+  text-decoration: none;
+  border: var(--border-paper);
+  border-radius: 10px 4px 12px 6px;
+}
+
+/* The primary button: ink on cream, copper shadow, a -1 degree tilt (character sheet section 5). */
+.primary {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-display);
+  box-shadow: var(--shadow-primary);
+  rotate: -1deg;
+}
+
+.secondary {
+  background: transparent;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}

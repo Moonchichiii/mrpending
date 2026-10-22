@@ -1,0 +1,108 @@
+/* A paper card with level fields: controls and body text never tilt (character sheet section 5). */
+.form {
+  display: grid;
+  gap: var(--space-3);
+  max-width: var(--measure);
+  min-width: 0;
+  padding: var(--space-4);
+  background: var(--paper);
+  border: var(--border-paper);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+  container-type: inline-size;
+}
+
+.title {
+  font-size: var(--text-heading);
+}
+
+.lede,
+.hint {
+  color: var(--copper-text);
+}
+
+.hint {
+  font-size: var(--text-small);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.field label {
+  font-weight: 700;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--target);
+  padding: var(--space-2) var(--space-3);
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.field [aria-invalid='true'] {
+  border-color: var(--coral-text);
+  border-width: 3px;
+}
+
+/* Two items side by side once the card is wide enough; stacked on narrow cards. */
+.pair {
+  display: grid;
+  gap: var(--space-3);
+}
+
+@container (min-width: 28rem) {
+  .pair {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.error,
+.rejection {
+  color: var(--coral-text);
+  font-weight: 700;
+}
+
+.rejection {
+  padding: var(--space-2) var(--space-3);
+  border: 3px double var(--coral);
+  border-radius: 8px;
+}
+
+.submit {
+  justify-self: start;
+  min-height: var(--target);
+  padding: var(--space-2) var(--space-4);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  border: var(--border-paper);
+  border-radius: 10px 4px 12px 6px;
+  box-shadow: var(--shadow-primary);
+  rotate: -1deg;
+  cursor: pointer;
+}
+
+.submit:disabled {
+  color: var(--copper-text);
+  box-shadow: none;
+  rotate: none;
+  cursor: not-allowed;
+}
+
+.submit:enabled:active {
+  translate: 2px 2px;
+  box-shadow: 3px 3px 0 var(--copper);
+}
