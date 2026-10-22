@@ -27,12 +27,14 @@ export async function desktop() {
   };
 }
 
-// Samples available memory after every call; the minimum is the headroom the run left.
+// Samples available memory after every call, resolved or rejected; the minimum is the headroom the run left.
 export function sampled(infer: Infer, mem: { minFreeMiB: number }): Infer {
   return async (call, signal) => {
-    const reply = await infer(call, signal);
-    mem.minFreeMiB = Math.min(mem.minFreeMiB, freeMiB());
-    return reply;
+    try {
+      return await infer(call, signal);
+    } finally {
+      mem.minFreeMiB = Math.min(mem.minFreeMiB, freeMiB());
+    }
   };
 }
 
