@@ -1,6 +1,23 @@
 import { RULES_VERSION } from '@pending/machine';
 
-// The loop, the routes and the beats arrive in issues #8 and #9; this is the workspace edge, nothing more.
+export { parseEnv } from './env';
+export type { Env } from './env';
+export { PROMPT_VERSION, PROMPT_VERSIONS, instructions, pendingAgent } from './agents/pending';
+export type { PromptVersion } from './agents/pending';
+export {
+  LOCAL_CALL_TIMEOUT_MS,
+  SETTINGS,
+  inspectCompatRequest,
+  mastraInfer,
+  ollamaInfer,
+} from './models/ollama';
+export { loaded, provenance, unload } from './models/provenance';
+export type { Call, CallKind, Infer, Reply, Timing } from './models/ollama';
+export { APP_REPAIRS, BuildInterrupted, EVAL_REPAIRS, runBuild } from './build/loop';
+export { designPrompt } from './build/brief';
+export type { BuildRun, CallRecord, Try } from './build/loop';
+
+// The routes and the beats arrive in issue #9.
 export function healthz(): { ok: true; rulesVersion: typeof RULES_VERSION } {
   return { ok: true, rulesVersion: RULES_VERSION };
 }

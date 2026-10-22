@@ -1,0 +1,1090 @@
+{
+  "model": "gemma4:e2b",
+  "promptVersion": "v2",
+  "settings": {
+    "temperature": 0.2,
+    "numCtx": 4096,
+    "numPredict": 1024,
+    "think": false,
+    "repairs": 5,
+    "callTimeoutMs": 90000
+  },
+  "provenance": {
+    "digest": "sha256:b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+    "runtime": "ollama-0.40.7",
+    "sizeBytes": 4587156505
+  },
+  "hardware": {
+    "cpu": "13th Gen Intel(R) Core(TM) i7-1355U",
+    "threads": 12,
+    "totalMiB": 15661
+  },
+  "desktop": {
+    "vscode": true,
+    "browser": true
+  },
+  "startedAt": "2026-10-22T12:10:13.018Z",
+  "mastra": [
+    {
+      "scenario": "scenic",
+      "partials": 98,
+      "partialsParsing": 74,
+      "objectParses": true,
+      "timing": {
+        "firstChunkMs": 15948.195489,
+        "wallMs": 33345.680899
+      },
+      "request": {
+        "reasoningEffort": "none",
+        "temperature": 0.2,
+        "maxTokens": 1024,
+        "responseFormat": "json_schema",
+        "schemaSent": true,
+        "schemaEqualsDerived": true,
+        "schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "blueprint": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "maxLength": 40
+                },
+                "parts": {
+                  "maxItems": 14,
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "conveyor"
+                          },
+                          "length": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 6
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "length"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "ramp"
+                          },
+                          "length": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 4
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "length"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "dominoes"
+                          },
+                          "length": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 5
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "length"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "seesaw"
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "catapult"
+                          },
+                          "power": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 5
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "power"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "fan"
+                          },
+                          "power": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 4
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "power"],
+                        "additionalProperties": false
+                      }
+                    ]
+                  }
+                }
+              },
+              "required": ["title", "parts"],
+              "additionalProperties": false
+            },
+            "memo": {
+              "type": "string",
+              "maxLength": 160
+            }
+          },
+          "required": ["blueprint", "memo"],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "scenario": "thrown",
+      "partials": 85,
+      "partialsParsing": 65,
+      "objectParses": true,
+      "timing": {
+        "firstChunkMs": 1037.4759169999961,
+        "wallMs": 17444.331682999997
+      },
+      "request": {
+        "reasoningEffort": "none",
+        "temperature": 0.2,
+        "maxTokens": 1024,
+        "responseFormat": "json_schema",
+        "schemaSent": true,
+        "schemaEqualsDerived": true,
+        "schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "blueprint": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "maxLength": 40
+                },
+                "parts": {
+                  "maxItems": 14,
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "conveyor"
+                          },
+                          "length": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 6
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "length"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "ramp"
+                          },
+                          "length": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 4
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "length"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "dominoes"
+                          },
+                          "length": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 5
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "length"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "seesaw"
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "catapult"
+                          },
+                          "power": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 5
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "power"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "fan"
+                          },
+                          "power": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 4
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "power"],
+                        "additionalProperties": false
+                      }
+                    ]
+                  }
+                }
+              },
+              "required": ["title", "parts"],
+              "additionalProperties": false
+            },
+            "memo": {
+              "type": "string",
+              "maxLength": 160
+            }
+          },
+          "required": ["blueprint", "memo"],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "scenario": "windless",
+      "partials": 66,
+      "partialsParsing": 54,
+      "objectParses": true,
+      "timing": {
+        "firstChunkMs": 1004.8648150000008,
+        "wallMs": 11805.998143999997
+      },
+      "request": {
+        "reasoningEffort": "none",
+        "temperature": 0.2,
+        "maxTokens": 1024,
+        "responseFormat": "json_schema",
+        "schemaSent": true,
+        "schemaEqualsDerived": true,
+        "schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "blueprint": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "maxLength": 40
+                },
+                "parts": {
+                  "maxItems": 14,
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "conveyor"
+                          },
+                          "length": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 6
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "length"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "ramp"
+                          },
+                          "length": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 4
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "length"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "dominoes"
+                          },
+                          "length": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 5
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "length"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "seesaw"
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "catapult"
+                          },
+                          "power": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 5
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "power"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "fan"
+                          },
+                          "power": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 4
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "power"],
+                        "additionalProperties": false
+                      }
+                    ]
+                  }
+                }
+              },
+              "required": ["title", "parts"],
+              "additionalProperties": false
+            },
+            "memo": {
+              "type": "string",
+              "maxLength": 160
+            }
+          },
+          "required": ["blueprint", "memo"],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "scenario": "chain",
+      "partials": 97,
+      "partialsParsing": 73,
+      "objectParses": true,
+      "timing": {
+        "firstChunkMs": 967.1254800000024,
+        "wallMs": 19529.561564000003
+      },
+      "request": {
+        "reasoningEffort": "none",
+        "temperature": 0.2,
+        "maxTokens": 1024,
+        "responseFormat": "json_schema",
+        "schemaSent": true,
+        "schemaEqualsDerived": true,
+        "schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "blueprint": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "maxLength": 40
+                },
+                "parts": {
+                  "maxItems": 14,
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "conveyor"
+                          },
+                          "length": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 6
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "length"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "ramp"
+                          },
+                          "length": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 4
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "length"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "dominoes"
+                          },
+                          "length": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 5
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "length"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "seesaw"
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "catapult"
+                          },
+                          "power": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 5
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "power"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "fan"
+                          },
+                          "power": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 4
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "power"],
+                        "additionalProperties": false
+                      }
+                    ]
+                  }
+                }
+              },
+              "required": ["title", "parts"],
+              "additionalProperties": false
+            },
+            "memo": {
+              "type": "string",
+              "maxLength": 160
+            }
+          },
+          "required": ["blueprint", "memo"],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "scenario": "updown",
+      "partials": 70,
+      "partialsParsing": 54,
+      "objectParses": true,
+      "timing": {
+        "firstChunkMs": 1022.4078630000004,
+        "wallMs": 16701.672166000004
+      },
+      "request": {
+        "reasoningEffort": "none",
+        "temperature": 0.2,
+        "maxTokens": 1024,
+        "responseFormat": "json_schema",
+        "schemaSent": true,
+        "schemaEqualsDerived": true,
+        "schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "blueprint": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "maxLength": 40
+                },
+                "parts": {
+                  "maxItems": 14,
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "conveyor"
+                          },
+                          "length": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 6
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "length"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "ramp"
+                          },
+                          "length": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 4
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "length"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "dominoes"
+                          },
+                          "length": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 5
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "length"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "seesaw"
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "catapult"
+                          },
+                          "power": {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 5
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "power"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^p\\d{1,2}$"
+                          },
+                          "cell": {
+                            "type": "string",
+                            "pattern": "^[A-L][1-7]$"
+                          },
+                          "dir": {
+                            "type": "string",
+                            "enum": ["east", "west"]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "fan"
+                          },
+                          "power": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 4
+                          }
+                        },
+                        "required": ["id", "cell", "dir", "kind", "power"],
+                        "additionalProperties": false
+                      }
+                    ]
+                  }
+                }
+              },
+              "required": ["title", "parts"],
+              "additionalProperties": false
+            },
+            "memo": {
+              "type": "string",
+              "maxLength": 160
+            }
+          },
+          "required": ["blueprint", "memo"],
+          "additionalProperties": false
+        }
+      }
+    }
+  ],
+  "unloaded": true
+}

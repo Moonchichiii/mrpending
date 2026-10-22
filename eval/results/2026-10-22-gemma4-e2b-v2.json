@@ -1,0 +1,4273 @@
+{
+  "model": "gemma4:e2b",
+  "promptVersion": "v2",
+  "settings": {
+    "temperature": 0.2,
+    "numCtx": 4096,
+    "numPredict": 1024,
+    "think": false,
+    "repairs": 5,
+    "callTimeoutMs": 90000
+  },
+  "provenance": {
+    "digest": "sha256:b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+    "runtime": "ollama-0.40.7",
+    "sizeBytes": 4587156505
+  },
+  "hardware": {
+    "cpu": "13th Gen Intel(R) Core(TM) i7-1355U",
+    "threads": 12,
+    "totalMiB": 15661
+  },
+  "desktop": {
+    "vscode": true,
+    "browser": true
+  },
+  "startedAt": "2026-10-22T11:55:09.549Z",
+  "resident": [
+    {
+      "name": "gemma4:e2b",
+      "sizeBytes": 312433704,
+      "vramBytes": 312433704
+    }
+  ],
+  "memory": {
+    "minFreeMiB": 2475
+  },
+  "unloaded": true,
+  "summary": {
+    "schema": {
+      "designReplies": {
+        "hits": 5,
+        "n": 5
+      },
+      "repairReplies": {
+        "hits": 25,
+        "n": 25
+      },
+      "scenariosDesigned": {
+        "hits": 5,
+        "n": 5
+      },
+      "issues": []
+    },
+    "catalogue": {
+      "firstTime": {
+        "hits": 0,
+        "n": 5
+      },
+      "withinBudget": {
+        "hits": 4,
+        "n": 5
+      },
+      "violationKinds": {
+        "overlap": 9,
+        "footprint": 1,
+        "constraint": 7,
+        "patch": 5,
+        "parameter": 0
+      }
+    },
+    "simulator": {
+      "scenarios": [
+        {
+          "scenario": "scenic",
+          "end": "done",
+          "attempts": [
+            {
+              "n": 1,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["overlap"]
+            },
+            {
+              "n": 2,
+              "outcome": "stalled",
+              "failedAt": "G4",
+              "handovers": 2,
+              "violations": []
+            },
+            {
+              "n": 3,
+              "outcome": "stalled",
+              "failedAt": "K7",
+              "handovers": 3,
+              "violations": []
+            },
+            {
+              "n": 4,
+              "outcome": "stalled",
+              "failedAt": "K7",
+              "handovers": 3,
+              "violations": []
+            },
+            {
+              "n": 5,
+              "outcome": "stalled",
+              "failedAt": "K7",
+              "handovers": 3,
+              "violations": []
+            },
+            {
+              "n": 6,
+              "outcome": "stalled",
+              "failedAt": "K7",
+              "handovers": 3,
+              "violations": []
+            }
+          ],
+          "repairs": [
+            {
+              "attempt": 2,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "G4",
+                "step": 8
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 3,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "G4",
+                "step": 8
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "K7",
+                "step": 16
+              },
+              "changedOutcome": true
+            },
+            {
+              "attempt": 4,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "K7",
+                "step": 16
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "K7",
+                "step": 16
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 5,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "K7",
+                "step": 16
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "K7",
+                "step": 16
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 6,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "K7",
+                "step": 16
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "K7",
+                "step": 16
+              },
+              "changedOutcome": false
+            }
+          ],
+          "replayIdentical": true
+        },
+        {
+          "scenario": "thrown",
+          "end": "done",
+          "attempts": [
+            {
+              "n": 1,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["overlap"]
+            },
+            {
+              "n": 2,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["overlap"]
+            },
+            {
+              "n": 3,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["overlap"]
+            },
+            {
+              "n": 4,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["patch", "constraint"]
+            },
+            {
+              "n": 5,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["patch", "constraint"]
+            },
+            {
+              "n": 6,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["patch", "constraint"]
+            }
+          ],
+          "repairs": [
+            {
+              "attempt": 2,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 3,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 4,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 5,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 6,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            }
+          ],
+          "replayIdentical": true
+        },
+        {
+          "scenario": "windless",
+          "end": "done",
+          "attempts": [
+            {
+              "n": 1,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["overlap"]
+            },
+            {
+              "n": 2,
+              "outcome": "stalled",
+              "failedAt": "F7",
+              "handovers": 1,
+              "violations": []
+            },
+            {
+              "n": 3,
+              "outcome": "stalled",
+              "failedAt": "K7",
+              "handovers": 3,
+              "violations": []
+            },
+            {
+              "n": 4,
+              "outcome": "stalled",
+              "failedAt": "K7",
+              "handovers": 3,
+              "violations": []
+            },
+            {
+              "n": 5,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["footprint"]
+            },
+            {
+              "n": 6,
+              "outcome": "stalled",
+              "failedAt": "K7",
+              "handovers": 3,
+              "violations": []
+            }
+          ],
+          "repairs": [
+            {
+              "attempt": 2,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "F7",
+                "step": 11
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 3,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "F7",
+                "step": 11
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "K7",
+                "step": 16
+              },
+              "changedOutcome": true
+            },
+            {
+              "attempt": 4,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "K7",
+                "step": 16
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "K7",
+                "step": 16
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 5,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "K7",
+                "step": 16
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 6,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "K7",
+                "step": 16
+              },
+              "changedOutcome": false
+            }
+          ],
+          "replayIdentical": true
+        },
+        {
+          "scenario": "chain",
+          "end": "done",
+          "attempts": [
+            {
+              "n": 1,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["overlap", "overlap"]
+            },
+            {
+              "n": 2,
+              "outcome": "stalled",
+              "failedAt": "G4",
+              "handovers": 2,
+              "violations": []
+            },
+            {
+              "n": 3,
+              "outcome": "stalled",
+              "failedAt": "G4",
+              "handovers": 2,
+              "violations": []
+            },
+            {
+              "n": 4,
+              "outcome": "stalled",
+              "failedAt": "G4",
+              "handovers": 2,
+              "violations": []
+            },
+            {
+              "n": 5,
+              "outcome": "stalled",
+              "failedAt": "G4",
+              "handovers": 2,
+              "violations": []
+            },
+            {
+              "n": 6,
+              "outcome": "stalled",
+              "failedAt": "G4",
+              "handovers": 2,
+              "violations": []
+            }
+          ],
+          "repairs": [
+            {
+              "attempt": 2,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "G4",
+                "step": 8
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 3,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "G4",
+                "step": 8
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "G4",
+                "step": 8
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 4,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "G4",
+                "step": 8
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "G4",
+                "step": 8
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 5,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "G4",
+                "step": 8
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "G4",
+                "step": 8
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 6,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "G4",
+                "step": 8
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "G4",
+                "step": 8
+              },
+              "changedOutcome": false
+            }
+          ],
+          "replayIdentical": true
+        },
+        {
+          "scenario": "updown",
+          "end": "done",
+          "attempts": [
+            {
+              "n": 1,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["overlap", "overlap", "constraint"]
+            },
+            {
+              "n": 2,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["constraint"]
+            },
+            {
+              "n": 3,
+              "outcome": "stalled",
+              "failedAt": "A7",
+              "handovers": 0,
+              "violations": []
+            },
+            {
+              "n": 4,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["patch"]
+            },
+            {
+              "n": 5,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["constraint"]
+            },
+            {
+              "n": 6,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["patch", "constraint"]
+            }
+          ],
+          "repairs": [
+            {
+              "attempt": 2,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 3,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "A7",
+                "step": 7
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 4,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "A7",
+                "step": 7
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 5,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 6,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            }
+          ],
+          "replayIdentical": true
+        }
+      ],
+      "simulatedFailures": 15,
+      "outcomeChangingRepairs": 2,
+      "pressed": 0
+    },
+    "latency": {
+      "coldLoadMs": 9233.220259,
+      "design": {
+        "wallMs": {
+          "n": 5,
+          "p50": 15835.958190000034,
+          "p95": 31256.309683
+        },
+        "warmMs": {
+          "n": 5,
+          "p50": 15834.243390000034,
+          "p95": 22023.089423999998
+        },
+        "promptMs": {
+          "n": 5,
+          "p50": 1267.771,
+          "p95": 6858.892
+        },
+        "evalMs": {
+          "n": 5,
+          "p50": 14533.904,
+          "p95": 18815.578
+        },
+        "evalTokens": {
+          "n": 5,
+          "p50": 280,
+          "p95": 331
+        }
+      },
+      "repair": {
+        "wallMs": {
+          "n": 25,
+          "p50": 10034.630219999992,
+          "p95": 13831.370277000009
+        },
+        "warmMs": {
+          "n": 25,
+          "p50": 10033.295169999992,
+          "p95": 13829.74126500001
+        },
+        "promptMs": {
+          "n": 25,
+          "p50": 3177.54,
+          "p95": 5043.615
+        },
+        "evalMs": {
+          "n": 25,
+          "p50": 6952.834,
+          "p95": 8751.281
+        },
+        "evalTokens": {
+          "n": 25,
+          "p50": 100,
+          "p95": 144
+        }
+      }
+    }
+  },
+  "gate": {
+    "schemaValid4of5": true,
+    "catalogueValid4of5": true,
+    "failsInSimulator": true,
+    "outcomeChangingRepair": true,
+    "latencyMeasured": true,
+    "go": true
+  },
+  "runs": [
+    {
+      "scenario": "scenic",
+      "run": {
+        "end": "done",
+        "build": {
+          "id": "2026-10-22-gemma4-e2b-v2-scenic",
+          "contractVersion": "c1",
+          "rulesVersion": "r2",
+          "promptVersion": "v2",
+          "form": {
+            "nature": "Press the blue button. Scenic route, please.",
+            "minParts": 2,
+            "maxParts": 14
+          },
+          "model": {
+            "mode": "local",
+            "id": "gemma4:e2b",
+            "host": "ollama",
+            "digest": "sha256:b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+            "runtime": "ollama-0.40.7"
+          },
+          "title": "Blue Button Press Mechanism",
+          "report": {
+            "attempts": 6,
+            "parts": 7,
+            "pressed": false,
+            "failedAt": "K7",
+            "verdict": "Your request is pending. Naturally."
+          },
+          "createdAt": "2026-10-22T11:56:30.924Z",
+          "attempts": [
+            {
+              "n": 1,
+              "blueprint": {
+                "title": "Blue Button Press Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "C2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "D6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "F6",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 3
+                  },
+                  {
+                    "id": "p5",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  },
+                  {
+                    "id": "p6",
+                    "cell": "H7",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  }
+                ]
+              },
+              "violations": ["p2 overlaps p1 at C2"],
+              "events": [],
+              "outcome": "invalid"
+            },
+            {
+              "n": 2,
+              "blueprint": {
+                "title": "Blue Button Press Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "D6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "F6",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 3
+                  },
+                  {
+                    "id": "p5",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  },
+                  {
+                    "id": "p6",
+                    "cell": "H7",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E3",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "E3",
+                  "to": "F4",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "F4",
+                  "to": "G4",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.stopped",
+                  "step": 8,
+                  "cell": "G4"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "G4",
+              "patch": [
+                {
+                  "op": "move",
+                  "id": "p2",
+                  "cell": "D2"
+                }
+              ]
+            },
+            {
+              "n": 3,
+              "blueprint": {
+                "title": "Blue Button Press Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "D6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "F6",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 3
+                  },
+                  {
+                    "id": "p6",
+                    "cell": "H7",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p7",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E3",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "E3",
+                  "to": "F4",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "F4",
+                  "to": "G4",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.launched",
+                  "step": 8,
+                  "from": "G4",
+                  "to": "I2",
+                  "by": "catapult",
+                  "part": "p7"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 9,
+                  "from": "I2",
+                  "to": "I3",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 10,
+                  "from": "I3",
+                  "to": "I4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 11,
+                  "from": "I4",
+                  "to": "I5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 12,
+                  "from": "I5",
+                  "to": "I6",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 13,
+                  "from": "I6",
+                  "to": "I7",
+                  "by": "gravity"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 14,
+                  "part": "p6",
+                  "index": 1,
+                  "cell": "I7"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 15,
+                  "part": "p6",
+                  "index": 2,
+                  "cell": "J7"
+                },
+                {
+                  "type": "impulse.lost",
+                  "step": 16,
+                  "cell": "K7"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "K7",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p5"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p7",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 2
+                  }
+                }
+              ]
+            },
+            {
+              "n": 4,
+              "blueprint": {
+                "title": "Blue Button Press Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "D6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "F6",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 3
+                  },
+                  {
+                    "id": "p6",
+                    "cell": "H7",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p7",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 2
+                  },
+                  {
+                    "id": "p8",
+                    "cell": "J5",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E3",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "E3",
+                  "to": "F4",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "F4",
+                  "to": "G4",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.launched",
+                  "step": 8,
+                  "from": "G4",
+                  "to": "I2",
+                  "by": "catapult",
+                  "part": "p7"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 9,
+                  "from": "I2",
+                  "to": "I3",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 10,
+                  "from": "I3",
+                  "to": "I4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 11,
+                  "from": "I4",
+                  "to": "I5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 12,
+                  "from": "I5",
+                  "to": "I6",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 13,
+                  "from": "I6",
+                  "to": "I7",
+                  "by": "gravity"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 14,
+                  "part": "p6",
+                  "index": 1,
+                  "cell": "I7"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 15,
+                  "part": "p6",
+                  "index": 2,
+                  "cell": "J7"
+                },
+                {
+                  "type": "impulse.lost",
+                  "step": 16,
+                  "cell": "K7"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "K7",
+              "patch": [
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p8",
+                    "cell": "J5",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                }
+              ]
+            },
+            {
+              "n": 5,
+              "blueprint": {
+                "title": "Blue Button Press Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "D6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "F6",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 3
+                  },
+                  {
+                    "id": "p6",
+                    "cell": "H7",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p7",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 2
+                  },
+                  {
+                    "id": "p8",
+                    "cell": "J5",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  },
+                  {
+                    "id": "p9",
+                    "cell": "K6",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E3",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "E3",
+                  "to": "F4",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "F4",
+                  "to": "G4",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.launched",
+                  "step": 8,
+                  "from": "G4",
+                  "to": "I2",
+                  "by": "catapult",
+                  "part": "p7"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 9,
+                  "from": "I2",
+                  "to": "I3",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 10,
+                  "from": "I3",
+                  "to": "I4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 11,
+                  "from": "I4",
+                  "to": "I5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 12,
+                  "from": "I5",
+                  "to": "I6",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 13,
+                  "from": "I6",
+                  "to": "I7",
+                  "by": "gravity"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 14,
+                  "part": "p6",
+                  "index": 1,
+                  "cell": "I7"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 15,
+                  "part": "p6",
+                  "index": 2,
+                  "cell": "J7"
+                },
+                {
+                  "type": "impulse.lost",
+                  "step": 16,
+                  "cell": "K7"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "K7",
+              "patch": [
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p9",
+                    "cell": "K6",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                }
+              ]
+            },
+            {
+              "n": 6,
+              "blueprint": {
+                "title": "Blue Button Press Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "D6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "F6",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 3
+                  },
+                  {
+                    "id": "p6",
+                    "cell": "H7",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p7",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 2
+                  },
+                  {
+                    "id": "p8",
+                    "cell": "J5",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E3",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "E3",
+                  "to": "F4",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "F4",
+                  "to": "G4",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.launched",
+                  "step": 8,
+                  "from": "G4",
+                  "to": "I2",
+                  "by": "catapult",
+                  "part": "p7"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 9,
+                  "from": "I2",
+                  "to": "I3",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 10,
+                  "from": "I3",
+                  "to": "I4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 11,
+                  "from": "I4",
+                  "to": "I5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 12,
+                  "from": "I5",
+                  "to": "I6",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 13,
+                  "from": "I6",
+                  "to": "I7",
+                  "by": "gravity"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 14,
+                  "part": "p6",
+                  "index": 1,
+                  "cell": "I7"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 15,
+                  "part": "p6",
+                  "index": 2,
+                  "cell": "J7"
+                },
+                {
+                  "type": "impulse.lost",
+                  "step": 16,
+                  "cell": "K7"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "K7",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p9"
+                }
+              ]
+            }
+          ],
+          "lines": []
+        },
+        "calls": [
+          {
+            "kind": "design",
+            "attempt": 1,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 16125.682221000001,
+                  "loadMs": 9233.220259,
+                  "promptMs": 6858.892,
+                  "evalMs": 15128.298,
+                  "promptTokens": 1115,
+                  "evalTokens": 331,
+                  "wallMs": 31256.309683
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 2,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2676.959593000003,
+                  "loadMs": 1.173115,
+                  "promptMs": 2646.922,
+                  "evalMs": 4292.058,
+                  "promptTokens": 1293,
+                  "evalTokens": 68,
+                  "wallMs": 6971.112929999999
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 3,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 3879.9948300000033,
+                  "loadMs": 1.888405,
+                  "promptMs": 3844.849,
+                  "evalMs": 6952.834,
+                  "promptTokens": 1391,
+                  "evalTokens": 126,
+                  "wallMs": 10834.152052999998
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 4,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 4079.003155999999,
+                  "loadMs": 2.109284,
+                  "promptMs": 4044.506,
+                  "evalMs": 7059.059,
+                  "promptTokens": 1400,
+                  "evalTokens": 100,
+                  "wallMs": 11138.97137
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 5,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 5126.100772999991,
+                  "loadMs": 1.86114,
+                  "promptMs": 5079.503,
+                  "evalMs": 6598.946,
+                  "promptTokens": 1423,
+                  "evalTokens": 94,
+                  "wallMs": 11723.512309999998
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 6,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 4882.510982000007,
+                  "loadMs": 2.467387,
+                  "promptMs": 4846.684,
+                  "evalMs": 4543.225,
+                  "promptTokens": 1446,
+                  "evalTokens": 59,
+                  "wallMs": 9426.31908500001
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "thrown",
+      "run": {
+        "end": "done",
+        "build": {
+          "id": "2026-10-22-gemma4-e2b-v2-thrown",
+          "contractVersion": "c1",
+          "rulesVersion": "r2",
+          "promptVersion": "v2",
+          "form": {
+            "nature": "Something must be thrown across the room. Formally.",
+            "minParts": 3,
+            "maxParts": 8,
+            "required": "catapult"
+          },
+          "model": {
+            "mode": "local",
+            "id": "gemma4:e2b",
+            "host": "ollama",
+            "digest": "sha256:b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+            "runtime": "ollama-0.40.7"
+          },
+          "title": "Blue Button Press Mechanism",
+          "report": {
+            "attempts": 6,
+            "parts": 2,
+            "pressed": false,
+            "verdict": "Your request is pending. Naturally."
+          },
+          "createdAt": "2026-10-22T11:57:31.686Z",
+          "attempts": [
+            {
+              "n": 1,
+              "blueprint": {
+                "title": "Blue Button Press Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "F6",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "E6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  }
+                ]
+              },
+              "violations": ["p3 overlaps p1 at F6"],
+              "events": [],
+              "outcome": "invalid"
+            },
+            {
+              "n": 2,
+              "blueprint": {
+                "title": "Blue Button Press Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "F6",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "E6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  }
+                ]
+              },
+              "violations": ["p4 overlaps p1 at F6"],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p3"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p4",
+                    "cell": "E6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  }
+                }
+              ]
+            },
+            {
+              "n": 3,
+              "blueprint": {
+                "title": "Blue Button Press Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "F6",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  },
+                  {
+                    "id": "p5",
+                    "cell": "E6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  }
+                ]
+              },
+              "violations": ["p5 overlaps p1 at F6"],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p4"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p5",
+                    "cell": "E6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  }
+                }
+              ]
+            },
+            {
+              "n": 4,
+              "blueprint": {
+                "title": "Blue Button Press Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "F6",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  }
+                ]
+              },
+              "violations": [
+                "the patch adds p5, an id already used in this build",
+                "the blueprint has 2 parts; the form asks for at least 3"
+              ],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p5"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p5",
+                    "cell": "E6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  }
+                }
+              ]
+            },
+            {
+              "n": 5,
+              "blueprint": {
+                "title": "Blue Button Press Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "F6",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  }
+                ]
+              },
+              "violations": [
+                "the patch adds p3, an id already used in this build",
+                "the blueprint has 2 parts; the form asks for at least 3"
+              ],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p3",
+                    "cell": "H4",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  }
+                }
+              ]
+            },
+            {
+              "n": 6,
+              "blueprint": {
+                "title": "Blue Button Press Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "F6",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  }
+                ]
+              },
+              "violations": [
+                "the patch adds p3, an id already used in this build",
+                "the blueprint has 2 parts; the form asks for at least 3"
+              ],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p3",
+                    "cell": "H4",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  }
+                }
+              ]
+            }
+          ],
+          "lines": []
+        },
+        "calls": [
+          {
+            "kind": "design",
+            "attempt": 1,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 1297.4853460000013,
+                  "loadMs": 1.610556,
+                  "promptMs": 1265.59,
+                  "evalMs": 12079.722,
+                  "promptTokens": 1125,
+                  "evalTokens": 186,
+                  "wallMs": 13377.835349999994
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 2,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2368.951405999993,
+                  "loadMs": 2.951445,
+                  "promptMs": 2329.288,
+                  "evalMs": 7629.122,
+                  "promptTokens": 1234,
+                  "evalTokens": 118,
+                  "wallMs": 9998.979584999994
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 3,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2340.4378859999997,
+                  "loadMs": 2.33619,
+                  "promptMs": 2303.117,
+                  "evalMs": 7440.291,
+                  "promptTokens": 1234,
+                  "evalTokens": 120,
+                  "wallMs": 9781.636516999992
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 4,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2436.3569209999987,
+                  "loadMs": 1.542183,
+                  "promptMs": 2398.962,
+                  "evalMs": 7833.356,
+                  "promptTokens": 1234,
+                  "evalTokens": 120,
+                  "wallMs": 10270.768761
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 5,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2707.8160770000104,
+                  "loadMs": 1.713168,
+                  "promptMs": 2667.43,
+                  "evalMs": 6215.749,
+                  "promptTokens": 1256,
+                  "evalTokens": 89,
+                  "wallMs": 8924.379396000004
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 6,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2550.0994730000093,
+                  "loadMs": 1.522596,
+                  "promptMs": 2515.322,
+                  "evalMs": 5842.778,
+                  "promptTokens": 1256,
+                  "evalTokens": 89,
+                  "wallMs": 8393.848175000021
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "windless",
+      "run": {
+        "end": "done",
+        "build": {
+          "id": "2026-10-22-gemma4-e2b-v2-windles",
+          "contractVersion": "c1",
+          "rulesVersion": "r2",
+          "promptVersion": "v2",
+          "form": {
+            "nature": "No fans. I dislike wind.",
+            "minParts": 2,
+            "maxParts": 6,
+            "forbidden": "fan"
+          },
+          "model": {
+            "mode": "local",
+            "id": "gemma4:e2b",
+            "host": "ollama",
+            "digest": "sha256:b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+            "runtime": "ollama-0.40.7"
+          },
+          "title": "Blue Button Press Mechanism",
+          "report": {
+            "attempts": 6,
+            "parts": 4,
+            "pressed": false,
+            "failedAt": "K7",
+            "verdict": "Your request is pending. Naturally."
+          },
+          "createdAt": "2026-10-22T11:58:27.251Z",
+          "attempts": [
+            {
+              "n": 1,
+              "blueprint": {
+                "title": "Blue Button Press Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "C2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 2
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "H7",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  }
+                ]
+              },
+              "violations": ["p2 overlaps p1 at C2"],
+              "events": [],
+              "outcome": "invalid"
+            },
+            {
+              "n": 2,
+              "blueprint": {
+                "title": "Blue Button Press Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 2
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "H7",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E3",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "E3",
+                  "to": "F3",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "F3",
+                  "to": "F4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 8,
+                  "from": "F4",
+                  "to": "F5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 9,
+                  "from": "F5",
+                  "to": "F6",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 10,
+                  "from": "F6",
+                  "to": "F7",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.stopped",
+                  "step": 11,
+                  "cell": "F7"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "F7",
+              "patch": [
+                {
+                  "op": "move",
+                  "id": "p2",
+                  "cell": "D2"
+                }
+              ]
+            },
+            {
+              "n": 3,
+              "blueprint": {
+                "title": "Blue Button Press Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 2
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "H7",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "F7",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E3",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "E3",
+                  "to": "F3",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "F3",
+                  "to": "F4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 8,
+                  "from": "F4",
+                  "to": "F5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 9,
+                  "from": "F5",
+                  "to": "F6",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 10,
+                  "from": "F6",
+                  "to": "F7",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 11,
+                  "from": "F7",
+                  "to": "G7",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 12,
+                  "from": "G7",
+                  "to": "H7",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 13,
+                  "part": "p3",
+                  "index": 0,
+                  "cell": "H7"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 14,
+                  "part": "p3",
+                  "index": 1,
+                  "cell": "I7"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 15,
+                  "part": "p3",
+                  "index": 2,
+                  "cell": "J7"
+                },
+                {
+                  "type": "impulse.lost",
+                  "step": 16,
+                  "cell": "K7"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "K7",
+              "patch": [
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p4",
+                    "cell": "F7",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                }
+              ]
+            },
+            {
+              "n": 4,
+              "blueprint": {
+                "title": "Blue Button Press Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 2
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "H7",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "F7",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  },
+                  {
+                    "id": "p5",
+                    "cell": "K6",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E3",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "E3",
+                  "to": "F3",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "F3",
+                  "to": "F4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 8,
+                  "from": "F4",
+                  "to": "F5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 9,
+                  "from": "F5",
+                  "to": "F6",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 10,
+                  "from": "F6",
+                  "to": "F7",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 11,
+                  "from": "F7",
+                  "to": "G7",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 12,
+                  "from": "G7",
+                  "to": "H7",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 13,
+                  "part": "p3",
+                  "index": 0,
+                  "cell": "H7"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 14,
+                  "part": "p3",
+                  "index": 1,
+                  "cell": "I7"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 15,
+                  "part": "p3",
+                  "index": 2,
+                  "cell": "J7"
+                },
+                {
+                  "type": "impulse.lost",
+                  "step": 16,
+                  "cell": "K7"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "K7",
+              "patch": [
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p5",
+                    "cell": "K6",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                }
+              ]
+            },
+            {
+              "n": 5,
+              "blueprint": {
+                "title": "Blue Button Press Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 2
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "H7",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "F7",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  },
+                  {
+                    "id": "p6",
+                    "cell": "L6",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": ["p6 at L6 runs off the east edge of the board"],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p5"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p6",
+                    "cell": "L6",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                }
+              ]
+            },
+            {
+              "n": 6,
+              "blueprint": {
+                "title": "Blue Button Press Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 2
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "H7",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "F7",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E3",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "E3",
+                  "to": "F3",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "F3",
+                  "to": "F4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 8,
+                  "from": "F4",
+                  "to": "F5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 9,
+                  "from": "F5",
+                  "to": "F6",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 10,
+                  "from": "F6",
+                  "to": "F7",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 11,
+                  "from": "F7",
+                  "to": "G7",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 12,
+                  "from": "G7",
+                  "to": "H7",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 13,
+                  "part": "p3",
+                  "index": 0,
+                  "cell": "H7"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 14,
+                  "part": "p3",
+                  "index": 1,
+                  "cell": "I7"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 15,
+                  "part": "p3",
+                  "index": 2,
+                  "cell": "J7"
+                },
+                {
+                  "type": "impulse.lost",
+                  "step": 16,
+                  "cell": "K7"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "K7",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p6"
+                }
+              ]
+            }
+          ],
+          "lines": []
+        },
+        "calls": [
+          {
+            "kind": "design",
+            "attempt": 1,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 974.5714940000034,
+                  "loadMs": 1.444538,
+                  "promptMs": 942.106,
+                  "evalMs": 9537.436,
+                  "promptTokens": 1117,
+                  "evalTokens": 202,
+                  "wallMs": 10512.685059999989
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 2,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2046.892338000005,
+                  "loadMs": 1.144633,
+                  "promptMs": 2027.216,
+                  "evalMs": 3977.063,
+                  "promptTokens": 1233,
+                  "evalTokens": 50,
+                  "wallMs": 6025.318646
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 3,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 3169.6833979999938,
+                  "loadMs": 2.549721,
+                  "promptMs": 3132.475,
+                  "evalMs": 5414.157,
+                  "promptTokens": 1332,
+                  "evalTokens": 96,
+                  "wallMs": 8584.48232000001
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 4,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 3488.9707699999854,
+                  "loadMs": 1.33505,
+                  "promptMs": 3455.453,
+                  "evalMs": 6544.689,
+                  "promptTokens": 1363,
+                  "evalTokens": 98,
+                  "wallMs": 10034.630219999992
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 5,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 4094.5338749999937,
+                  "loadMs": 1.572041,
+                  "promptMs": 4056.005,
+                  "evalMs": 8751.281,
+                  "promptTokens": 1386,
+                  "evalTokens": 132,
+                  "wallMs": 12846.219248999987
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 6,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 3338.9908559999894,
+                  "loadMs": 1.798223,
+                  "promptMs": 3298.465,
+                  "evalMs": 4215.015999,
+                  "promptTokens": 1289,
+                  "evalTokens": 55,
+                  "wallMs": 7555.136505000002
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "chain",
+      "run": {
+        "end": "done",
+        "build": {
+          "id": "2026-10-22-gemma4-e2b-v2-chain",
+          "contractVersion": "c1",
+          "rulesVersion": "r2",
+          "promptVersion": "v2",
+          "form": {
+            "nature": "A chain of consequences, please, ending at the button.",
+            "minParts": 4,
+            "maxParts": 10,
+            "required": "dominoes"
+          },
+          "model": {
+            "mode": "local",
+            "id": "gemma4:e2b",
+            "host": "ollama",
+            "digest": "sha256:b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+            "runtime": "ollama-0.40.7"
+          },
+          "title": "Button Press Mechanism Design",
+          "report": {
+            "attempts": 6,
+            "parts": 6,
+            "pressed": false,
+            "failedAt": "G4",
+            "verdict": "Your request is pending. Naturally."
+          },
+          "createdAt": "2026-10-22T11:59:53.388Z",
+          "attempts": [
+            {
+              "n": 1,
+              "blueprint": {
+                "title": "Button Press Mechanism Design",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "C2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "H7",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "E6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p5",
+                    "cell": "F6",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 3
+                  },
+                  {
+                    "id": "p6",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  }
+                ]
+              },
+              "violations": ["p2 overlaps p1 at C2", "p5 overlaps p4 at F6"],
+              "events": [],
+              "outcome": "invalid"
+            },
+            {
+              "n": 2,
+              "blueprint": {
+                "title": "Button Press Mechanism Design",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "H7",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "E6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p6",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  },
+                  {
+                    "id": "p7",
+                    "cell": "I2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E3",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "E3",
+                  "to": "F4",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "F4",
+                  "to": "G4",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.stopped",
+                  "step": 8,
+                  "cell": "G4"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "G4",
+              "patch": [
+                {
+                  "op": "move",
+                  "id": "p2",
+                  "cell": "D2"
+                },
+                {
+                  "op": "remove",
+                  "id": "p5"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p7",
+                    "cell": "I2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                }
+              ]
+            },
+            {
+              "n": 3,
+              "blueprint": {
+                "title": "Button Press Mechanism Design",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "H7",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "E6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p7",
+                    "cell": "I2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  },
+                  {
+                    "id": "p8",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 1
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E3",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "E3",
+                  "to": "F4",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "F4",
+                  "to": "G4",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.stopped",
+                  "step": 8,
+                  "cell": "G4"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "G4",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p6"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p8",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 1
+                  }
+                }
+              ]
+            },
+            {
+              "n": 4,
+              "blueprint": {
+                "title": "Button Press Mechanism Design",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "H7",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "E6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p7",
+                    "cell": "I2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  },
+                  {
+                    "id": "p9",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E3",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "E3",
+                  "to": "F4",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "F4",
+                  "to": "G4",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.stopped",
+                  "step": 8,
+                  "cell": "G4"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "G4",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p8"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p9",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  }
+                }
+              ]
+            },
+            {
+              "n": 5,
+              "blueprint": {
+                "title": "Button Press Mechanism Design",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "H7",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "E6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p7",
+                    "cell": "I2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  },
+                  {
+                    "id": "p10",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 1
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E3",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "E3",
+                  "to": "F4",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "F4",
+                  "to": "G4",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.stopped",
+                  "step": 8,
+                  "cell": "G4"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "G4",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p9"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p10",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 1
+                  }
+                }
+              ]
+            },
+            {
+              "n": 6,
+              "blueprint": {
+                "title": "Button Press Mechanism Design",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "H7",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "E6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p7",
+                    "cell": "I2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  },
+                  {
+                    "id": "p11",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E3",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "E3",
+                  "to": "F4",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "F4",
+                  "to": "G4",
+                  "by": "ramp"
+                },
+                {
+                  "type": "ball.stopped",
+                  "step": 8,
+                  "cell": "G4"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "G4",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p10"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p11",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  }
+                }
+              ]
+            }
+          ],
+          "lines": []
+        },
+        "calls": [
+          {
+            "kind": "design",
+            "attempt": 1,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 1480.3838050000195,
+                  "loadMs": 1.770447,
+                  "promptMs": 1447.279,
+                  "evalMs": 18815.578,
+                  "promptTokens": 1129,
+                  "evalTokens": 327,
+                  "wallMs": 20296.88090800002
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 2,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 3594.2740079999785,
+                  "loadMs": 2.875674,
+                  "promptMs": 3556.197,
+                  "evalMs": 10862.376,
+                  "promptTokens": 1323,
+                  "evalTokens": 159,
+                  "wallMs": 14457.770740999986
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 3,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 4474.103551999986,
+                  "loadMs": 2.323592,
+                  "promptMs": 4435.746,
+                  "evalMs": 8368.752,
+                  "promptTokens": 1402,
+                  "evalTokens": 127,
+                  "wallMs": 12843.313077999977
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 4,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 4474.91186599998,
+                  "loadMs": 1.499228,
+                  "promptMs": 4444.637,
+                  "evalMs": 8191.54,
+                  "promptTokens": 1402,
+                  "evalTokens": 118,
+                  "wallMs": 12667.399482999987
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 5,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 5087.5315539999865,
+                  "loadMs": 1.629012,
+                  "promptMs": 5043.615,
+                  "evalMs": 8742.036,
+                  "promptTokens": 1402,
+                  "evalTokens": 124,
+                  "wallMs": 13831.370277000009
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 6,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 4546.4654819999705,
+                  "loadMs": 2.019313,
+                  "promptMs": 4508.501,
+                  "evalMs": 7485.169,
+                  "promptTokens": 1403,
+                  "evalTokens": 120,
+                  "wallMs": 12032.504817000008
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "updown",
+      "run": {
+        "end": "done",
+        "build": {
+          "id": "2026-10-22-gemma4-e2b-v2-updown",
+          "contractVersion": "c1",
+          "rulesVersion": "r2",
+          "promptVersion": "v2",
+          "form": {
+            "nature": "Up before down. Nothing on a belt.",
+            "minParts": 3,
+            "maxParts": 8,
+            "required": "seesaw",
+            "forbidden": "conveyor"
+          },
+          "model": {
+            "mode": "local",
+            "id": "gemma4:e2b",
+            "host": "ollama",
+            "digest": "sha256:b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+            "runtime": "ollama-0.40.7"
+          },
+          "title": "Button Press Mechanism Design",
+          "report": {
+            "attempts": 6,
+            "parts": 2,
+            "pressed": false,
+            "verdict": "Your request is pending. Naturally."
+          },
+          "createdAt": "2026-10-22T12:00:52.911Z",
+          "attempts": [
+            {
+              "n": 1,
+              "blueprint": {
+                "title": "Button Press Mechanism Design",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "C2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "E6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "F6",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 3
+                  },
+                  {
+                    "id": "p5",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  }
+                ]
+              },
+              "violations": [
+                "p2 overlaps p1 at C2",
+                "p4 overlaps p3 at F6",
+                "the form forbids conveyor parts: p1"
+              ],
+              "events": [],
+              "outcome": "invalid"
+            },
+            {
+              "n": 2,
+              "blueprint": {
+                "title": "Button Press Mechanism Design",
+                "parts": [
+                  {
+                    "id": "p2",
+                    "cell": "C2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "E6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p5",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  },
+                  {
+                    "id": "p6",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": ["the form forbids conveyor parts: p6"],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p1"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p6",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                },
+                {
+                  "op": "remove",
+                  "id": "p4"
+                }
+              ]
+            },
+            {
+              "n": 3,
+              "blueprint": {
+                "title": "Button Press Mechanism Design",
+                "parts": [
+                  {
+                    "id": "p2",
+                    "cell": "C2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "E6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p5",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "A3",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "A3",
+                  "to": "A4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "A4",
+                  "to": "A5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "A5",
+                  "to": "A6",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "A6",
+                  "to": "A7",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.stopped",
+                  "step": 7,
+                  "cell": "A7"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "A7",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p6"
+                }
+              ]
+            },
+            {
+              "n": 4,
+              "blueprint": {
+                "title": "Button Press Mechanism Design",
+                "parts": [
+                  {
+                    "id": "p2",
+                    "cell": "C2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "E6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p5",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  }
+                ]
+              },
+              "violations": ["the patch adds p4, an id already used in this build"],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p4",
+                    "cell": "B2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 2
+                  }
+                }
+              ]
+            },
+            {
+              "n": 5,
+              "blueprint": {
+                "title": "Button Press Mechanism Design",
+                "parts": [
+                  {
+                    "id": "p2",
+                    "cell": "C2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "E6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  }
+                ]
+              },
+              "violations": ["the blueprint has 2 parts; the form asks for at least 3"],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p5"
+                }
+              ]
+            },
+            {
+              "n": 6,
+              "blueprint": {
+                "title": "Button Press Mechanism Design",
+                "parts": [
+                  {
+                    "id": "p2",
+                    "cell": "C2",
+                    "dir": "east",
+                    "kind": "ramp",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "E6",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  }
+                ]
+              },
+              "violations": [
+                "the patch adds p4, an id already used in this build",
+                "the blueprint has 2 parts; the form asks for at least 3"
+              ],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p4",
+                    "cell": "H4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  }
+                }
+              ]
+            }
+          ],
+          "lines": []
+        },
+        "calls": [
+          {
+            "kind": "design",
+            "attempt": 1,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 1299.0170570000191,
+                  "loadMs": 1.7148,
+                  "promptMs": 1267.771,
+                  "evalMs": 14533.904,
+                  "promptTokens": 1131,
+                  "evalTokens": 280,
+                  "wallMs": 15835.958190000034
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 2,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 3163.8950800000457,
+                  "loadMs": 2.58002,
+                  "promptMs": 3125.899,
+                  "evalMs": 8096.688,
+                  "promptTokens": 1322,
+                  "evalTokens": 144,
+                  "wallMs": 11259.57409000001
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 3,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2292.380501000036,
+                  "loadMs": 1.330924,
+                  "promptMs": 2260.664,
+                  "evalMs": 3543.846,
+                  "promptTokens": 1262,
+                  "evalTokens": 58,
+                  "wallMs": 5836.993023000017
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 4,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 3209.422569999995,
+                  "loadMs": 1.457252,
+                  "promptMs": 3177.54,
+                  "evalMs": 7315.927,
+                  "promptTokens": 1336,
+                  "evalTokens": 102,
+                  "wallMs": 10526.308787000016
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 5,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2710.198363000003,
+                  "loadMs": 2.093174,
+                  "promptMs": 2671.32,
+                  "evalMs": 4202.163999,
+                  "promptTokens": 1249,
+                  "evalTokens": 53,
+                  "wallMs": 6913.331655999995
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 6,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2574.0020609999774,
+                  "loadMs": 1.657147,
+                  "promptMs": 2533.01,
+                  "evalMs": 6569.322,
+                  "promptTokens": 1232,
+                  "evalTokens": 95,
+                  "wallMs": 9144.040114999982
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          }
+        ]
+      }
+    }
+  ]
+}
