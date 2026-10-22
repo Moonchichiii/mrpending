@@ -1,0 +1,8 @@
+{
+  "title": "Invalid",
+  "parts": [
+    { "id": "p1", "kind": "ramp", "cell": "C2", "dir": "east", "length": 3 },
+    { "id": "p2", "kind": "ramp", "cell": "D3", "dir": "east", "length": 2 },
+    { "id": "p3", "kind": "fan", "cell": "H4", "dir": "east", "power": 2 }
+  ]
+}
