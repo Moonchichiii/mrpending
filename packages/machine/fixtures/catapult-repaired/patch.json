@@ -1,0 +1,5 @@
+[
+  { "op": "remove", "id": "p3" },
+  { "op": "add", "part": { "id": "p6", "kind": "catapult", "cell": "F6", "dir": "east", "power": 4 } },
+  { "op": "move", "id": "p5", "cell": "J7" }
+]

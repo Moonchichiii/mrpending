@@ -1,0 +1,17 @@
+[
+  { "type": "ball.released", "step": 1, "cell": "A2" },
+  { "type": "ball.moved", "step": 2, "from": "A2", "to": "B2", "by": "conveyor" },
+  { "type": "ball.moved", "step": 3, "from": "B2", "to": "C2", "by": "conveyor" },
+  { "type": "ball.moved", "step": 4, "from": "C2", "to": "D2", "by": "conveyor" },
+  { "type": "ball.moved", "step": 5, "from": "D2", "to": "E2", "by": "conveyor" },
+  { "type": "ball.moved", "step": 6, "from": "E2", "to": "F3", "by": "ramp" },
+  { "type": "ball.moved", "step": 7, "from": "F3", "to": "G4", "by": "ramp" },
+  { "type": "ball.moved", "step": 8, "from": "G4", "to": "H5", "by": "ramp" },
+  { "type": "ball.moved", "step": 9, "from": "H5", "to": "I5", "by": "ramp" },
+  { "type": "ball.moved", "step": 10, "from": "I5", "to": "I6", "by": "gravity" },
+  { "type": "ball.moved", "step": 11, "from": "I6", "to": "I7", "by": "gravity" },
+  { "type": "domino.fell", "step": 12, "part": "p3", "index": 0, "cell": "I7" },
+  { "type": "domino.fell", "step": 13, "part": "p3", "index": 1, "cell": "J7" },
+  { "type": "domino.fell", "step": 14, "part": "p3", "index": 2, "cell": "K7" },
+  { "type": "button.pressed", "step": 15, "by": "domino" }
+]

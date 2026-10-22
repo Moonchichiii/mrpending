@@ -1,0 +1,17 @@
+[
+  { "type": "ball.released", "step": 1, "cell": "A2" },
+  { "type": "ball.moved", "step": 2, "from": "A2", "to": "B2", "by": "conveyor" },
+  { "type": "ball.moved", "step": 3, "from": "B2", "to": "C2", "by": "conveyor" },
+  { "type": "ball.moved", "step": 4, "from": "C2", "to": "D3", "by": "ramp" },
+  { "type": "ball.moved", "step": 5, "from": "D3", "to": "E4", "by": "ramp" },
+  { "type": "ball.moved", "step": 6, "from": "E4", "to": "F4", "by": "ramp" },
+  { "type": "ball.moved", "step": 7, "from": "F4", "to": "F5", "by": "gravity" },
+  { "type": "ball.moved", "step": 8, "from": "F5", "to": "F6", "by": "gravity" },
+  { "type": "ball.launched", "step": 9, "from": "F6", "to": "J4", "by": "catapult", "part": "p6" },
+  { "type": "ball.moved", "step": 10, "from": "J4", "to": "K4", "by": "fan" },
+  { "type": "ball.moved", "step": 11, "from": "K4", "to": "K5", "by": "gravity" },
+  { "type": "ball.moved", "step": 12, "from": "K5", "to": "K6", "by": "gravity" },
+  { "type": "ball.moved", "step": 13, "from": "K6", "to": "K7", "by": "gravity" },
+  { "type": "domino.fell", "step": 14, "part": "p5", "index": 1, "cell": "K7" },
+  { "type": "button.pressed", "step": 15, "by": "domino" }
+]
