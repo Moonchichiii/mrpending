@@ -216,6 +216,13 @@ test('limits before the stream: 413 for a large body, 400 in character for a par
   expect(ApiError.parse(await paradox.json()).message).toBe(REJECTED);
 });
 
+test('a form with minParts above maxParts is 400 INPUT_INVALID in character', async () => {
+  const url = await start(pressing);
+  const inverted = await post(url, { ...lostForm, minParts: 8, maxParts: 4 });
+  expect(inverted.status).toBe(400);
+  expect(ApiError.parse(await inverted.json())).toMatchObject({ code: 'INPUT_INVALID', message: REJECTED });
+});
+
 test('a model that never answers is 504, one that fails is 503, and no stream starts', async () => {
   const { model } = hanging();
   const slow = await post(await start(model, {}, { callMs: 50 }), lostForm);

@@ -88,8 +88,11 @@ function parseJson(text: string): unknown {
   }
 }
 
+// The Form's two refines are the contradictions: minParts above maxParts, and a kind both required and forbidden.
 function invalidForm(error: z.ZodError, requestId: string): ApiError {
-  const paradox = error.issues.some((i) => i.code === 'custom' && i.path[0] === 'forbidden');
+  const paradox = error.issues.some(
+    (i) => i.code === 'custom' && (i.path[0] === 'minParts' || i.path[0] === 'forbidden'),
+  );
   return apiError('INPUT_INVALID', requestId, paradox ? { message: REJECTED } : {});
 }
 
