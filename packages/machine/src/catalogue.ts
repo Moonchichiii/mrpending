@@ -1,4 +1,4 @@
-import type { Cell, Part } from '@pending/contract';
+import type { Cell, Part, SimEvent } from '@pending/contract';
 
 export const COLUMNS = 'ABCDEFGHIJKL';
 export const ROWS = 7;
@@ -7,6 +7,7 @@ export const BUTTON = 'L7';
 
 // A position that may lie off the board, so a footprint can be measured before its cells are named.
 export type Point = { col: number; row: number };
+export type Edge = Extract<SimEvent, { type: 'ball.lost' }>['edge'];
 
 export const toPoint = (cell: Cell): Point => ({
   col: COLUMNS.indexOf(cell.charAt(0)),
@@ -19,7 +20,14 @@ export const onBoard = (p: Point): boolean =>
 const run = (from: Point, n: number, col: number, row: number): Point[] =>
   Array.from({ length: n }, (_, i) => ({ col: from.col + i * col, row: from.row + i * row }));
 
-const step = (part: Part): number => (part.dir === 'east' ? 1 : -1);
+export const sign = (part: Part): number => (part.dir === 'east' ? 1 : -1);
+
+// The side of the board a position beyond it lies on; columns win over rows at a corner.
+export function edge(p: Point): Edge {
+  if (p.col < 0) return 'west';
+  if (p.col >= COLUMNS.length) return 'east';
+  return p.row > ROWS ? 'bottom' : 'top';
+}
 
 // The cells a part occupies (MACHINE-RULES section 2); parameter ranges live in the contract's Part schema.
 export function footprint(part: Part): Point[] {
@@ -27,9 +35,9 @@ export function footprint(part: Part): Point[] {
   switch (part.kind) {
     case 'conveyor':
     case 'dominoes':
-      return run(at, part.length, step(part), 0);
+      return run(at, part.length, sign(part), 0);
     case 'ramp':
-      return run(at, part.length, step(part), 1);
+      return run(at, part.length, sign(part), 1);
     case 'seesaw':
       return run({ col: at.col - 1, row: at.row }, 3, 1, 0);
     case 'catapult':
@@ -42,5 +50,5 @@ export function footprint(part: Part): Point[] {
 export function wind(part: Part): Point[] {
   if (part.kind !== 'fan') return [];
   const at = toPoint(part.cell);
-  return run({ col: at.col + step(part), row: at.row }, part.power, step(part), 0);
+  return run({ col: at.col + sign(part), row: at.row }, part.power, sign(part), 0);
 }

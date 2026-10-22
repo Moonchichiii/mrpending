@@ -1,0 +1,17 @@
+[
+  { "type": "ball.released", "step": 1, "cell": "A2" },
+  { "type": "ball.moved", "step": 2, "from": "A2", "to": "B3", "by": "ramp" },
+  { "type": "ball.moved", "step": 3, "from": "B3", "to": "C4", "by": "ramp" },
+  { "type": "ball.moved", "step": 4, "from": "C4", "to": "D4", "by": "ramp" },
+  { "type": "ball.moved", "step": 5, "from": "D4", "to": "D5", "by": "gravity" },
+  { "type": "ball.moved", "step": 6, "from": "D5", "to": "D6", "by": "gravity" },
+  { "type": "ball.launched", "step": 7, "from": "D6", "to": "H4", "by": "seesaw", "part": "p2" },
+  { "type": "ball.moved", "step": 8, "from": "H4", "to": "I4", "by": "fan" },
+  { "type": "ball.moved", "step": 9, "from": "I4", "to": "J4", "by": "fan" },
+  { "type": "ball.moved", "step": 10, "from": "J4", "to": "J5", "by": "gravity" },
+  { "type": "ball.moved", "step": 11, "from": "J5", "to": "J6", "by": "gravity" },
+  { "type": "ball.moved", "step": 12, "from": "J6", "to": "J7", "by": "gravity" },
+  { "type": "domino.fell", "step": 13, "part": "p4", "index": 0, "cell": "J7" },
+  { "type": "domino.fell", "step": 14, "part": "p4", "index": 1, "cell": "K7" },
+  { "type": "button.pressed", "step": 15, "by": "domino" }
+]
