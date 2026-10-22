@@ -61,3 +61,5 @@ export default defineConfig({
   },
   test: { projects: ['apps/*', 'packages/*', 'eval'] },
 });
+
+// gate test: protected path
