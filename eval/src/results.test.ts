@@ -7,7 +7,7 @@ import lostForm from '../../packages/machine/fixtures/lost/form.json';
 import pressedBlueprint from '../../packages/machine/fixtures/pressed/blueprint.json';
 import repairedPatch from '../../packages/machine/fixtures/repaired/patch.json';
 import { recorded } from './metrics';
-import { Matrix, Results, resultsRecord, runRecords } from './results';
+import { Matrix, Results, concluded, resultsRecord, runRecords } from './results';
 import type { Done } from './results';
 import type { Role } from './scenarios';
 
@@ -163,4 +163,17 @@ test('a matrix over budget carries its shortfall and no configuration; a complet
   };
   expect(Matrix.safeParse(complete).success).toBe(false);
   expect(Matrix.safeParse({ ...complete, configurations: [a, a, a] }).success).toBe(true);
+  // Past the budget, even with all three configurations, a matrix is never complete.
+  const late = { ...complete, configurations: [a, a, a], elapsedMs: 10_800_001 };
+  expect(Matrix.safeParse(late).success).toBe(false);
+  expect(Matrix.safeParse({ ...late, status: 'stopped-at-deadline' }).success).toBe(true);
+});
+
+test('the deadline is read again after the last unload: a matrix that ran past its budget stopped at the deadline', () => {
+  const run = { configurations: 3, cut: false, best: true, budgetMs: 10_800_000 };
+  expect(concluded({ ...run, elapsedMs: 10_800_000 })).toBe('complete');
+  expect(concluded({ ...run, elapsedMs: 10_800_001 })).toBe('stopped-at-deadline');
+  expect(concluded({ ...run, elapsedMs: 9_000_000, cut: true })).toBe('stopped-at-deadline');
+  expect(concluded({ ...run, elapsedMs: 9_000_000, configurations: 2 })).toBe('stopped-at-deadline');
+  expect(concluded({ ...run, elapsedMs: 9_000_000, best: false })).toBe('stopped-at-deadline');
 });

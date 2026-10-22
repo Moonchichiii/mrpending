@@ -2,7 +2,7 @@
 // loaded at a time. Run from the repository root; both commands exit non-zero on a budget shortfall or a schema failure.
 //   bun eval/src/run.ts                                         pilot, plan, matrix; writes eval/results/
 //   bun eval/src/run.ts --gallery eval/results/<date>-eval.json   Build records into apps/web/public/gallery/
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import {
@@ -16,15 +16,16 @@ import {
   runBuild,
 } from '@pending/agent';
 import type { PromptVersion } from '@pending/agent';
-import { RULES_VERSION } from '@pending/machine';
 import * as z from 'zod';
 import { BUDGET_MS, pilotStats, plan } from './budget';
 import type { Pilot } from './budget';
+import { galleryPlan } from './gallery';
 import { desktop, freeMiB, hardware, sampled, unloadAndConfirm } from './host';
-import { better, recorded, replaysIdentically } from './metrics';
+import { better, recorded } from './metrics';
 import {
   Matrix,
   Results,
+  concluded,
   matrixMarkdown,
   modelCalls,
   resultsMarkdown,
@@ -304,63 +305,52 @@ async function evaluate() {
         );
   if (best !== undefined && !stopped()) await run('D', E4B, best);
   const kRecord: Results['k'] = { headline: k, heldOut: 1, trap: 1, optionalTrap: optionalTrap ? 1 : 0 };
-  const planned = { ...base, ...ended(), plannedMs: decided.plannedMs, k: kRecord, configurations };
+  const end = ended();
+  const planned = { ...base, ...end, plannedMs: decided.plannedMs, k: kRecord, configurations };
+  const status = concluded({
+    configurations: configs.length,
+    cut: stopped(),
+    best: best !== undefined,
+    elapsedMs: end.elapsedMs,
+    budgetMs: BUDGET_MS,
+  });
   await write(
-    best !== undefined && !stopped() && configs.length === 3
-      ? { ...planned, status: 'complete', bestVersion: best }
-      : { ...planned, status: 'stopped-at-deadline', ...(best === undefined ? {} : { bestVersion: best }) },
+    status === 'complete' && best !== undefined
+      ? { ...planned, status, bestVersion: best }
+      : {
+          ...planned,
+          status: 'stopped-at-deadline',
+          ...(best === undefined ? {} : { bestVersion: best }),
+        },
     configs,
   );
-  if (stopped()) {
-    say('stopped at the budget deadline; the matrix is incomplete');
+  if (status !== 'complete') {
+    say(`stopped at the budget deadline after ${seconds(end.elapsedMs)}; the matrix is incomplete`);
     process.exitCode = 1;
   }
 }
 
-// One record per headline form, from a complete matrix: the shipped configuration (E2B, PROMPT_VERSION) first,
-// its first pressed build, else the first pressed or finished one elsewhere; each is checked as the gallery will
-// check it (current rules, Ollama provenance, byte-identical replay) before it is written.
+// One record per headline form with a verified build (see galleryPlan); a form without one loses any stale record
+// and is named, and the command exits non-zero.
 async function gallery(file: string) {
   const matrixUrl = pathToFileURL(file);
   const m = Matrix.parse(await readJson(matrixUrl));
-  if (m.status !== 'complete') throw new Error(`${file} is ${m.status}; the gallery needs a complete matrix`);
-  const shipped = (c: Matrix['configurations'][number]) =>
-    c.model === E2B && c.promptVersion === PROMPT_VERSION;
-  const order = [...m.configurations.filter(shipped), ...m.configurations.filter((c) => !shipped(c))];
   const configs = await Promise.all(
-    order.map(async (c) => Results.parse(await readJson(new URL(c.file, matrixUrl)))),
+    m.configurations.map(async (c) => Results.parse(await readJson(new URL(c.file, matrixUrl)))),
   );
-  const finished = configs.flatMap((r) =>
-    r.runs.flatMap((x) =>
-      x.run.end === 'done' ? [{ scenario: x.scenario.split('#')[0], build: x.run.build }] : [],
-    ),
-  );
-  const headline = new Set(
-    configs.flatMap((r) => r.rows.filter((w) => w.role === 'headline').map((w) => w.scenario)),
-  );
-  // Every form is picked and checked before anything is written, so the gallery never mixes two matrices.
-  const picks = [...headline].map((scenario) => {
-    const builds = finished.filter((f) => f.scenario === scenario).map((f) => f.build);
-    return { scenario, build: builds.find((x) => x.report.pressed) ?? builds[0] };
-  });
-  const chosen = picks.flatMap(({ scenario, build }) => (build === undefined ? [] : [{ scenario, build }]));
-  const missing = picks.filter((p) => p.build === undefined).map((p) => p.scenario);
-  if (missing.length > 0) throw new Error(`${file} has no finished build for ${missing.join(', ')}`);
-  for (const { build } of chosen) {
-    const ok =
-      build.rulesVersion === RULES_VERSION &&
-      build.model.host === 'ollama' &&
-      build.model.digest !== undefined &&
-      build.model.runtime !== undefined &&
-      build.attempts.every(replaysIdentically);
-    if (!ok) throw new Error(`${build.id} fails the gallery checks`);
-  }
+  const forms = (await loadScenarios()).filter((s) => s.role === 'headline').map((s) => s.id);
+  const { picks, missing } = galleryPlan(m, configs, forms, { model: E2B, promptVersion: PROMPT_VERSION });
   await mkdir(GALLERY, { recursive: true });
-  for (const { scenario, build } of chosen) {
-    await writeFile(new URL(`${scenario}.json`, GALLERY), json(build));
+  for (const { form, build } of picks) {
+    await writeFile(new URL(`${form}.json`, GALLERY), json(build));
     say(
-      `wrote apps/web/public/gallery/${scenario}.json from ${build.id} (${build.model.id}, ${build.promptVersion}, ${build.report.pressed ? 'pressed' : 'not pressed'})`,
+      `wrote apps/web/public/gallery/${form}.json from ${build.id} (${build.model.id}, ${build.promptVersion}, ${build.report.pressed ? 'pressed' : 'not pressed'})`,
     );
+  }
+  for (const form of missing) await rm(new URL(`${form}.json`, GALLERY), { force: true });
+  if (missing.length > 0) {
+    say(`no verified build for ${missing.join(', ')}; any stale record for them was removed`);
+    process.exitCode = 1;
   }
 }
 

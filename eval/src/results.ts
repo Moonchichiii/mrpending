@@ -180,34 +180,51 @@ const MatrixBase = Started.extend({
 export type MatrixBase = z.infer<typeof MatrixBase>;
 
 // A pilot the deadline cut has no warm sample to forecast from; a matrix over budget ran no headline build;
-// a complete one ran all three configurations, D on the better version.
-export const Matrix = z.discriminatedUnion('status', [
-  Started.extend({
-    status: z.literal('stopped-in-pilot'),
-    pilot: PilotRun,
-    configurations: z.array(Configuration).length(0),
-  }),
-  MatrixBase.extend({
-    status: z.literal('stopped-over-budget'),
-    shortfallMs: ms.positive(),
-    configurations: z.array(Configuration).length(0),
-  }),
-  MatrixBase.extend({
-    status: z.literal('stopped-at-deadline'),
-    plannedMs: ms,
-    k: K,
-    bestVersion: PromptVersion.optional(),
-    configurations: z.array(Configuration).max(3),
-  }),
-  MatrixBase.extend({
-    status: z.literal('complete'),
-    plannedMs: ms,
-    k: K,
-    bestVersion: PromptVersion,
-    configurations: z.array(Configuration).length(3),
-  }),
-]);
+// a complete one ran all three configurations, D on the better version, and ended inside the budget.
+export const Matrix = z
+  .discriminatedUnion('status', [
+    Started.extend({
+      status: z.literal('stopped-in-pilot'),
+      pilot: PilotRun,
+      configurations: z.array(Configuration).length(0),
+    }),
+    MatrixBase.extend({
+      status: z.literal('stopped-over-budget'),
+      shortfallMs: ms.positive(),
+      configurations: z.array(Configuration).length(0),
+    }),
+    MatrixBase.extend({
+      status: z.literal('stopped-at-deadline'),
+      plannedMs: ms,
+      k: K,
+      bestVersion: PromptVersion.optional(),
+      configurations: z.array(Configuration).max(3),
+    }),
+    MatrixBase.extend({
+      status: z.literal('complete'),
+      plannedMs: ms,
+      k: K,
+      bestVersion: PromptVersion,
+      configurations: z.array(Configuration).length(3),
+    }),
+  ])
+  .refine((m) => m.status !== 'complete' || m.elapsedMs <= m.budgetMs, {
+    message: 'a matrix that ran past its budget is stopped-at-deadline, never complete',
+  });
 export type Matrix = z.infer<typeof Matrix>;
+
+// Read after the last model is unloaded: the unload counts against the budget like any build.
+export function concluded(run: {
+  configurations: number;
+  cut: boolean;
+  best: boolean;
+  elapsedMs: number;
+  budgetMs: number;
+}): 'complete' | 'stopped-at-deadline' {
+  return run.best && !run.cut && run.configurations === 3 && run.elapsedMs <= run.budgetMs
+    ? 'complete'
+    : 'stopped-at-deadline';
+}
 
 export type Item = { scenario: Scenario; rep: number };
 export type Done = { item: Item; entry: ScenarioRun; wallMs: number };
