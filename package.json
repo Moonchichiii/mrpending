@@ -1,0 +1,33 @@
+{
+  "name": "mrpending",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "eval"
+  ],
+  "scripts": {
+    "check": "vp check",
+    "fmt": "vp fmt",
+    "lint": "vp lint",
+    "typecheck": "vp check --no-fmt --no-lint",
+    "test": "vp test",
+    "build": "vp -C apps/web build",
+    "audit": "bun audit --ignore=GHSA-hp3w-g68c-fv3c",
+    "secret-scan": "bash scripts/secret-scan.sh"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "jsdom": "30.1.3",
+    "vite-plus": "1.3.0",
+    "vitest": "5.0.5"
+  },
+  "overrides": {
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.3.0",
+    "vitest": "5.0.5"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "bun@1.4.3"
+}

@@ -1,0 +1,58 @@
+name: ci
+
+on:
+  push:
+    branches: [main] # the bootstrap commit and every merge are checked
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled] # the scope gate reruns when protected-approved changes
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.3
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+      - run: bun install --frozen-lockfile
+      - run: bun run check # oxfmt + oxlint + type check (tsgolint), the whole workspace
+      - run: bun run test
+      - run: bun run build
+      - run: bun run audit # fails on any advisory except GHSA-hp3w-g68c-fv3c (transitive sprintf-js under @mastra/core, reviewed 22 Oct)
+      - run: bun run secret-scan
+
+  # The enforcement boundary: every changed file is judged against the issue named in the branch, by the base
+  # branch's copy of the gate, never by the pull request's own copy. A skipped run on push counts as success.
+  scope:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # all branches, so origin/<base> exists
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+      - run: git show "origin/${BASE_REF}:.claude/hooks/scope.mjs" > "$RUNNER_TEMP/scope.mjs"
+        env:
+          BASE_REF: ${{ github.base_ref }}
+      - run: node "$RUNNER_TEMP/scope.mjs" --diff "origin/${BASE_REF}"
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}

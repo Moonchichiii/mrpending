@@ -1,0 +1,14 @@
+{
+  "name": "@pending/eval",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@pending/agent": "workspace:*",
+    "@pending/contract": "workspace:*",
+    "@pending/machine": "workspace:*"
+  }
+}

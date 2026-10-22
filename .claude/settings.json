@@ -1,0 +1,52 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(vp check *)",
+      "Bash(vp test *)",
+      "Bash(vp build *)",
+      "Bash(bun run *)",
+      "Bash(bun test *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(gh issue view *)",
+      "Bash(gh pr view *)",
+      "Bash(node */scripts/codex-companion.mjs review *)",
+      "Bash(node */scripts/codex-companion.mjs adversarial-review *)",
+      "Bash(node */scripts/codex-companion.mjs status *)",
+      "Bash(node */scripts/codex-companion.mjs result *)"
+    ],
+    "ask": [
+      "Bash(git commit *)",
+      "Bash(git add *)",
+      "Bash(bun add *)",
+      "Bash(bun install *)",
+      "Bash(bun remove *)"
+    ],
+    "deny": [
+      "Bash(git push *)",
+      "Bash(gh pr merge *)",
+      "Bash(gh release *)",
+      "Bash(git reset --hard *)",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Bash(gh label *)",
+      "Bash(gh issue edit *)",
+      "Bash(gh pr edit *)",
+      "Bash(gh api *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/scope.mjs"
+          }
+        ]
+      }
+    ]
+  }
+}
