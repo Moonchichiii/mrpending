@@ -1,0 +1,23 @@
+{
+  "scenic": { "nature": "Press the blue button. Scenic route, please.", "minParts": 2, "maxParts": 14 },
+  "thrown": {
+    "nature": "Something must be thrown across the room. Formally.",
+    "minParts": 3,
+    "maxParts": 8,
+    "required": "catapult"
+  },
+  "windless": { "nature": "No fans. I dislike wind.", "minParts": 2, "maxParts": 6, "forbidden": "fan" },
+  "chain": {
+    "nature": "A chain of consequences, please, ending at the button.",
+    "minParts": 4,
+    "maxParts": 10,
+    "required": "dominoes"
+  },
+  "updown": {
+    "nature": "Up before down. Nothing on a belt.",
+    "minParts": 3,
+    "maxParts": 8,
+    "required": "seesaw",
+    "forbidden": "conveyor"
+  }
+}

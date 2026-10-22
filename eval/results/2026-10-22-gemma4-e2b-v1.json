@@ -1,0 +1,3872 @@
+{
+  "model": "gemma4:e2b",
+  "promptVersion": "v1",
+  "settings": {
+    "temperature": 0.2,
+    "numCtx": 4096,
+    "numPredict": 1024,
+    "think": false,
+    "repairs": 5,
+    "callTimeoutMs": 90000
+  },
+  "provenance": {
+    "digest": "sha256:b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+    "runtime": "ollama-0.40.7",
+    "sizeBytes": 4587156505
+  },
+  "hardware": {
+    "cpu": "13th Gen Intel(R) Core(TM) i7-1355U",
+    "threads": 12,
+    "totalMiB": 15661
+  },
+  "desktop": {
+    "vscode": true,
+    "browser": true
+  },
+  "startedAt": "2026-10-22T11:50:14.510Z",
+  "resident": [
+    {
+      "name": "gemma4:e2b",
+      "sizeBytes": 312433704,
+      "vramBytes": 312433704
+    }
+  ],
+  "memory": {
+    "minFreeMiB": 1797
+  },
+  "unloaded": true,
+  "summary": {
+    "schema": {
+      "designReplies": {
+        "hits": 5,
+        "n": 5
+      },
+      "repairReplies": {
+        "hits": 25,
+        "n": 25
+      },
+      "scenariosDesigned": {
+        "hits": 5,
+        "n": 5
+      },
+      "issues": []
+    },
+    "catalogue": {
+      "firstTime": {
+        "hits": 2,
+        "n": 5
+      },
+      "withinBudget": {
+        "hits": 3,
+        "n": 5
+      },
+      "violationKinds": {
+        "overlap": 15,
+        "footprint": 8,
+        "constraint": 0,
+        "patch": 0,
+        "parameter": 0
+      }
+    },
+    "simulator": {
+      "scenarios": [
+        {
+          "scenario": "scenic",
+          "end": "done",
+          "attempts": [
+            {
+              "n": 1,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["overlap", "footprint", "footprint"]
+            },
+            {
+              "n": 2,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["overlap"]
+            },
+            {
+              "n": 3,
+              "outcome": "stalled",
+              "failedAt": "E2",
+              "handovers": 1,
+              "violations": []
+            },
+            {
+              "n": 4,
+              "outcome": "stalled",
+              "failedAt": "A7",
+              "handovers": 0,
+              "violations": []
+            },
+            {
+              "n": 5,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["overlap"]
+            },
+            {
+              "n": 6,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["overlap"]
+            }
+          ],
+          "repairs": [
+            {
+              "attempt": 2,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 3,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "E2",
+                "step": 6
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 4,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "E2",
+                "step": 6
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "A7",
+                "step": 7
+              },
+              "changedOutcome": true
+            },
+            {
+              "attempt": 5,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "A7",
+                "step": 7
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 6,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            }
+          ],
+          "replayIdentical": true
+        },
+        {
+          "scenario": "thrown",
+          "end": "done",
+          "attempts": [
+            {
+              "n": 1,
+              "outcome": "stalled",
+              "failedAt": "G7",
+              "handovers": 1,
+              "violations": []
+            },
+            {
+              "n": 2,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["overlap"]
+            },
+            {
+              "n": 3,
+              "outcome": "stalled",
+              "failedAt": "G5",
+              "handovers": 2,
+              "violations": []
+            },
+            {
+              "n": 4,
+              "outcome": "stalled",
+              "failedAt": "G4",
+              "handovers": 2,
+              "violations": []
+            },
+            {
+              "n": 5,
+              "outcome": "stalled",
+              "failedAt": "G5",
+              "handovers": 2,
+              "violations": []
+            },
+            {
+              "n": 6,
+              "outcome": "stalled",
+              "failedAt": "G4",
+              "handovers": 2,
+              "violations": []
+            }
+          ],
+          "repairs": [
+            {
+              "attempt": 2,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "G7",
+                "step": 13
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 3,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "G5",
+                "step": 11
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 4,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "G5",
+                "step": 11
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "G4",
+                "step": 10
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 5,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "G4",
+                "step": 10
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "G5",
+                "step": 11
+              },
+              "changedOutcome": true
+            },
+            {
+              "attempt": 6,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "G5",
+                "step": 11
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "G4",
+                "step": 10
+              },
+              "changedOutcome": false
+            }
+          ],
+          "replayIdentical": true
+        },
+        {
+          "scenario": "windless",
+          "end": "done",
+          "attempts": [
+            {
+              "n": 1,
+              "outcome": "stalled",
+              "failedAt": "H6",
+              "handovers": 1,
+              "violations": []
+            },
+            {
+              "n": 2,
+              "outcome": "stalled",
+              "failedAt": "E7",
+              "handovers": 0,
+              "violations": []
+            },
+            {
+              "n": 3,
+              "outcome": "stalled",
+              "failedAt": "I6",
+              "handovers": 2,
+              "violations": []
+            },
+            {
+              "n": 4,
+              "outcome": "stalled",
+              "failedAt": "F7",
+              "handovers": 1,
+              "violations": []
+            },
+            {
+              "n": 5,
+              "outcome": "stalled",
+              "failedAt": "F7",
+              "handovers": 1,
+              "violations": []
+            },
+            {
+              "n": 6,
+              "outcome": "stalled",
+              "failedAt": "F7",
+              "handovers": 1,
+              "violations": []
+            }
+          ],
+          "repairs": [
+            {
+              "attempt": 2,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "H6",
+                "step": 13
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "E7",
+                "step": 11
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 3,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "E7",
+                "step": 11
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "I6",
+                "step": 14
+              },
+              "changedOutcome": true
+            },
+            {
+              "attempt": 4,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "I6",
+                "step": 14
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "F7",
+                "step": 12
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 5,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "F7",
+                "step": 12
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "F7",
+                "step": 12
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 6,
+              "before": {
+                "outcome": "stalled",
+                "failedAt": "F7",
+                "step": 12
+              },
+              "after": {
+                "outcome": "stalled",
+                "failedAt": "F7",
+                "step": 12
+              },
+              "changedOutcome": false
+            }
+          ],
+          "replayIdentical": true
+        },
+        {
+          "scenario": "chain",
+          "end": "done",
+          "attempts": [
+            {
+              "n": 1,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["overlap"]
+            },
+            {
+              "n": 2,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["overlap"]
+            },
+            {
+              "n": 3,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["overlap"]
+            },
+            {
+              "n": 4,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["overlap"]
+            },
+            {
+              "n": 5,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["overlap"]
+            },
+            {
+              "n": 6,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["overlap"]
+            }
+          ],
+          "repairs": [
+            {
+              "attempt": 2,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 3,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 4,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 5,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 6,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            }
+          ],
+          "replayIdentical": true
+        },
+        {
+          "scenario": "updown",
+          "end": "done",
+          "attempts": [
+            {
+              "n": 1,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["footprint", "overlap", "overlap"]
+            },
+            {
+              "n": 2,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["footprint", "overlap"]
+            },
+            {
+              "n": 3,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["footprint"]
+            },
+            {
+              "n": 4,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["footprint", "overlap"]
+            },
+            {
+              "n": 5,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["footprint"]
+            },
+            {
+              "n": 6,
+              "outcome": "invalid",
+              "handovers": 0,
+              "violations": ["footprint"]
+            }
+          ],
+          "repairs": [
+            {
+              "attempt": 2,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 3,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 4,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 5,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            },
+            {
+              "attempt": 6,
+              "before": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "after": {
+                "outcome": "invalid",
+                "step": 0
+              },
+              "changedOutcome": false
+            }
+          ],
+          "replayIdentical": true
+        }
+      ],
+      "simulatedFailures": 13,
+      "outcomeChangingRepairs": 3,
+      "pressed": 0
+    },
+    "latency": {
+      "coldLoadMs": 10238.523403,
+      "design": {
+        "wallMs": {
+          "n": 5,
+          "p50": 12745.511522000015,
+          "p95": 26738.8304
+        },
+        "warmMs": {
+          "n": 5,
+          "p50": 12743.717121000016,
+          "p95": 16500.306997
+        },
+        "promptMs": {
+          "n": 5,
+          "p50": 957.853,
+          "p95": 3910.544
+        },
+        "evalMs": {
+          "n": 5,
+          "p50": 11765.515,
+          "p95": 12711.383
+        },
+        "evalTokens": {
+          "n": 5,
+          "p50": 202,
+          "p95": 292
+        }
+      },
+      "repair": {
+        "wallMs": {
+          "n": 25,
+          "p50": 8014.79869299999,
+          "p95": 11989.052505
+        },
+        "warmMs": {
+          "n": 25,
+          "p50": 8005.01132399999,
+          "p95": 11986.400969
+        },
+        "promptMs": {
+          "n": 25,
+          "p50": 2295.324,
+          "p95": 2870.737
+        },
+        "evalMs": {
+          "n": 25,
+          "p50": 5585.872,
+          "p95": 9455.43
+        },
+        "evalTokens": {
+          "n": 25,
+          "p50": 97,
+          "p95": 155
+        }
+      }
+    }
+  },
+  "gate": {
+    "schemaValid4of5": true,
+    "catalogueValid4of5": false,
+    "failsInSimulator": true,
+    "outcomeChangingRepair": true,
+    "latencyMeasured": true,
+    "go": false
+  },
+  "runs": [
+    {
+      "scenario": "scenic",
+      "run": {
+        "end": "done",
+        "build": {
+          "id": "2026-10-22-gemma4-e2b-v1-scenic",
+          "contractVersion": "c1",
+          "rulesVersion": "r2",
+          "promptVersion": "v1",
+          "form": {
+            "nature": "Press the blue button. Scenic route, please.",
+            "minParts": 2,
+            "maxParts": 14
+          },
+          "model": {
+            "mode": "local",
+            "id": "gemma4:e2b",
+            "host": "ollama",
+            "digest": "sha256:b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+            "runtime": "ollama-0.40.7"
+          },
+          "title": "Button Pressing Apparatus",
+          "report": {
+            "attempts": 6,
+            "parts": 6,
+            "pressed": false,
+            "verdict": "Your request is pending. Naturally."
+          },
+          "createdAt": "2026-10-22T11:51:25.663Z",
+          "attempts": [
+            {
+              "n": 1,
+              "blueprint": {
+                "title": "Button Pressing Apparatus",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 4
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "E2",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "G3",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "K4",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p5",
+                    "cell": "L5",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": [
+                "p2 overlaps p1 at D2",
+                "p4 at K4 runs off the east edge of the board",
+                "p5 at L5 runs off the east edge of the board"
+              ],
+              "events": [],
+              "outcome": "invalid"
+            },
+            {
+              "n": 2,
+              "blueprint": {
+                "title": "Button Pressing Apparatus",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 4
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "E2",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "G3",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "J4",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p6",
+                    "cell": "H2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": ["p2 overlaps p1 at D2"],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "move",
+                  "id": "p4",
+                  "cell": "J4"
+                },
+                {
+                  "op": "remove",
+                  "id": "p5"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p6",
+                    "cell": "H2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                }
+              ]
+            },
+            {
+              "n": 3,
+              "blueprint": {
+                "title": "Button Pressing Apparatus",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 4
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "F2",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "G3",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "J4",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p6",
+                    "cell": "H2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.stopped",
+                  "step": 6,
+                  "cell": "E2"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "E2",
+              "patch": [
+                {
+                  "op": "move",
+                  "id": "p2",
+                  "cell": "F2"
+                }
+              ]
+            },
+            {
+              "n": 4,
+              "blueprint": {
+                "title": "Button Pressing Apparatus",
+                "parts": [
+                  {
+                    "id": "p2",
+                    "cell": "F2",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "G3",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "J4",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p6",
+                    "cell": "H2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  },
+                  {
+                    "id": "p7",
+                    "cell": "B2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "A3",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "A3",
+                  "to": "A4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "A4",
+                  "to": "A5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "A5",
+                  "to": "A6",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "A6",
+                  "to": "A7",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.stopped",
+                  "step": 7,
+                  "cell": "A7"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "A7",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p1"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p7",
+                    "cell": "B2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  }
+                }
+              ]
+            },
+            {
+              "n": 5,
+              "blueprint": {
+                "title": "Button Pressing Apparatus",
+                "parts": [
+                  {
+                    "id": "p2",
+                    "cell": "F2",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "G3",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "J4",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p6",
+                    "cell": "H2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  },
+                  {
+                    "id": "p7",
+                    "cell": "B2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p8",
+                    "cell": "H3",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  }
+                ]
+              },
+              "violations": ["p8 overlaps p3 at H3"],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "move",
+                  "id": "p6",
+                  "cell": "H2"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p8",
+                    "cell": "H3",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  }
+                }
+              ]
+            },
+            {
+              "n": 6,
+              "blueprint": {
+                "title": "Button Pressing Apparatus",
+                "parts": [
+                  {
+                    "id": "p2",
+                    "cell": "F2",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "G3",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "J4",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p6",
+                    "cell": "H2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  },
+                  {
+                    "id": "p7",
+                    "cell": "B2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p9",
+                    "cell": "I3",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": ["p9 overlaps p3 at I3"],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p8"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p9",
+                    "cell": "I3",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                }
+              ]
+            }
+          ],
+          "lines": []
+        },
+        "calls": [
+          {
+            "kind": "design",
+            "attempt": 1,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 14174.484502,
+                  "loadMs": 10238.523403,
+                  "promptMs": 3910.544,
+                  "evalMs": 12560.364,
+                  "promptTokens": 743,
+                  "evalTokens": 292,
+                  "wallMs": 26738.8304
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 2,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2263.1227580000013,
+                  "loadMs": 1.143207,
+                  "promptMs": 2248.943,
+                  "evalMs": 7654.522,
+                  "promptTokens": 954,
+                  "evalTokens": 152,
+                  "wallMs": 9919.327269000005
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 3,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 1784.2938029999932,
+                  "loadMs": 0.845383,
+                  "promptMs": 1765.04,
+                  "evalMs": 3512.152,
+                  "promptTokens": 898,
+                  "evalTokens": 62,
+                  "wallMs": 5296.719997999993
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 4,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2849.2029140000013,
+                  "loadMs": 8.439241,
+                  "promptMs": 2830.451,
+                  "evalMs": 6743.544,
+                  "promptTokens": 999,
+                  "evalTokens": 119,
+                  "wallMs": 9593.386553999997
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 5,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2888.8276639999967,
+                  "loadMs": 1.547935,
+                  "promptMs": 2870.737,
+                  "evalMs": 7526.567,
+                  "promptTokens": 995,
+                  "evalTokens": 127,
+                  "wallMs": 10416.227808999996
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 6,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2229.536657000004,
+                  "loadMs": 1.735024,
+                  "promptMs": 2207.982,
+                  "evalMs": 6938.161,
+                  "promptTokens": 920,
+                  "evalTokens": 122,
+                  "wallMs": 9168.462310999996
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "thrown",
+      "run": {
+        "end": "done",
+        "build": {
+          "id": "2026-10-22-gemma4-e2b-v1-thrown",
+          "contractVersion": "c1",
+          "rulesVersion": "r2",
+          "promptVersion": "v1",
+          "form": {
+            "nature": "Something must be thrown across the room. Formally.",
+            "minParts": 3,
+            "maxParts": 8,
+            "required": "catapult"
+          },
+          "model": {
+            "mode": "local",
+            "id": "gemma4:e2b",
+            "host": "ollama",
+            "digest": "sha256:b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+            "runtime": "ollama-0.40.7"
+          },
+          "title": "Simple Projectile Deployment Unit",
+          "report": {
+            "attempts": 6,
+            "parts": 4,
+            "pressed": false,
+            "failedAt": "G4",
+            "verdict": "Your request is pending. Naturally."
+          },
+          "createdAt": "2026-10-22T11:52:12.579Z",
+          "attempts": [
+            {
+              "n": 1,
+              "blueprint": {
+                "title": "Simple Projectile Deployment Unit",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D5",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "E5",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "D3",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "D3",
+                  "to": "D4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "D4",
+                  "to": "D5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.launched",
+                  "step": 8,
+                  "from": "D5",
+                  "to": "G3",
+                  "by": "catapult",
+                  "part": "p2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 9,
+                  "from": "G3",
+                  "to": "G4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 10,
+                  "from": "G4",
+                  "to": "G5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 11,
+                  "from": "G5",
+                  "to": "G6",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 12,
+                  "from": "G6",
+                  "to": "G7",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.stopped",
+                  "step": 13,
+                  "cell": "G7"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "G7"
+            },
+            {
+              "n": 2,
+              "blueprint": {
+                "title": "Simple Projectile Deployment Unit",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D5",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "E5",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "F5",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  }
+                ]
+              },
+              "violations": ["p4 overlaps p3 at F5"],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p4",
+                    "cell": "F5",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  }
+                }
+              ]
+            },
+            {
+              "n": 3,
+              "blueprint": {
+                "title": "Simple Projectile Deployment Unit",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D5",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "E5",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "G5",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "D3",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "D3",
+                  "to": "D4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "D4",
+                  "to": "D5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.launched",
+                  "step": 8,
+                  "from": "D5",
+                  "to": "G3",
+                  "by": "catapult",
+                  "part": "p2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 9,
+                  "from": "G3",
+                  "to": "G4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 10,
+                  "from": "G4",
+                  "to": "G5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.stopped",
+                  "step": 11,
+                  "cell": "G5"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "G5",
+              "patch": [
+                {
+                  "op": "move",
+                  "id": "p4",
+                  "cell": "G5"
+                }
+              ]
+            },
+            {
+              "n": 4,
+              "blueprint": {
+                "title": "Simple Projectile Deployment Unit",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D5",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "E5",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "D3",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "D3",
+                  "to": "D4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "D4",
+                  "to": "D5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.launched",
+                  "step": 8,
+                  "from": "D5",
+                  "to": "G3",
+                  "by": "catapult",
+                  "part": "p2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 9,
+                  "from": "G3",
+                  "to": "G4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.stopped",
+                  "step": 10,
+                  "cell": "G4"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "G4",
+              "patch": [
+                {
+                  "op": "move",
+                  "id": "p4",
+                  "cell": "G4"
+                }
+              ]
+            },
+            {
+              "n": 5,
+              "blueprint": {
+                "title": "Simple Projectile Deployment Unit",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D5",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "E5",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "G5",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "D3",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "D3",
+                  "to": "D4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "D4",
+                  "to": "D5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.launched",
+                  "step": 8,
+                  "from": "D5",
+                  "to": "G3",
+                  "by": "catapult",
+                  "part": "p2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 9,
+                  "from": "G3",
+                  "to": "G4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 10,
+                  "from": "G4",
+                  "to": "G5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.stopped",
+                  "step": 11,
+                  "cell": "G5"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "G5",
+              "patch": [
+                {
+                  "op": "move",
+                  "id": "p4",
+                  "cell": "G5"
+                }
+              ]
+            },
+            {
+              "n": 6,
+              "blueprint": {
+                "title": "Simple Projectile Deployment Unit",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D5",
+                    "dir": "east",
+                    "kind": "catapult",
+                    "power": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "E5",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "fan",
+                    "power": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "D3",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "D3",
+                  "to": "D4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "D4",
+                  "to": "D5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.launched",
+                  "step": 8,
+                  "from": "D5",
+                  "to": "G3",
+                  "by": "catapult",
+                  "part": "p2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 9,
+                  "from": "G3",
+                  "to": "G4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.stopped",
+                  "step": 10,
+                  "cell": "G4"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "G4",
+              "patch": [
+                {
+                  "op": "move",
+                  "id": "p4",
+                  "cell": "G4"
+                }
+              ]
+            }
+          ],
+          "lines": []
+        },
+        "calls": [
+          {
+            "kind": "design",
+            "attempt": 1,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 971.5602459999936,
+                  "loadMs": 1.236364,
+                  "promptMs": 951.964,
+                  "evalMs": 10327.269,
+                  "promptTokens": 753,
+                  "evalTokens": 202,
+                  "wallMs": 11296.801547999989
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 2,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2882.899575000003,
+                  "loadMs": 1.57888,
+                  "promptMs": 2861.034,
+                  "evalMs": 5585.872,
+                  "promptTokens": 968,
+                  "evalTokens": 96,
+                  "wallMs": 8469.559760999997
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 3,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 1846.5700269999943,
+                  "loadMs": 1.376168,
+                  "promptMs": 1828.045,
+                  "evalMs": 3724.402,
+                  "promptTokens": 889,
+                  "evalTokens": 64,
+                  "wallMs": 5572.323814000003
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 4,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2871.453653999997,
+                  "loadMs": 1.984793,
+                  "promptMs": 2839.672,
+                  "evalMs": 4329.825,
+                  "promptTokens": 995,
+                  "evalTokens": 62,
+                  "wallMs": 7201.784790000005
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 5,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2817.5598499999905,
+                  "loadMs": 1.418636,
+                  "promptMs": 2799.598,
+                  "evalMs": 4426.211,
+                  "promptTokens": 994,
+                  "evalTokens": 66,
+                  "wallMs": 7244.497534999988
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 6,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2846.262911999991,
+                  "loadMs": 1.81592,
+                  "promptMs": 2823.808,
+                  "evalMs": 4271.975999,
+                  "promptTokens": 995,
+                  "evalTokens": 62,
+                  "wallMs": 7118.832895
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "windless",
+      "run": {
+        "end": "done",
+        "build": {
+          "id": "2026-10-22-gemma4-e2b-v1-windles",
+          "contractVersion": "c1",
+          "rulesVersion": "r2",
+          "promptVersion": "v1",
+          "form": {
+            "nature": "No fans. I dislike wind.",
+            "minParts": 2,
+            "maxParts": 6,
+            "forbidden": "fan"
+          },
+          "model": {
+            "mode": "local",
+            "id": "gemma4:e2b",
+            "host": "ollama",
+            "digest": "sha256:b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+            "runtime": "ollama-0.40.7"
+          },
+          "title": "Simple Ball Transfer Apparatus",
+          "report": {
+            "attempts": 6,
+            "parts": 3,
+            "pressed": false,
+            "failedAt": "F7",
+            "verdict": "Your request is pending. Naturally."
+          },
+          "createdAt": "2026-10-22T11:52:54.937Z",
+          "attempts": [
+            {
+              "n": 1,
+              "blueprint": {
+                "title": "Simple Ball Transfer Apparatus",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 4
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "E6",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "E2",
+                  "to": "E3",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "E3",
+                  "to": "E4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 8,
+                  "from": "E4",
+                  "to": "E5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 9,
+                  "from": "E5",
+                  "to": "E6",
+                  "by": "gravity"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 10,
+                  "part": "p2",
+                  "index": 0,
+                  "cell": "E6"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 11,
+                  "part": "p2",
+                  "index": 1,
+                  "cell": "F6"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 12,
+                  "part": "p2",
+                  "index": 2,
+                  "cell": "G6"
+                },
+                {
+                  "type": "impulse.lost",
+                  "step": 13,
+                  "cell": "H6"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "H6"
+            },
+            {
+              "n": 2,
+              "blueprint": {
+                "title": "Simple Ball Transfer Apparatus",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 4
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "F6",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "E2",
+                  "to": "E3",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "E3",
+                  "to": "E4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 8,
+                  "from": "E4",
+                  "to": "E5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 9,
+                  "from": "E5",
+                  "to": "E6",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 10,
+                  "from": "E6",
+                  "to": "E7",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.stopped",
+                  "step": 11,
+                  "cell": "E7"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "E7",
+              "patch": [
+                {
+                  "op": "move",
+                  "id": "p2",
+                  "cell": "F6"
+                }
+              ]
+            },
+            {
+              "n": 3,
+              "blueprint": {
+                "title": "Simple Ball Transfer Apparatus",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 4
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "F6",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "D4",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "E2",
+                  "to": "E3",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "E3",
+                  "to": "E4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 8,
+                  "from": "E4",
+                  "to": "F4",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 9,
+                  "from": "F4",
+                  "to": "F5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 10,
+                  "from": "F5",
+                  "to": "F6",
+                  "by": "gravity"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 11,
+                  "part": "p2",
+                  "index": 0,
+                  "cell": "F6"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 12,
+                  "part": "p2",
+                  "index": 1,
+                  "cell": "G6"
+                },
+                {
+                  "type": "domino.fell",
+                  "step": 13,
+                  "part": "p2",
+                  "index": 2,
+                  "cell": "H6"
+                },
+                {
+                  "type": "impulse.lost",
+                  "step": 14,
+                  "cell": "I6"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "I6",
+              "patch": [
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p3",
+                    "cell": "D4",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                }
+              ]
+            },
+            {
+              "n": 4,
+              "blueprint": {
+                "title": "Simple Ball Transfer Apparatus",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 4
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "G6",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "D4",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "E2",
+                  "to": "E3",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "E3",
+                  "to": "E4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 8,
+                  "from": "E4",
+                  "to": "F4",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 9,
+                  "from": "F4",
+                  "to": "F5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 10,
+                  "from": "F5",
+                  "to": "F6",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 11,
+                  "from": "F6",
+                  "to": "F7",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.stopped",
+                  "step": 12,
+                  "cell": "F7"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "F7",
+              "patch": [
+                {
+                  "op": "move",
+                  "id": "p2",
+                  "cell": "G6"
+                }
+              ]
+            },
+            {
+              "n": 5,
+              "blueprint": {
+                "title": "Simple Ball Transfer Apparatus",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 4
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "G6",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "D4",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "E2",
+                  "to": "E3",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "E3",
+                  "to": "E4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 8,
+                  "from": "E4",
+                  "to": "F4",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 9,
+                  "from": "F4",
+                  "to": "F5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 10,
+                  "from": "F5",
+                  "to": "F6",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 11,
+                  "from": "F6",
+                  "to": "F7",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.stopped",
+                  "step": 12,
+                  "cell": "F7"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "F7",
+              "patch": [
+                {
+                  "op": "move",
+                  "id": "p2",
+                  "cell": "G6"
+                }
+              ]
+            },
+            {
+              "n": 6,
+              "blueprint": {
+                "title": "Simple Ball Transfer Apparatus",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 4
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "G6",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "D4",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": [],
+              "events": [
+                {
+                  "type": "ball.released",
+                  "step": 1,
+                  "cell": "A2"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 2,
+                  "from": "A2",
+                  "to": "B2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 3,
+                  "from": "B2",
+                  "to": "C2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 4,
+                  "from": "C2",
+                  "to": "D2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 5,
+                  "from": "D2",
+                  "to": "E2",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 6,
+                  "from": "E2",
+                  "to": "E3",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 7,
+                  "from": "E3",
+                  "to": "E4",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 8,
+                  "from": "E4",
+                  "to": "F4",
+                  "by": "conveyor"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 9,
+                  "from": "F4",
+                  "to": "F5",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 10,
+                  "from": "F5",
+                  "to": "F6",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.moved",
+                  "step": 11,
+                  "from": "F6",
+                  "to": "F7",
+                  "by": "gravity"
+                },
+                {
+                  "type": "ball.stopped",
+                  "step": 12,
+                  "cell": "F7"
+                }
+              ],
+              "outcome": "stalled",
+              "failedAt": "F7",
+              "patch": [
+                {
+                  "op": "move",
+                  "id": "p2",
+                  "cell": "G6"
+                }
+              ]
+            }
+          ],
+          "lines": []
+        },
+        "calls": [
+          {
+            "kind": "design",
+            "attempt": 1,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 719.921067000003,
+                  "loadMs": 1.330789,
+                  "promptMs": 703.678,
+                  "evalMs": 7672.595,
+                  "promptTokens": 745,
+                  "evalTokens": 151,
+                  "wallMs": 8393.137793000002
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 2,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2359.987234,
+                  "loadMs": 1.212406,
+                  "promptMs": 2344.15,
+                  "evalMs": 3497.936,
+                  "promptTokens": 944,
+                  "evalTokens": 61,
+                  "wallMs": 5859.376142000008
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 3,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2315.8842920000025,
+                  "loadMs": 1.887973,
+                  "promptMs": 2295.324,
+                  "evalMs": 5293.122,
+                  "promptTokens": 938,
+                  "evalTokens": 97,
+                  "wallMs": 7609.422128000006
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 4,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2632.305624999979,
+                  "loadMs": 1.34215,
+                  "promptMs": 2615.558,
+                  "evalMs": 3820.555,
+                  "promptTokens": 968,
+                  "evalTokens": 61,
+                  "wallMs": 6454.494225999981
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 5,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2758.6464009999763,
+                  "loadMs": 1.75994,
+                  "promptMs": 2738.103,
+                  "evalMs": 4484.259,
+                  "promptTokens": 963,
+                  "evalTokens": 70,
+                  "wallMs": 7243.538286999974
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 6,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2780.1380820000195,
+                  "loadMs": 1.233847,
+                  "promptMs": 2761.381,
+                  "evalMs": 4007.739,
+                  "promptTokens": 963,
+                  "evalTokens": 65,
+                  "wallMs": 6789.847372000018
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "chain",
+      "run": {
+        "end": "done",
+        "build": {
+          "id": "2026-10-22-gemma4-e2b-v1-chain",
+          "contractVersion": "c1",
+          "rulesVersion": "r2",
+          "promptVersion": "v1",
+          "form": {
+            "nature": "A chain of consequences, please, ending at the button.",
+            "minParts": 4,
+            "maxParts": 10,
+            "required": "dominoes"
+          },
+          "model": {
+            "mode": "local",
+            "id": "gemma4:e2b",
+            "host": "ollama",
+            "digest": "sha256:b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+            "runtime": "ollama-0.40.7"
+          },
+          "title": "Simple Domino Chain Assembly",
+          "report": {
+            "attempts": 6,
+            "parts": 4,
+            "pressed": false,
+            "verdict": "Your request is pending. Naturally."
+          },
+          "createdAt": "2026-10-22T11:53:50.520Z",
+          "attempts": [
+            {
+              "n": 1,
+              "blueprint": {
+                "title": "Simple Domino Chain Assembly",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D3",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "E3",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": ["p3 overlaps p2 at E3 and F3"],
+              "events": [],
+              "outcome": "invalid"
+            },
+            {
+              "n": 2,
+              "blueprint": {
+                "title": "Simple Domino Chain Assembly",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D3",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  },
+                  {
+                    "id": "p5",
+                    "cell": "E3",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": ["p5 overlaps p2 at E3 and F3"],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p3"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p5",
+                    "cell": "E3",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                }
+              ]
+            },
+            {
+              "n": 3,
+              "blueprint": {
+                "title": "Simple Domino Chain Assembly",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D3",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  },
+                  {
+                    "id": "p6",
+                    "cell": "E3",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": ["p6 overlaps p2 at E3 and F3"],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p5"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p6",
+                    "cell": "E3",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                }
+              ]
+            },
+            {
+              "n": 4,
+              "blueprint": {
+                "title": "Simple Domino Chain Assembly",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D3",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  },
+                  {
+                    "id": "p7",
+                    "cell": "E3",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": ["p7 overlaps p2 at E3 and F3"],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p6"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p7",
+                    "cell": "E3",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 2
+                  }
+                }
+              ]
+            },
+            {
+              "n": 5,
+              "blueprint": {
+                "title": "Simple Domino Chain Assembly",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D3",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  },
+                  {
+                    "id": "p8",
+                    "cell": "E3",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": ["p8 overlaps p2 at E3 and F3"],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p7"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p8",
+                    "cell": "E3",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  }
+                }
+              ]
+            },
+            {
+              "n": 6,
+              "blueprint": {
+                "title": "Simple Domino Chain Assembly",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "conveyor",
+                    "length": 3
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "D3",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "G4",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  },
+                  {
+                    "id": "p9",
+                    "cell": "E3",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": ["p9 overlaps p2 at E3 and F3"],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "remove",
+                  "id": "p8"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p9",
+                    "cell": "E3",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  }
+                }
+              ]
+            }
+          ],
+          "lines": []
+        },
+        "calls": [
+          {
+            "kind": "design",
+            "attempt": 1,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 977.7931050000188,
+                  "loadMs": 1.794401,
+                  "promptMs": 957.853,
+                  "evalMs": 11765.515,
+                  "promptTokens": 757,
+                  "evalTokens": 249,
+                  "wallMs": 12745.511522000015
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 2,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2121.0264749999915,
+                  "loadMs": 1.938751,
+                  "promptMs": 2099.282,
+                  "evalMs": 6241.976,
+                  "promptTokens": 899,
+                  "evalTokens": 122,
+                  "wallMs": 8364.396836999978
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 3,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2121.5223360000236,
+                  "loadMs": 1.965911,
+                  "promptMs": 2096.339,
+                  "evalMs": 6350.185,
+                  "promptTokens": 899,
+                  "evalTokens": 122,
+                  "wallMs": 8472.408959000022
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 4,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2071.0837070000125,
+                  "loadMs": 1.358336,
+                  "promptMs": 2054.094,
+                  "evalMs": 6256.468,
+                  "promptTokens": 899,
+                  "evalTokens": 122,
+                  "wallMs": 8328.356417000003
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 5,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2108.9220209999767,
+                  "loadMs": 9.787369,
+                  "promptMs": 2084.123999,
+                  "evalMs": 5905.461,
+                  "promptTokens": 899,
+                  "evalTokens": 120,
+                  "wallMs": 8014.79869299999
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 6,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2146.4304770000163,
+                  "loadMs": 1.330198,
+                  "promptMs": 2128.922,
+                  "evalMs": 7502.266,
+                  "promptTokens": 900,
+                  "evalTokens": 119,
+                  "wallMs": 9649.937945000012
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "updown",
+      "run": {
+        "end": "done",
+        "build": {
+          "id": "2026-10-22-gemma4-e2b-v1-updown",
+          "contractVersion": "c1",
+          "rulesVersion": "r2",
+          "promptVersion": "v1",
+          "form": {
+            "nature": "Up before down. Nothing on a belt.",
+            "minParts": 3,
+            "maxParts": 8,
+            "required": "seesaw",
+            "forbidden": "conveyor"
+          },
+          "model": {
+            "mode": "local",
+            "id": "gemma4:e2b",
+            "host": "ollama",
+            "digest": "sha256:b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+            "runtime": "ollama-0.40.7"
+          },
+          "title": "Simple Upward Transfer Mechanism",
+          "report": {
+            "attempts": 6,
+            "parts": 3,
+            "pressed": false,
+            "verdict": "Your request is pending. Naturally."
+          },
+          "createdAt": "2026-10-22T11:54:53.064Z",
+          "attempts": [
+            {
+              "n": 1,
+              "blueprint": {
+                "title": "Simple Upward Transfer Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p2",
+                    "cell": "B2",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "C2",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": [
+                "p1 at A2 runs off the west edge of the board",
+                "p2 overlaps p1 at B2",
+                "p3 overlaps p2 at C2 and D2"
+              ],
+              "events": [],
+              "outcome": "invalid"
+            },
+            {
+              "n": 2,
+              "blueprint": {
+                "title": "Simple Upward Transfer Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A3",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "C2",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  },
+                  {
+                    "id": "p4",
+                    "cell": "B2",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": ["p1 at A3 runs off the west edge of the board", "p4 overlaps p3 at C2"],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "move",
+                  "id": "p1",
+                  "cell": "A3"
+                },
+                {
+                  "op": "remove",
+                  "id": "p2"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p4",
+                    "cell": "B2",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  }
+                }
+              ]
+            },
+            {
+              "n": 3,
+              "blueprint": {
+                "title": "Simple Upward Transfer Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "C2",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  },
+                  {
+                    "id": "p5",
+                    "cell": "B3",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  }
+                ]
+              },
+              "violations": ["p1 at A2 runs off the west edge of the board"],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "move",
+                  "id": "p1",
+                  "cell": "A2"
+                },
+                {
+                  "op": "remove",
+                  "id": "p4"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p5",
+                    "cell": "B3",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  }
+                }
+              ]
+            },
+            {
+              "n": 4,
+              "blueprint": {
+                "title": "Simple Upward Transfer Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A3",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "C2",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  },
+                  {
+                    "id": "p5",
+                    "cell": "B3",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 3
+                  }
+                ]
+              },
+              "violations": ["p1 at A3 runs off the west edge of the board", "p5 overlaps p1 at B3"],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "move",
+                  "id": "p1",
+                  "cell": "A3"
+                }
+              ]
+            },
+            {
+              "n": 5,
+              "blueprint": {
+                "title": "Simple Upward Transfer Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A2",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "C2",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  },
+                  {
+                    "id": "p6",
+                    "cell": "B4",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": ["p1 at A2 runs off the west edge of the board"],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "move",
+                  "id": "p1",
+                  "cell": "A2"
+                },
+                {
+                  "op": "remove",
+                  "id": "p5"
+                },
+                {
+                  "op": "add",
+                  "part": {
+                    "id": "p6",
+                    "cell": "B4",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  }
+                }
+              ]
+            },
+            {
+              "n": 6,
+              "blueprint": {
+                "title": "Simple Upward Transfer Mechanism",
+                "parts": [
+                  {
+                    "id": "p1",
+                    "cell": "A3",
+                    "dir": "east",
+                    "kind": "seesaw"
+                  },
+                  {
+                    "id": "p3",
+                    "cell": "C2",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  },
+                  {
+                    "id": "p6",
+                    "cell": "B4",
+                    "dir": "east",
+                    "kind": "dominoes",
+                    "length": 2
+                  }
+                ]
+              },
+              "violations": ["p1 at A3 runs off the west edge of the board"],
+              "events": [],
+              "outcome": "invalid",
+              "patch": [
+                {
+                  "op": "move",
+                  "id": "p1",
+                  "cell": "A3"
+                }
+              ]
+            }
+          ],
+          "lines": []
+        },
+        "calls": [
+          {
+            "kind": "design",
+            "attempt": 1,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 1275.7735669999965,
+                  "loadMs": 1.594385,
+                  "promptMs": 1253.845,
+                  "evalMs": 12711.383,
+                  "promptTokens": 759,
+                  "evalTokens": 188,
+                  "wallMs": 13988.210643999977
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 2,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 3120.9897100000235,
+                  "loadMs": 2.163418,
+                  "promptMs": 3096.292,
+                  "evalMs": 11095.822,
+                  "promptTokens": 924,
+                  "evalTokens": 155,
+                  "wallMs": 14217.886671000015
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 3,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2531.5571839999757,
+                  "loadMs": 2.651536,
+                  "promptMs": 2497.062,
+                  "evalMs": 9455.43,
+                  "promptTokens": 900,
+                  "evalTokens": 156,
+                  "wallMs": 11989.052505
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 4,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2001.9223479999928,
+                  "loadMs": 3.361434,
+                  "promptMs": 1974.969,
+                  "evalMs": 4179.559,
+                  "promptTokens": 882,
+                  "evalTokens": 64,
+                  "wallMs": 6182.72407299999
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 5,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 2118.218603000045,
+                  "loadMs": 1.690216,
+                  "promptMs": 2096.992,
+                  "evalMs": 8344.901,
+                  "promptTokens": 900,
+                  "evalTokens": 153,
+                  "wallMs": 10463.909918999998
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          },
+          {
+            "kind": "repair",
+            "attempt": 6,
+            "tries": [
+              {
+                "timing": {
+                  "firstChunkMs": 1755.2282650000416,
+                  "loadMs": 1.28382,
+                  "promptMs": 1737.989,
+                  "evalMs": 3940.582,
+                  "promptTokens": 882,
+                  "evalTokens": 62,
+                  "wallMs": 5696.39107100002
+                },
+                "issues": []
+              }
+            ],
+            "parsed": true
+          }
+        ]
+      }
+    }
+  ]
+}
