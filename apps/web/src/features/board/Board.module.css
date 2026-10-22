@@ -1,0 +1,95 @@
+/* Colours are the character sheet's tokens (section 5); blue is reserved for the button and the sheet. */
+.board {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.sheet {
+  fill: #2446b8;
+}
+
+.grid {
+  stroke: #cfe0ff;
+  stroke-width: 1;
+  opacity: 0.35;
+}
+
+/* Text on the navy board is paper (7.5:1). */
+.labels {
+  fill: #fff8e6;
+  font-family: Fredoka, sans-serif;
+  font-size: 14px;
+  text-anchor: middle;
+}
+
+.part {
+  stroke: #1f1b2e;
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+/* Ink outline 3 px plus 2 px of paper on each side. */
+.board .halo * {
+  fill: #fff8e6;
+  stroke: #fff8e6;
+  stroke-width: 7;
+}
+
+.belt,
+.plank {
+  fill: #f2a33a;
+}
+
+.roller,
+.pivot,
+.frame,
+.arm,
+.ramp {
+  fill: #b5652f;
+}
+
+.domino,
+.hopper {
+  fill: #fff8e6;
+}
+
+.fan {
+  fill: #1fb5a3;
+}
+
+.blade {
+  fill: #a9e3b5;
+}
+
+.wind {
+  stroke: #fff8e6;
+  stroke-width: 2;
+  stroke-dasharray: 6 8;
+}
+
+.dome {
+  fill: #2f6bff;
+}
+
+.domePressed {
+  fill: #1f4fd1;
+}
+
+.base {
+  fill: #1f1b2e;
+}
+
+.trail {
+  fill: none;
+  stroke: #fff8e6;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 0.1 10;
+}
+
+.ball {
+  fill: #ff5a4e;
+  stroke: #1f1b2e;
+  stroke-width: 3;
+}
