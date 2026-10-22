@@ -122,6 +122,16 @@ export function Hopper({ at }: { at: Point }) {
   );
 }
 
+export function Ball({ at }: { at: Point }) {
+  return (
+    <g className={styles.part} data-ball transform={translate(at)}>
+      <Haloed>
+        <circle className={styles.ball} r={9} />
+      </Haloed>
+    </g>
+  );
+}
+
 // The button sinks 6 px and darkens only on button.pressed (character sheet section 6).
 export function Button({ at, pressed }: { at: Point; pressed: boolean }) {
   return (

@@ -2,7 +2,7 @@ import type { Blueprint, SimEvent } from '@pending/contract';
 import { useId } from 'react';
 import type { Segment } from './model/frame';
 import { BOARD, BUTTON, HOPPER, centre, frame, lastStep } from './model/frame';
-import { Button, Hopper, PartSprite } from './Sprites';
+import { Ball, Button, Hopper, PartSprite } from './Sprites';
 import styles from './Board.module.css';
 
 const right = BOARD.x + BOARD.cell * BOARD.columns.length;
@@ -78,7 +78,7 @@ export function Board({ blueprint, events }: { blueprint: Blueprint; events: Sim
           <path key={i} d={path(segment)} />
         ))}
       </g>
-      {ball && <circle className={styles.ball} data-ball cx={ball.x} cy={ball.y} r={9} />}
+      <Ball at={ball} />
     </svg>
   );
 }

@@ -44,7 +44,7 @@ const finals = {
   seesaw: { pressed: true, ball: 'J7', fallen: 2 },
   catapult: { pressed: false, ball: 'H4', fallen: 0 },
   'catapult-repaired': { pressed: true, ball: 'K7', fallen: 1 },
-  invalid: { pressed: false, ball: undefined, fallen: 0 },
+  invalid: { pressed: false, ball: 'A1', fallen: 0 },
 };
 
 test('cells centre on the 56 px grid from (36, 28)', () => {
@@ -78,9 +78,11 @@ describe.each(Object.entries(finals))('fixture %s', (name, final) => {
     expect(container.querySelector('[data-button]')?.getAttribute('transform')).toBe(translate('L7'));
   });
 
-  test('puts a paper halo under every part, the hopper and the button', () => {
-    const { container } = draw(name);
-    for (const drawn of container.querySelectorAll('[data-part], [data-hopper], [data-button]')) {
+  test('puts a paper halo under every part, the hopper, the button and the ball', () => {
+    const { blueprint, container } = draw(name);
+    const sprites = container.querySelectorAll('[data-part], [data-hopper], [data-button], [data-ball]');
+    expect(sprites).toHaveLength(blueprint.parts.length + 3);
+    for (const drawn of sprites) {
       const halo = drawn.querySelector('[aria-hidden="true"]');
       expect(halo?.innerHTML).toBe(halo?.nextElementSibling?.innerHTML);
     }
@@ -88,9 +90,7 @@ describe.each(Object.entries(finals))('fixture %s', (name, final) => {
 
   test('shows the final frame of the events', () => {
     const { events, container } = draw(name);
-    const ball = container.querySelector('[data-ball]');
-    const drawnBall = ball && { x: Number(ball.getAttribute('cx')), y: Number(ball.getAttribute('cy')) };
-    expect(drawnBall ?? undefined).toEqual(final.ball && at(final.ball));
+    expect(container.querySelector('[data-ball]')?.getAttribute('transform')).toBe(translate(final.ball));
     expect(container.querySelector('[data-button]')?.getAttribute('data-pressed')).toBe(
       String(final.pressed),
     );
@@ -100,6 +100,14 @@ describe.each(Object.entries(finals))('fixture %s', (name, final) => {
     const travels = events.filter((e) => e.type === 'ball.released' || 'to' in e).length;
     expect(container.querySelectorAll('[data-trail] path')).toHaveLength(travels);
   });
+});
+
+test('before any event the ball waits in the hopper', () => {
+  const { blueprint, events } = fixture('pressed');
+  const view = frame(blueprint, events, 0);
+  expect(view.ball).toEqual(at('A1'));
+  expect(view.trail).toEqual([]);
+  expect(view.pressed).toBe(false);
 });
 
 test('a launch is an arc in the trail and the frame stops at the given step', () => {
@@ -120,5 +128,5 @@ test('a west-facing part is mirrored about its anchor', () => {
   const ramp = container.querySelector('[data-part="p1"]');
   expect(ramp?.getAttribute('transform')).toBe(translate('F2'));
   expect(ramp?.firstElementChild?.getAttribute('transform')).toBe('scale(-1 1)');
-  expect(container.querySelector('[data-ball]')).toBeNull();
+  expect(container.querySelector('[data-ball]')?.getAttribute('transform')).toBe(translate('A1'));
 });

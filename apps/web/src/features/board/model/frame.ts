@@ -16,7 +16,7 @@ export const BUTTON: Cell = 'L7';
 export type Point = { x: number; y: number };
 export type PartView = { part: Part; at: Point; fallen: number[] };
 export type Segment = { from: Point; to: Point; arc: boolean };
-export type Frame = { parts: PartView[]; ball: Point | undefined; trail: Segment[]; pressed: boolean };
+export type Frame = { parts: PartView[]; ball: Point; trail: Segment[]; pressed: boolean };
 
 // Cell (c, r), both counted from zero, centres at (64 + 56c, 56 + 56r).
 export const centre = (cell: Cell): Point => ({
@@ -25,10 +25,11 @@ export const centre = (cell: Cell): Point => ({
 });
 
 // The board at `step`: parts from the blueprint, the ball, its trail and the fallen dominoes from the events up to it.
+// Before the first event the ball waits in the hopper.
 export function frame(blueprint: Blueprint, events: SimEvent[], step: number): Frame {
   const fallen = new Map<string, number[]>();
   const trail: Segment[] = [];
-  let ball: Point | undefined;
+  let ball = centre(HOPPER);
   let pressed = false;
   for (const event of events) {
     if (event.step > step) break;
