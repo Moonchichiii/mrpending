@@ -1,0 +1,9 @@
+{
+  "title": "Seesaw",
+  "parts": [
+    { "id": "p1", "kind": "ramp", "cell": "A2", "dir": "east", "length": 3 },
+    { "id": "p2", "kind": "seesaw", "cell": "E6", "dir": "east" },
+    { "id": "p3", "kind": "fan", "cell": "G4", "dir": "east", "power": 2 },
+    { "id": "p4", "kind": "dominoes", "cell": "J7", "dir": "east", "length": 2 }
+  ]
+}

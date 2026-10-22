@@ -1,7 +1,6 @@
 import { Blueprint, MAX_PARTS, PartId, PartKind } from '@pending/contract';
 import type { Form, Part } from '@pending/contract';
-import { BUTTON, COLUMNS, HOPPER, ROWS, footprint, onBoard, toCell, wind } from './catalogue';
-import type { Point } from './catalogue';
+import { BUTTON, HOPPER, edge, footprint, onBoard, toCell, wind } from './catalogue';
 
 type Issue = NonNullable<ReturnType<typeof Blueprint.safeParse>['error']>['issues'][number];
 
@@ -62,12 +61,6 @@ function describe(issue: Issue, raw: unknown): string {
       : 'the title is not text';
   }
   return 'the blueprint is not an object with a title and parts';
-}
-
-function edge(p: Point): string {
-  if (p.col < 0) return 'west';
-  if (p.col >= COLUMNS.length) return 'east';
-  return p.row > ROWS ? 'bottom' : 'top';
 }
 
 function duplicates(parts: Part[]): string[] {

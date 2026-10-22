@@ -1,0 +1,10 @@
+{
+  "title": "Catapult",
+  "parts": [
+    { "id": "p1", "kind": "conveyor", "cell": "A2", "dir": "east", "length": 2 },
+    { "id": "p2", "kind": "ramp", "cell": "C2", "dir": "east", "length": 3 },
+    { "id": "p3", "kind": "catapult", "cell": "F6", "dir": "east", "power": 2 },
+    { "id": "p4", "kind": "fan", "cell": "H4", "dir": "east", "power": 2 },
+    { "id": "p5", "kind": "dominoes", "cell": "I7", "dir": "east", "length": 2 }
+  ]
+}

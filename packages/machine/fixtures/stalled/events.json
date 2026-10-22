@@ -1,0 +1,13 @@
+[
+  { "type": "ball.released", "step": 1, "cell": "A2" },
+  { "type": "ball.moved", "step": 2, "from": "A2", "to": "B2", "by": "conveyor" },
+  { "type": "ball.moved", "step": 3, "from": "B2", "to": "C2", "by": "conveyor" },
+  { "type": "ball.moved", "step": 4, "from": "C2", "to": "D2", "by": "conveyor" },
+  { "type": "ball.moved", "step": 5, "from": "D2", "to": "E2", "by": "conveyor" },
+  { "type": "ball.moved", "step": 6, "from": "E2", "to": "E3", "by": "gravity" },
+  { "type": "ball.moved", "step": 7, "from": "E3", "to": "E4", "by": "gravity" },
+  { "type": "ball.moved", "step": 8, "from": "E4", "to": "E5", "by": "gravity" },
+  { "type": "ball.moved", "step": 9, "from": "E5", "to": "E6", "by": "gravity" },
+  { "type": "ball.moved", "step": 10, "from": "E6", "to": "E7", "by": "gravity" },
+  { "type": "ball.stopped", "step": 11, "cell": "E7" }
+]

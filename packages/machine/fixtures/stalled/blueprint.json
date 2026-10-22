@@ -1,0 +1,7 @@
+{
+  "title": "Stalled",
+  "parts": [
+    { "id": "p1", "kind": "conveyor", "cell": "A2", "dir": "east", "length": 4 },
+    { "id": "p2", "kind": "dominoes", "cell": "I7", "dir": "east", "length": 2 }
+  ]
+}
