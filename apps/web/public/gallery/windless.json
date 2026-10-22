@@ -1,0 +1,1213 @@
+{
+  "id": "B-2026-10-22-windless-1",
+  "contractVersion": "c1",
+  "rulesVersion": "r2",
+  "promptVersion": "v2",
+  "form": {
+    "nature": "No fans. I dislike wind.",
+    "minParts": 2,
+    "maxParts": 6,
+    "forbidden": "fan"
+  },
+  "model": {
+    "mode": "local",
+    "id": "gemma4:e2b",
+    "host": "ollama",
+    "digest": "sha256:b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+    "runtime": "ollama-0.40.7"
+  },
+  "title": "Blue Button Press Mechanism",
+  "report": {
+    "attempts": 6,
+    "parts": 5,
+    "pressed": false,
+    "verdict": "Your request is pending. Naturally."
+  },
+  "createdAt": "2026-10-22T23:03:44.723Z",
+  "attempts": [
+    {
+      "n": 1,
+      "blueprint": {
+        "title": "Blue Button Press Mechanism",
+        "parts": [
+          {
+            "id": "p1",
+            "cell": "A2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 3
+          },
+          {
+            "id": "p2",
+            "cell": "C2",
+            "dir": "east",
+            "kind": "ramp",
+            "length": 2
+          },
+          {
+            "id": "p3",
+            "cell": "H7",
+            "dir": "east",
+            "kind": "dominoes",
+            "length": 3
+          }
+        ]
+      },
+      "violations": ["p2 overlaps p1 at C2"],
+      "events": [],
+      "outcome": "invalid"
+    },
+    {
+      "n": 2,
+      "blueprint": {
+        "title": "Blue Button Press Mechanism",
+        "parts": [
+          {
+            "id": "p1",
+            "cell": "A2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 3
+          },
+          {
+            "id": "p2",
+            "cell": "D2",
+            "dir": "east",
+            "kind": "ramp",
+            "length": 2
+          },
+          {
+            "id": "p3",
+            "cell": "H7",
+            "dir": "east",
+            "kind": "dominoes",
+            "length": 3
+          }
+        ]
+      },
+      "violations": [],
+      "events": [
+        {
+          "type": "ball.released",
+          "step": 1,
+          "cell": "A2"
+        },
+        {
+          "type": "ball.moved",
+          "step": 2,
+          "from": "A2",
+          "to": "B2",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 3,
+          "from": "B2",
+          "to": "C2",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 4,
+          "from": "C2",
+          "to": "D2",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 5,
+          "from": "D2",
+          "to": "E3",
+          "by": "ramp"
+        },
+        {
+          "type": "ball.moved",
+          "step": 6,
+          "from": "E3",
+          "to": "F3",
+          "by": "ramp"
+        },
+        {
+          "type": "ball.moved",
+          "step": 7,
+          "from": "F3",
+          "to": "F4",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 8,
+          "from": "F4",
+          "to": "F5",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 9,
+          "from": "F5",
+          "to": "F6",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 10,
+          "from": "F6",
+          "to": "F7",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.stopped",
+          "step": 11,
+          "cell": "F7"
+        }
+      ],
+      "outcome": "stalled",
+      "failedAt": "F7",
+      "patch": [
+        {
+          "op": "move",
+          "id": "p2",
+          "cell": "D2"
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "blueprint": {
+        "title": "Blue Button Press Mechanism",
+        "parts": [
+          {
+            "id": "p1",
+            "cell": "A2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 3
+          },
+          {
+            "id": "p2",
+            "cell": "D2",
+            "dir": "east",
+            "kind": "ramp",
+            "length": 2
+          },
+          {
+            "id": "p3",
+            "cell": "H7",
+            "dir": "east",
+            "kind": "dominoes",
+            "length": 3
+          },
+          {
+            "id": "p4",
+            "cell": "F7",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          }
+        ]
+      },
+      "violations": [],
+      "events": [
+        {
+          "type": "ball.released",
+          "step": 1,
+          "cell": "A2"
+        },
+        {
+          "type": "ball.moved",
+          "step": 2,
+          "from": "A2",
+          "to": "B2",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 3,
+          "from": "B2",
+          "to": "C2",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 4,
+          "from": "C2",
+          "to": "D2",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 5,
+          "from": "D2",
+          "to": "E3",
+          "by": "ramp"
+        },
+        {
+          "type": "ball.moved",
+          "step": 6,
+          "from": "E3",
+          "to": "F3",
+          "by": "ramp"
+        },
+        {
+          "type": "ball.moved",
+          "step": 7,
+          "from": "F3",
+          "to": "F4",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 8,
+          "from": "F4",
+          "to": "F5",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 9,
+          "from": "F5",
+          "to": "F6",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 10,
+          "from": "F6",
+          "to": "F7",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 11,
+          "from": "F7",
+          "to": "G7",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 12,
+          "from": "G7",
+          "to": "H7",
+          "by": "conveyor"
+        },
+        {
+          "type": "domino.fell",
+          "step": 13,
+          "part": "p3",
+          "index": 0,
+          "cell": "H7"
+        },
+        {
+          "type": "domino.fell",
+          "step": 14,
+          "part": "p3",
+          "index": 1,
+          "cell": "I7"
+        },
+        {
+          "type": "domino.fell",
+          "step": 15,
+          "part": "p3",
+          "index": 2,
+          "cell": "J7"
+        },
+        {
+          "type": "impulse.lost",
+          "step": 16,
+          "cell": "K7"
+        }
+      ],
+      "outcome": "stalled",
+      "failedAt": "K7",
+      "patch": [
+        {
+          "op": "add",
+          "part": {
+            "id": "p4",
+            "cell": "F7",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          }
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "blueprint": {
+        "title": "Blue Button Press Mechanism",
+        "parts": [
+          {
+            "id": "p1",
+            "cell": "A2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 3
+          },
+          {
+            "id": "p2",
+            "cell": "D2",
+            "dir": "east",
+            "kind": "ramp",
+            "length": 2
+          },
+          {
+            "id": "p3",
+            "cell": "H7",
+            "dir": "east",
+            "kind": "dominoes",
+            "length": 3
+          },
+          {
+            "id": "p4",
+            "cell": "F7",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          },
+          {
+            "id": "p5",
+            "cell": "K6",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          }
+        ]
+      },
+      "violations": [],
+      "events": [
+        {
+          "type": "ball.released",
+          "step": 1,
+          "cell": "A2"
+        },
+        {
+          "type": "ball.moved",
+          "step": 2,
+          "from": "A2",
+          "to": "B2",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 3,
+          "from": "B2",
+          "to": "C2",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 4,
+          "from": "C2",
+          "to": "D2",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 5,
+          "from": "D2",
+          "to": "E3",
+          "by": "ramp"
+        },
+        {
+          "type": "ball.moved",
+          "step": 6,
+          "from": "E3",
+          "to": "F3",
+          "by": "ramp"
+        },
+        {
+          "type": "ball.moved",
+          "step": 7,
+          "from": "F3",
+          "to": "F4",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 8,
+          "from": "F4",
+          "to": "F5",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 9,
+          "from": "F5",
+          "to": "F6",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 10,
+          "from": "F6",
+          "to": "F7",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 11,
+          "from": "F7",
+          "to": "G7",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 12,
+          "from": "G7",
+          "to": "H7",
+          "by": "conveyor"
+        },
+        {
+          "type": "domino.fell",
+          "step": 13,
+          "part": "p3",
+          "index": 0,
+          "cell": "H7"
+        },
+        {
+          "type": "domino.fell",
+          "step": 14,
+          "part": "p3",
+          "index": 1,
+          "cell": "I7"
+        },
+        {
+          "type": "domino.fell",
+          "step": 15,
+          "part": "p3",
+          "index": 2,
+          "cell": "J7"
+        },
+        {
+          "type": "impulse.lost",
+          "step": 16,
+          "cell": "K7"
+        }
+      ],
+      "outcome": "stalled",
+      "failedAt": "K7",
+      "patch": [
+        {
+          "op": "add",
+          "part": {
+            "id": "p5",
+            "cell": "K6",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          }
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "blueprint": {
+        "title": "Blue Button Press Mechanism",
+        "parts": [
+          {
+            "id": "p1",
+            "cell": "A2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 3
+          },
+          {
+            "id": "p2",
+            "cell": "D2",
+            "dir": "east",
+            "kind": "ramp",
+            "length": 2
+          },
+          {
+            "id": "p3",
+            "cell": "H7",
+            "dir": "east",
+            "kind": "dominoes",
+            "length": 3
+          },
+          {
+            "id": "p4",
+            "cell": "F7",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          },
+          {
+            "id": "p6",
+            "cell": "J6",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          }
+        ]
+      },
+      "violations": [],
+      "events": [
+        {
+          "type": "ball.released",
+          "step": 1,
+          "cell": "A2"
+        },
+        {
+          "type": "ball.moved",
+          "step": 2,
+          "from": "A2",
+          "to": "B2",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 3,
+          "from": "B2",
+          "to": "C2",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 4,
+          "from": "C2",
+          "to": "D2",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 5,
+          "from": "D2",
+          "to": "E3",
+          "by": "ramp"
+        },
+        {
+          "type": "ball.moved",
+          "step": 6,
+          "from": "E3",
+          "to": "F3",
+          "by": "ramp"
+        },
+        {
+          "type": "ball.moved",
+          "step": 7,
+          "from": "F3",
+          "to": "F4",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 8,
+          "from": "F4",
+          "to": "F5",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 9,
+          "from": "F5",
+          "to": "F6",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 10,
+          "from": "F6",
+          "to": "F7",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 11,
+          "from": "F7",
+          "to": "G7",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 12,
+          "from": "G7",
+          "to": "H7",
+          "by": "conveyor"
+        },
+        {
+          "type": "domino.fell",
+          "step": 13,
+          "part": "p3",
+          "index": 0,
+          "cell": "H7"
+        },
+        {
+          "type": "domino.fell",
+          "step": 14,
+          "part": "p3",
+          "index": 1,
+          "cell": "I7"
+        },
+        {
+          "type": "domino.fell",
+          "step": 15,
+          "part": "p3",
+          "index": 2,
+          "cell": "J7"
+        },
+        {
+          "type": "impulse.lost",
+          "step": 16,
+          "cell": "K7"
+        }
+      ],
+      "outcome": "stalled",
+      "failedAt": "K7",
+      "patch": [
+        {
+          "op": "remove",
+          "id": "p5"
+        },
+        {
+          "op": "add",
+          "part": {
+            "id": "p6",
+            "cell": "J6",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          }
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "blueprint": {
+        "title": "Blue Button Press Mechanism",
+        "parts": [
+          {
+            "id": "p1",
+            "cell": "A2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 3
+          },
+          {
+            "id": "p2",
+            "cell": "D2",
+            "dir": "east",
+            "kind": "ramp",
+            "length": 2
+          },
+          {
+            "id": "p4",
+            "cell": "F7",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          },
+          {
+            "id": "p6",
+            "cell": "J6",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          },
+          {
+            "id": "p7",
+            "cell": "K7",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          }
+        ]
+      },
+      "violations": ["p7 covers the button at L7"],
+      "events": [],
+      "outcome": "invalid",
+      "patch": [
+        {
+          "op": "remove",
+          "id": "p3"
+        },
+        {
+          "op": "add",
+          "part": {
+            "id": "p7",
+            "cell": "K7",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          }
+        }
+      ]
+    }
+  ],
+  "lines": [
+    {
+      "id": "l1",
+      "beat": "intake",
+      "mood": "slow",
+      "text": "Form 27B/6 received. Stamped, filed, placed on top of the other forms. This will take some time.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l2",
+      "beat": "designing",
+      "mood": "slow",
+      "text": "Drafting. Please do not rush the Department.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l3",
+      "beat": "designed",
+      "mood": "slow",
+      "text": "The mechanism is designed to guide the ball to the button via a conveyor and a ramp.",
+      "source": "model",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l4",
+      "beat": "designed",
+      "mood": "slow",
+      "text": "Blueprint 1: “Blue Button Press Mechanism”. 3 components for one button. Proportionate.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l5",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "Finding: the blueprint breaches p2 overlaps p1 at C2.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l6",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "Engineering has identified a problem. Engineering would prefer not to discuss it.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l7",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "A correction will be issued.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l8",
+      "beat": "cameo",
+      "mood": "deadpan",
+      "text": "This is why we employ snails.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l9",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "The overlap at C2 has been rectified by relocating part p2 to D2.",
+      "source": "model",
+      "at": {
+        "attempt": 2,
+        "step": 0
+      }
+    },
+    {
+      "id": "l10",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "Correction 1: moved ramp from C2 to D2.",
+      "source": "table",
+      "at": {
+        "attempt": 2,
+        "step": 0
+      }
+    },
+    {
+      "id": "l11",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "A repair has been submitted. Optimism remains strictly provisional.",
+      "source": "table",
+      "at": {
+        "attempt": 2,
+        "step": 0
+      }
+    },
+    {
+      "id": "l12",
+      "beat": "running",
+      "mood": "slow",
+      "text": "Commencing trial 2.",
+      "source": "table",
+      "at": {
+        "attempt": 2,
+        "step": 0
+      }
+    },
+    {
+      "id": "l13",
+      "beat": "handoff",
+      "mood": "excited",
+      "text": "A handover! The parts are cooperating!",
+      "source": "table",
+      "at": {
+        "attempt": 2,
+        "step": 4
+      }
+    },
+    {
+      "id": "l14",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "Finding: the ball came to rest at F7.",
+      "source": "table",
+      "at": {
+        "attempt": 2,
+        "step": 11
+      }
+    },
+    {
+      "id": "l15",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "The Department regrets to inform you that gravity has once again failed to cooperate.",
+      "source": "table",
+      "at": {
+        "attempt": 2,
+        "step": 11
+      }
+    },
+    {
+      "id": "l16",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "A correction will be issued.",
+      "source": "table",
+      "at": {
+        "attempt": 2,
+        "step": 11
+      }
+    },
+    {
+      "id": "l17",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "A conveyor was added to address the stall at F7.",
+      "source": "model",
+      "at": {
+        "attempt": 3,
+        "step": 0
+      }
+    },
+    {
+      "id": "l18",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "Correction 2: added conveyor at F7.",
+      "source": "table",
+      "at": {
+        "attempt": 3,
+        "step": 0
+      }
+    },
+    {
+      "id": "l19",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "A repair has been submitted. Optimism remains strictly provisional.",
+      "source": "table",
+      "at": {
+        "attempt": 3,
+        "step": 0
+      }
+    },
+    {
+      "id": "l20",
+      "beat": "running",
+      "mood": "slow",
+      "text": "Commencing trial 3.",
+      "source": "table",
+      "at": {
+        "attempt": 3,
+        "step": 0
+      }
+    },
+    {
+      "id": "l21",
+      "beat": "handoff",
+      "mood": "excited",
+      "text": "A handover! The parts are cooperating!",
+      "source": "table",
+      "at": {
+        "attempt": 3,
+        "step": 4
+      }
+    },
+    {
+      "id": "l22",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "Finding: the ball came to rest at K7.",
+      "source": "table",
+      "at": {
+        "attempt": 3,
+        "step": 16
+      }
+    },
+    {
+      "id": "l23",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "The dominoes fell with great ceremony and no consequence.",
+      "source": "table",
+      "at": {
+        "attempt": 3,
+        "step": 16
+      }
+    },
+    {
+      "id": "l24",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "A correction will be issued.",
+      "source": "table",
+      "at": {
+        "attempt": 3,
+        "step": 16
+      }
+    },
+    {
+      "id": "l25",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "The stalling at K7 suggests insufficient pathing to the target. More conveyor.",
+      "source": "model",
+      "at": {
+        "attempt": 4,
+        "step": 0
+      }
+    },
+    {
+      "id": "l26",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "Correction 3: added conveyor at K6.",
+      "source": "table",
+      "at": {
+        "attempt": 4,
+        "step": 0
+      }
+    },
+    {
+      "id": "l27",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "A repair has been submitted. Optimism remains strictly provisional.",
+      "source": "table",
+      "at": {
+        "attempt": 4,
+        "step": 0
+      }
+    },
+    {
+      "id": "l28",
+      "beat": "running",
+      "mood": "slow",
+      "text": "Commencing trial 4.",
+      "source": "table",
+      "at": {
+        "attempt": 4,
+        "step": 0
+      }
+    },
+    {
+      "id": "l29",
+      "beat": "handoff",
+      "mood": "excited",
+      "text": "A handover! The parts are cooperating!",
+      "source": "table",
+      "at": {
+        "attempt": 4,
+        "step": 4
+      }
+    },
+    {
+      "id": "l30",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "Finding: the ball came to rest at K7.",
+      "source": "table",
+      "at": {
+        "attempt": 4,
+        "step": 16
+      }
+    },
+    {
+      "id": "l31",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "A correction will be issued.",
+      "source": "table",
+      "at": {
+        "attempt": 4,
+        "step": 16
+      }
+    },
+    {
+      "id": "l32",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "The removal of p5 and the addition of p6 should resolve the stalling at K7.",
+      "source": "model",
+      "at": {
+        "attempt": 5,
+        "step": 0
+      }
+    },
+    {
+      "id": "l33",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "Correction 4: removed conveyor at K6, added conveyor at J6.",
+      "source": "table",
+      "at": {
+        "attempt": 5,
+        "step": 0
+      }
+    },
+    {
+      "id": "l34",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "A repair has been submitted. Optimism remains strictly provisional.",
+      "source": "table",
+      "at": {
+        "attempt": 5,
+        "step": 0
+      }
+    },
+    {
+      "id": "l35",
+      "beat": "running",
+      "mood": "slow",
+      "text": "Commencing trial 5.",
+      "source": "table",
+      "at": {
+        "attempt": 5,
+        "step": 0
+      }
+    },
+    {
+      "id": "l36",
+      "beat": "handoff",
+      "mood": "excited",
+      "text": "A handover! The parts are cooperating!",
+      "source": "table",
+      "at": {
+        "attempt": 5,
+        "step": 4
+      }
+    },
+    {
+      "id": "l37",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "Finding: the ball came to rest at K7.",
+      "source": "table",
+      "at": {
+        "attempt": 5,
+        "step": 16
+      }
+    },
+    {
+      "id": "l38",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "A correction will be issued.",
+      "source": "table",
+      "at": {
+        "attempt": 5,
+        "step": 16
+      }
+    },
+    {
+      "id": "l39",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "The stalling at K7 was due to insufficient pathing to the button.",
+      "source": "model",
+      "at": {
+        "attempt": 6,
+        "step": 0
+      }
+    },
+    {
+      "id": "l40",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "Correction 5: removed dominoes at H7, added conveyor at K7.",
+      "source": "table",
+      "at": {
+        "attempt": 6,
+        "step": 0
+      }
+    },
+    {
+      "id": "l41",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "A repair has been submitted. Optimism remains strictly provisional.",
+      "source": "table",
+      "at": {
+        "attempt": 6,
+        "step": 0
+      }
+    },
+    {
+      "id": "l42",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "Finding: the blueprint breaches p7 covers the button at L7.",
+      "source": "table",
+      "at": {
+        "attempt": 6,
+        "step": 0
+      }
+    },
+    {
+      "id": "l43",
+      "beat": "exhausted",
+      "mood": "deadpan",
+      "text": "After 6 trials the button remains unpressed. The paperwork is immaculate. Your request is pending. Naturally.",
+      "source": "table",
+      "at": {
+        "attempt": 6,
+        "step": 0
+      }
+    }
+  ]
+}

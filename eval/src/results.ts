@@ -394,8 +394,15 @@ export function matrixMarkdown(m: Matrix, configs: readonly Results[], stem: str
           row('design warm p50 / p95 s', (r) => lat(h(r).latency.design.warmMs)),
           row('repair wall p50 / p95 s', (r) => lat(h(r).latency.repair.wallMs)),
           row('repairs under the animation', (r) => share(h(r).latency.repairUnderAnimation.calls)),
-          row('cold load s', (r) => num(h(r).latency.coldLoadMs)),
-          row('RAM headroom (min free MiB)', (r) => String(r.memory.minFreeMiB)),
+          // One cold load per batch; memory is sampled once before the batch and after every model call.
+          row(
+            'cold load s',
+            (r) => `${num(h(r).latency.coldLoadMs)} (n ${h(r).latency.coldLoadMs === undefined ? 0 : 1})`,
+          ),
+          row(
+            'RAM headroom (min free MiB)',
+            (r) => `${r.memory.minFreeMiB} (n ${1 + r.rows.reduce((n, w) => n + w.modelCalls, 0)} samples)`,
+          ),
           '',
           '| row | ' + cols.join(' | ') + ' |',
           `|---|${cols.map(() => '---').join('|')}|`,
