@@ -191,6 +191,24 @@ test('the gallery reads a matrix stopped at the deadline once the shipped config
   expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [short], headline, shipped)).toThrow(
     /did not finish all its builds/,
   );
+  // The results file declares its own k, or repeats one build in place of another.
+  const trap = finished.runs.find((x) => x.scenario === 'trap#1');
+  if (trap === undefined) throw new Error('the trap did not run');
+  const ownK = {
+    ...finished,
+    k: { ...finished.k, optionalTrap: 1 as const },
+    runs: [...finished.runs, { ...trap, scenario: 'sloth#1' }],
+  };
+  expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [ownK], headline, shipped)).toThrow(
+    /did not finish all its builds/,
+  );
+  const repeated = {
+    ...finished,
+    runs: finished.runs.map((x) => (x.scenario === 'thrown#2' ? { ...x, scenario: 'scenic#1' } : x)),
+  };
+  expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [repeated], headline, shipped)).toThrow(
+    /did not finish all its builds/,
+  );
   const v1 = { ...finished, promptVersion: 'v1' as const };
   expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [v1], headline, shipped)).toThrow(
     /did not finish all its builds/,

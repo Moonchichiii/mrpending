@@ -101,11 +101,17 @@ export function galleryPlan(
     c.results.model.id === shipped.model &&
     c.results.promptVersion === shipped.promptVersion;
   const ship = declared.find(isShipped);
-  const planned = (r: Results) => r.k.headline * headline.length + r.k.heldOut + r.k.trap + r.k.optionalTrap;
+  // Finished means the matrix's plan, not the results file's: its k, and each headline form once per repetition.
+  const planned = m.k.headline * headline.length + m.k.heldOut + m.k.trap + m.k.optionalTrap;
+  const labels = new Set(ship?.results.runs.map((x) => x.scenario));
+  const reps = Array.from({ length: m.k.headline }, (_, i) => i + 1);
   if (
     ship === undefined ||
     ship.results.stoppedAtDeadline ||
-    ship.results.runs.length !== planned(ship.results)
+    !same(ship.results.k, m.k) ||
+    ship.results.runs.length !== planned ||
+    labels.size !== planned ||
+    !headline.every((s) => reps.every((rep) => labels.has(`${s.id}#${rep}`)))
   )
     throw new Error(
       `the shipped configuration (${shipped.model} ${shipped.promptVersion}) did not finish all its builds`,
