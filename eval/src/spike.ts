@@ -1,8 +1,7 @@
 // Gemma spike (issue #8): one model, one prompt version, the five scenarios, one model loaded at a time.
 //   bun run eval/src/spike.ts --model gemma4:e2b --prompt v1            native Ollama loop, experiments A/B and C
 //   bun run eval/src/spike.ts --model gemma4:e2b --prompt v2 --mastra   what Mastra sends to Ollama, design only
-import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
-import { cpus, freemem, totalmem } from 'node:os';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
 import {
   EVAL_REPAIRS,
@@ -21,61 +20,26 @@ import {
   runBuild,
   unload,
 } from '@pending/agent';
-import type { Infer, PromptVersion } from '@pending/agent';
-import { BlueprintPartial, DesignReply, Form } from '@pending/contract';
+import type { PromptVersion } from '@pending/agent';
+import { BlueprintPartial, DesignReply } from '@pending/contract';
+import type { Form } from '@pending/contract';
+import { desktop, freeMiB, hardware, sampled, unloadAndConfirm } from './host';
 import { gate, recorded, summarize } from './metrics';
 import type { ScenarioRun, Summary } from './metrics';
 import { capturingProxy } from './proxy';
+import { loadScenarios } from './scenarios';
 
 // No 12B without a measured reason and the maintainer's approval.
 const MODELS = ['gemma4:e2b', 'gemma4:e4b'] as const;
 const ROOT = new URL('../', import.meta.url);
-const MIB = 1024 * 1024;
 
 const say = (line: string) => process.stdout.write(`${line}\n`);
 const isModel = (m: string | undefined): m is (typeof MODELS)[number] => MODELS.some((x) => x === m);
 const isPrompt = (p: string | undefined): p is PromptVersion => PROMPT_VERSIONS.some((x) => x === p);
 
-async function scenarios(): Promise<[string, Form][]> {
-  const raw: unknown = JSON.parse(await readFile(new URL('scenarios.json', ROOT), 'utf8'));
-  if (typeof raw !== 'object' || raw === null) throw new Error('scenarios.json is not an object');
-  return Object.entries(raw).map(([id, form]) => {
-    if (!/^[a-z]{1,16}$/.test(id)) throw new Error(`scenario id ${id} is not a short lowercase word`);
-    return [id, Form.parse(form)];
-  });
-}
-
-// VS Code and a browser must be open while measuring, so the headroom is the one the recording machine has.
-async function desktop() {
-  const comms = await Promise.all(
-    (await readdir('/proc'))
-      .filter((d) => /^\d+$/.test(d))
-      .map((pid) => readFile(`/proc/${pid}/comm`, 'utf8').catch(() => '')),
-  );
-  const running = new Set(comms.map((c) => c.trim()));
-  return {
-    vscode: running.has('code'),
-    browser: ['firefox', 'firefox-esr', 'chrome', 'chromium'].some((b) => running.has(b)),
-  };
-}
-
-// Samples available memory after every call; the minimum is the headroom the run left.
-function sampled(infer: Infer, mem: { minFreeMiB: number }): Infer {
-  return async (call, signal) => {
-    const reply = await infer(call, signal);
-    mem.minFreeMiB = Math.min(mem.minFreeMiB, Math.round(freemem() / MIB));
-    return reply;
-  };
-}
-
-async function unloadAndConfirm(url: string, model: string): Promise<boolean> {
-  await unload(url, model);
-  for (let i = 0; i < 30; i += 1) {
-    if ((await loaded(url)).length === 0) return true;
-    await new Promise((r) => setTimeout(r, 1000));
-  }
-  return false;
-}
+// The spike measured the headline forms only.
+const scenarios = async (): Promise<[string, Form][]> =>
+  (await loadScenarios()).filter((s) => s.role === 'headline').map((s) => [s.id, s.form]);
 
 async function mastraCheck(url: string, model: string, version: PromptVersion, forms: [string, Form][]) {
   const proxy = await capturingProxy(url);
@@ -179,11 +143,7 @@ async function main() {
     promptVersion: version,
     settings: { ...SETTINGS, think: false, repairs: EVAL_REPAIRS, callTimeoutMs: LOCAL_CALL_TIMEOUT_MS },
     provenance: prov,
-    hardware: {
-      cpu: cpus()[0]?.model ?? 'unknown',
-      threads: cpus().length,
-      totalMiB: Math.round(totalmem() / MIB),
-    },
+    hardware: hardware(),
     desktop: await desktop(),
     startedAt: new Date().toISOString(),
   };
@@ -201,7 +161,7 @@ async function main() {
     return;
   }
 
-  const mem = { minFreeMiB: Math.round(freemem() / MIB) };
+  const mem = { minFreeMiB: freeMiB() };
   const infer = sampled(ollamaInfer(url, model), mem);
   const runs: ScenarioRun[] = [];
   let resident: Awaited<ReturnType<typeof loaded>> = [];

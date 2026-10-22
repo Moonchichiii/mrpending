@@ -15,6 +15,17 @@ export function violationKind(violation: string): ViolationKind {
 
 const terminalStep = (attempt: Attempt): number => attempt.events.at(-1)?.step ?? 0;
 const ran = (attempt: Attempt): boolean => attempt.outcome !== 'invalid';
+// ARCHITECTURE section 7: one step animates in 120 ms at normal speed; a repair hides behind the attempt before it.
+export const STEP_MS = 120;
+
+// The loop stops at the first press, so a press on attempt 1 is the model's own design and any later one a repair.
+export type PressOrigin = { by: 'design' | 'repair'; attempt: number };
+export function pressOrigin(attempts: readonly Attempt[]): PressOrigin | undefined {
+  const pressed = attempts.find((a) => a.outcome === 'pressed');
+  return pressed === undefined
+    ? undefined
+    : { by: pressed.n === 1 ? 'design' : 'repair', attempt: pressed.n };
+}
 
 // A repair counts only when both trials ran and the later one pressed or failed at another cell at a later step;
 // a detour that fails at the same cell is not a changed outcome.
@@ -65,8 +76,12 @@ function latencies(calls: CallRecord[], kind: CallKind) {
     wallMs: latency(tries.map((t) => t.timing.wallMs)),
     // Warm inference: the wall time less the model loading Ollama reports for the same call.
     warmMs: latency(tries.map((t) => t.timing.wallMs - (t.timing.loadMs ?? 0))),
+    loadMs: latency(tries.flatMap((t) => (t.timing.loadMs === undefined ? [] : [t.timing.loadMs]))),
     promptMs: latency(tries.flatMap((t) => (t.timing.promptMs === undefined ? [] : [t.timing.promptMs]))),
     evalMs: latency(tries.flatMap((t) => (t.timing.evalMs === undefined ? [] : [t.timing.evalMs]))),
+    promptTokens: latency(
+      tries.flatMap((t) => (t.timing.promptTokens === undefined ? [] : [t.timing.promptTokens])),
+    ),
     evalTokens: latency(
       tries.flatMap((t) => (t.timing.evalTokens === undefined ? [] : [t.timing.evalTokens])),
     ),
@@ -85,9 +100,41 @@ export async function recorded(scenario: string, build: Promise<BuildRun>): Prom
     return { scenario, run: { end: 'ERROR', error: String(error.cause).slice(0, 300), attempts, calls } };
   }
 }
-const attemptsOf = (run: ScenarioRun['run']): Attempt[] =>
+export const attemptsOf = (run: ScenarioRun['run']): Attempt[] =>
   run.end === 'done' ? run.build.attempts : run.attempts;
 const share = (hits: number, n: number) => ({ hits, n });
+
+type FailureKind = 'ball.lost' | 'ball.stopped' | 'impulse.lost';
+function failureKinds(attempts: readonly Attempt[]): Record<FailureKind, number> {
+  const kinds: Record<FailureKind, number> = { 'ball.lost': 0, 'ball.stopped': 0, 'impulse.lost': 0 };
+  for (const a of attempts) {
+    const end = a.events.at(-1)?.type;
+    if (end === 'ball.lost' || end === 'ball.stopped' || end === 'impulse.lost') kinds[end] += 1;
+  }
+  return kinds;
+}
+
+// Per repair call that got a reply: whether it parsed and applied without violations, and whether its wall time
+// stayed under the animation of the attempt it repaired. A call cut off during its re-ask has no full wall time,
+// so it counts for validity but not for timing.
+function repairs(run: ScenarioRun['run']) {
+  const attempts = attemptsOf(run);
+  return run.calls
+    .filter((c) => c.kind === 'repair' && c.tries.length > 0)
+    .map((c) => {
+      const made = attempts.find((a) => a.n === c.attempt);
+      const before = attempts.find((a) => a.n === c.attempt - 1);
+      const wallMs = c.tries.reduce((sum, t) => sum + t.timing.wallMs, 0);
+      const animationMs = before === undefined ? 0 : terminalStep(before) * STEP_MS;
+      return {
+        valid: made !== undefined && made.violations.length === 0,
+        complete: c.parsed || c.tries.length === 2,
+        wallMs,
+        animationMs,
+        underAnimation: wallMs < animationMs,
+      };
+    });
+}
 
 // attempted counts every scenario tried, so one that failed in transport still lowers the share.
 export function summarize(runs: readonly ScenarioRun[], attempted = runs.length) {
@@ -123,6 +170,17 @@ export function summarize(runs: readonly ScenarioRun[], attempted = runs.length)
     };
   });
   const loadMs = calls.flatMap((c) => c.tries).map((t) => t.timing.loadMs);
+  const repairCalls = runs.flatMap(({ run }) => repairs(run));
+  const origins = runs.flatMap(({ run }) => pressOrigin(attemptsOf(run)) ?? []);
+  const timed = repairCalls.filter((r) => r.complete);
+  const repairWall = percentile(
+    timed.map((r) => r.wallMs),
+    50,
+  );
+  const animation = percentile(
+    timed.map((r) => r.animationMs),
+    50,
+  );
   return {
     // (1) schema validity: replies, and scenarios whose design parsed within the one re-ask.
     schema: {
@@ -145,11 +203,25 @@ export function summarize(runs: readonly ScenarioRun[], attempted = runs.length)
         .filter((a) => a.outcome === 'lost' || a.outcome === 'stalled').length,
       outcomeChangingRepairs: scenarios.flatMap((s) => s.repairs).filter((r) => r.changedOutcome).length,
       pressed: scenarios.filter((s) => s.attempts.at(-1)?.outcome === 'pressed').length,
+      pressedRate: share(origins.length, attempted),
+      pressedBy: {
+        design: origins.filter((o) => o.by === 'design').length,
+        repair: origins.filter((o) => o.by === 'repair').length,
+      },
+      attemptsToPress: origins.map((o) => o.attempt),
+      failureKinds: failureKinds(runs.flatMap(({ run }) => attemptsOf(run))),
+      // (C) simulator-guided repair: a RepairReply that parses and applies without violations.
+      repairValidity: share(repairCalls.filter((r) => r.valid).length, repairCalls.length),
     },
     latency: {
       coldLoadMs: loadMs[0],
       design: latencies(calls, 'design'),
       repair: latencies(calls, 'repair'),
+      repairUnderAnimation: {
+        calls: share(timed.filter((r) => r.underAnimation).length, timed.length),
+        // The architecture's test: the repair hides behind the animation when its p50 is shorter.
+        p50: repairWall === undefined || animation === undefined ? undefined : repairWall < animation,
+      },
     },
   };
 }
@@ -168,4 +240,25 @@ export function gate(summary: Summary) {
     latencyMeasured: l.design.wallMs.p95 !== undefined && l.repair.wallMs.p95 !== undefined,
   };
   return { ...checks, go: Object.values(checks).every(Boolean) };
+}
+
+// Experiment D runs the better of A and B on E4B: more presses, then more catalogue-valid designs within the
+// repair budget, then more valid first time; a tie keeps the frozen version. It reads only those three counts,
+// so a summary parsed back from a results file ranks like the in-memory one.
+type Ranked = {
+  simulator: Pick<Summary['simulator'], 'pressed'>;
+  catalogue: Pick<Summary['catalogue'], 'firstTime' | 'withinBudget'>;
+};
+export function better<V extends string>(
+  a: { version: V; summary: Ranked },
+  b: { version: V; summary: Ranked },
+  frozen: V,
+): V {
+  const key = (s: Ranked) => [s.simulator.pressed, s.catalogue.withinBudget.hits, s.catalogue.firstTime.hits];
+  const [ka, kb] = [key(a.summary), key(b.summary)];
+  for (let i = 0; i < ka.length; i += 1) {
+    const d = (ka[i] ?? 0) - (kb[i] ?? 0);
+    if (d !== 0) return d > 0 ? a.version : b.version;
+  }
+  return frozen;
 }
