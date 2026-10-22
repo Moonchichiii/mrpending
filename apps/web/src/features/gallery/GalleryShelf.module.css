@@ -1,0 +1,85 @@
+/* Cards reflow by the shelf's own width, not the viewport's. */
+.shelf {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  gap: var(--space-4);
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--paper);
+  border: var(--border-paper);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+}
+
+/* Title and stamp share a line when the card is wide enough; flex children may shrink below their text. */
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+}
+
+.head > * {
+  min-width: 0;
+}
+
+.card:nth-child(3n + 1) {
+  rotate: var(--tilt-a);
+}
+
+.card:nth-child(3n + 2) {
+  rotate: var(--tilt-b);
+}
+
+.card:nth-child(3n) {
+  rotate: var(--tilt-c);
+}
+
+.title {
+  font-size: var(--text-heading);
+}
+
+.approved,
+.pending {
+  justify-self: start;
+  padding: 0 var(--space-2);
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border: 4px double;
+  border-radius: 6px;
+  rotate: -6deg;
+  margin: var(--space-1);
+}
+
+.approved {
+  color: var(--teal-text);
+  border-color: var(--teal);
+}
+
+.pending {
+  color: var(--coral-text);
+  border-color: var(--coral);
+}
+
+.facts,
+.footer {
+  font-size: var(--text-small);
+}
+
+.footer {
+  color: var(--copper-text);
+}
+
+.empty {
+  max-width: var(--measure);
+}
