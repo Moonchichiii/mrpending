@@ -9,11 +9,16 @@ import pressedBlueprint from '../../packages/machine/fixtures/pressed/blueprint.
 import repairedPatch from '../../packages/machine/fixtures/repaired/patch.json';
 import { galleryPlan, verified } from './gallery';
 import { recorded } from './metrics';
+import scenariosFile from '../scenarios.json';
 import { Matrix, Results, resultsRecord } from './results';
 import type { Done } from './results';
+import { parseScenarios } from './scenarios';
 import type { Role } from './scenarios';
 
 const form = Form.parse(lostForm);
+// Two headline forms as scenarios.json declares them; scenic is the form the fixtures were built for.
+const headline = parseScenarios(scenariosFile).filter((s) => s.id === 'scenic' || s.id === 'thrown');
+const formOf = (id: string) => headline.find((s) => s.id === id)?.form ?? form;
 const memo = 'More catapult.';
 const digest = `sha256:${'a'.repeat(64)}`;
 const repaired = { design: { blueprint: lostBlueprint, memo }, repair: { patch: repairedPatch, memo } };
@@ -30,7 +35,7 @@ async function done(
     id,
     runBuild({
       id: `B-2026-10-22-${id}-${rep}`,
-      form,
+      form: formOf(id),
       system: 'instructions',
       promptVersion: 'v2',
       model: { mode: 'local', id: 'gemma4:e2b', host: 'ollama', digest, runtime: 'ollama-0.13.0' },
@@ -40,7 +45,7 @@ async function done(
       now: () => new Date('2026-10-22T12:00:00.000Z'),
     }),
   );
-  return { item: { scenario: { id, role, form }, rep }, entry, wallMs: 1700 };
+  return { item: { scenario: { id, role, form: formOf(id) }, rep }, entry, wallMs: 1700 };
 }
 
 // Shipped configuration B, k = 2 over two headline forms: scenic presses on its repair, thrown never designs.
@@ -74,14 +79,15 @@ async function results(stoppedAtDeadline = false) {
   );
 }
 
-const forms = ['scenic', 'thrown'];
 const stats = {
   coldBuildMs: 60_000,
   warmBuildMs: { p50: 30_000, p95: 30_000 },
   coldStartOverheadMs: 30_000,
   modelCalls: { p50: 2, p95: 2, max: 2 },
 };
-const matrix = (status: string, configurations: number) =>
+type Declared = { experiment: string; model: string; promptVersion: string };
+const B: Declared = { experiment: 'B', model: 'gemma4:e2b', promptVersion: 'v2' };
+const matrix = (status: string, configurations: number, declared: readonly Declared[] = []) =>
   Matrix.parse({
     budgetMs: 10_800_000,
     startedAt: '2026-10-22T12:00:00.000Z',
@@ -108,11 +114,9 @@ const matrix = (status: string, configurations: number) =>
     k: { headline: 2, heldOut: 1, trap: 1, optionalTrap: 0 },
     bestVersion: 'v2',
     status,
-    configurations: Array.from({ length: configurations }, () => ({
-      experiment: 'B',
-      model: 'gemma4:e2b',
-      promptVersion: 'v2',
-      file: '2026-10-22-gemma4-e2b-v2-B.json',
+    configurations: Array.from({ length: configurations }, (_, i) => ({
+      ...(declared[i] ?? B),
+      file: `2026-10-22-config-${i + 1}.json`,
     })),
   });
 
@@ -160,13 +164,14 @@ test('a corrupted results file loses its gallery record: a patch, a blueprint, a
   ];
   for (const r of corrupted) {
     expect(r.runs[0]?.run.end).toBe('done');
-    expect(galleryPlan(matrix('complete', 3), [r, r, r], forms, shipped)).toEqual({
+    expect(galleryPlan(matrix('complete', 3), [r, r, r], headline, shipped)).toEqual({
       picks: [],
       missing: ['scenic', 'thrown'],
+      mismatches: [],
     });
   }
   const clean = Results.parse(JSON.parse(file));
-  const plan = galleryPlan(matrix('complete', 3), [clean, clean, clean], forms, shipped);
+  const plan = galleryPlan(matrix('complete', 3), [clean, clean, clean], headline, shipped);
   expect(plan.picks.map((p) => [p.form, p.build.id, p.build.report.pressed])).toEqual([
     ['scenic', 'B-2026-10-22-scenic-1', true],
   ]);
@@ -175,21 +180,64 @@ test('a corrupted results file loses its gallery record: a patch, a blueprint, a
 
 test('the gallery reads a matrix stopped at the deadline once the shipped configuration finished, and refuses the rest', async () => {
   const finished = await results();
-  const plan = galleryPlan(matrix('stopped-at-deadline', 1), [finished], forms, shipped);
+  const plan = galleryPlan(matrix('stopped-at-deadline', 1), [finished], headline, shipped);
   expect(plan.picks.map((p) => p.form)).toEqual(['scenic']);
   // The shipped configuration was cut, or lost a build, or never ran.
   const cut = await results(true);
-  expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [cut], forms, shipped)).toThrow(
+  expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [cut], headline, shipped)).toThrow(
     /did not finish all its builds/,
   );
   const short = { ...finished, runs: finished.runs.slice(1) };
-  expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [short], forms, shipped)).toThrow(
+  expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [short], headline, shipped)).toThrow(
     /did not finish all its builds/,
   );
   const v1 = { ...finished, promptVersion: 'v1' as const };
-  expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [v1], forms, shipped)).toThrow(
+  expect(() => galleryPlan(matrix('stopped-at-deadline', 1), [v1], headline, shipped)).toThrow(
     /did not finish all its builds/,
   );
   for (const status of ['stopped-in-pilot', 'stopped-over-budget'])
-    expect(() => galleryPlan(matrix(status, 0), [], forms, shipped)).toThrow(new RegExp(status));
+    expect(() => galleryPlan(matrix(status, 0), [], headline, shipped)).toThrow(new RegExp(status));
+});
+
+test('a build listed under the wrong scenario is no candidate for that form, and the mismatch is reported', async () => {
+  // The pressed scenic builds are filed as thrown, the thrown runs as scenic; the labels are swapped, the builds not.
+  const r = await results();
+  const relabel = (scenario: string) =>
+    scenario.startsWith('scenic#')
+      ? scenario.replace('scenic#', 'thrown#')
+      : scenario.replace('thrown#', 'scenic#');
+  const swapped = { ...r, runs: r.runs.map((x) => ({ ...x, scenario: relabel(x.scenario) })) };
+  const plan = galleryPlan(matrix('stopped-at-deadline', 1), [swapped], headline, shipped);
+  expect(plan.picks).toEqual([]);
+  expect(plan.missing).toEqual(['scenic', 'thrown']);
+  expect(plan.mismatches).toEqual([
+    "2026-10-22-config-1.json thrown#1 (B-2026-10-22-scenic-1): its form is not thrown's form in scenarios.json",
+    "2026-10-22-config-1.json thrown#2 (B-2026-10-22-scenic-2): its form is not thrown's form in scenarios.json",
+  ]);
+});
+
+test('a build listed under the wrong configuration is no candidate for it, and the mismatch is reported', async () => {
+  const file = JSON.stringify(await results());
+  const read = () => Results.parse(JSON.parse(file));
+  const e4b = { experiment: 'D', model: 'gemma4:e4b', promptVersion: 'v2' };
+  // The results file claims E4B for configuration D, but its builds were made by E2B.
+  const claimed = read();
+  claimed.experiment = 'D';
+  claimed.model.id = 'gemma4:e4b';
+  const plan = galleryPlan(matrix('stopped-at-deadline', 2, [B, e4b]), [read(), claimed], headline, shipped);
+  expect(plan.picks.map((p) => p.build.id)).toEqual(['B-2026-10-22-scenic-1']);
+  expect(plan.mismatches).toEqual([
+    '2026-10-22-config-2.json scenic#1 (B-2026-10-22-scenic-1): built by gemma4:e2b v2, the matrix declares D as gemma4:e4b v2',
+    '2026-10-22-config-2.json scenic#2 (B-2026-10-22-scenic-2): built by gemma4:e2b v2, the matrix declares D as gemma4:e4b v2',
+  ]);
+  // The shipped slot holds builds another model made: none of them stands in for the shipped configuration.
+  const foreign = read();
+  for (const x of foreign.runs) if (x.run.end === 'done') x.run.build.model.id = 'gemma4:e4b';
+  const misfiled = galleryPlan(matrix('stopped-at-deadline', 1), [foreign], headline, shipped);
+  expect(misfiled.picks).toEqual([]);
+  expect(misfiled.missing).toEqual(['scenic', 'thrown']);
+  expect(misfiled.mismatches).toEqual([
+    '2026-10-22-config-1.json scenic#1 (B-2026-10-22-scenic-1): built by gemma4:e4b v2, the matrix declares B as gemma4:e2b v2',
+    '2026-10-22-config-1.json scenic#2 (B-2026-10-22-scenic-2): built by gemma4:e4b v2, the matrix declares B as gemma4:e2b v2',
+  ]);
 });

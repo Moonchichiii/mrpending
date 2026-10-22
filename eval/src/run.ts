@@ -331,15 +331,20 @@ async function evaluate() {
 }
 
 // One record per headline form with a verified build (see galleryPlan); a form without one loses any stale record
-// and is named, and the command exits non-zero.
+// and is named, a build bound to the wrong scenario or configuration is named, and either exits non-zero.
 async function gallery(file: string) {
   const matrixUrl = pathToFileURL(file);
   const m = Matrix.parse(await readJson(matrixUrl));
   const configs = await Promise.all(
     m.configurations.map(async (c) => Results.parse(await readJson(new URL(c.file, matrixUrl)))),
   );
-  const forms = (await loadScenarios()).filter((s) => s.role === 'headline').map((s) => s.id);
-  const { picks, missing } = galleryPlan(m, configs, forms, { model: E2B, promptVersion: PROMPT_VERSION });
+  const headline = (await loadScenarios()).filter((s) => s.role === 'headline');
+  const { picks, missing, mismatches } = galleryPlan(m, configs, headline, {
+    model: E2B,
+    promptVersion: PROMPT_VERSION,
+  });
+  for (const mismatch of mismatches) say(`not a candidate: ${mismatch}`);
+  if (mismatches.length > 0) process.exitCode = 1;
   await mkdir(GALLERY, { recursive: true });
   for (const { form, build } of picks) {
     await writeFile(new URL(`${form}.json`, GALLERY), json(build));
