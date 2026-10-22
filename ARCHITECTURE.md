@@ -69,7 +69,7 @@ export const Attempt = z.object({ n: n(1, 6), blueprint: Blueprint, violations: 
 export const Report = z.object({ attempts: n(1, 6), parts: n(0, 14), pressed: z.boolean(), failedAt: Cell.optional(), verdict: z.string().max(120) });
 // attempts = attempts.length; parts = the LAST attempt's blueprint part count, never a sum over repairs; pressed = last outcome
 export const BuildHeader = z.object({ id: short(32), contractVersion: short(16), rulesVersion: short(16), promptVersion: short(16), form: Form,
-  model: z.object({ mode: z.enum(['local', 'hosted']), id: short(64), host: z.enum(['ollama', 'openrouter']), digest: short(80).optional(), runtime: short(32).optional() }),
+  model: z.object({ mode: z.enum(['local', 'hosted']), id: z.string().regex(/^[\w.:+/-]+$/).max(64), host: z.enum(['ollama', 'openrouter']), digest: short(80).optional(), runtime: short(32).optional() }),
   title: z.string().max(40), report: Report, createdAt: z.iso.datetime() });
 export const Build = BuildHeader.extend({ attempts: z.array(Attempt).min(1).max(6), lines: z.array(Line).max(60) }); // six attempts with asides reach 51; 40 was already at the edge
 ```
