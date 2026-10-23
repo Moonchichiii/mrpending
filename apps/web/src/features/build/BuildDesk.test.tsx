@@ -17,9 +17,13 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
+// A media query list the rig can subscribe to, as the build clock and the engineer read it.
+const prefersReduced = (matches: boolean) =>
+  vi.stubGlobal('matchMedia', () => ({ matches, addEventListener() {}, removeEventListener() {} }));
+
 test('filing moves focus to the status region, which announces progress and then the verdict', async () => {
   // Reduced motion: one tick jumps to the final frame, so playback ends quickly.
-  vi.stubGlobal('matchMedia', () => ({ matches: true }));
+  prefersReduced(true);
   let release = () => {};
   const held = new Promise<void>((resolve) => (release = resolve));
   server.use(
@@ -63,7 +67,7 @@ const stream = (events: ((requestId: string) => StreamEvent)[]) =>
   );
 
 test('a build that ends is reported once with its build, however often it is replayed', async () => {
-  vi.stubGlobal('matchMedia', () => ({ matches: true }));
+  prefersReduced(true);
   stream([
     (requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }),
     (requestId) => ({ type: 'done', requestId, header: header([pressed(1)]) }),
@@ -85,7 +89,7 @@ test('a build that ends is reported once with its build, however often it is rep
 });
 
 test('a build the callback did not keep says so at its ending instead of vanishing from My department', async () => {
-  vi.stubGlobal('matchMedia', () => ({ matches: true }));
+  prefersReduced(true);
   stream([
     (requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }),
     (requestId) => ({ type: 'done', requestId, header: header([pressed(1)]) }),
@@ -100,7 +104,7 @@ test('a build the callback did not keep says so at its ending instead of vanishi
 });
 
 test('every playback control is a button operated from the keyboard, and speed sets the step duration', async () => {
-  vi.stubGlobal('matchMedia', () => ({ matches: false }));
+  prefersReduced(false);
   // A pressed attempt on a stream held open waits at its last step for done, so the controls stay.
   server.use(
     http.post('*/api/build', ({ request }) => {
@@ -151,7 +155,7 @@ test('every playback control is a button operated from the keyboard, and speed s
 });
 
 test('reduced motion: final frames, the full minutes, the correction diff and the lines, without movement', async () => {
-  vi.stubGlobal('matchMedia', () => ({ matches: true }));
+  prefersReduced(true);
   const repaired = Attempt.parse({ ...pressed(2), patch: [{ op: 'remove', id: 'p4' }] });
   stream([
     (requestId) => ({ type: 'attempt', requestId, attempt: lost(1) }),
@@ -223,7 +227,7 @@ const held = () => {
 };
 
 test('Space pauses from anywhere but a control, which keeps its own Space, and Escape skips voice', async () => {
-  vi.stubGlobal('matchMedia', () => ({ matches: false }));
+  prefersReduced(false);
   const cancel = vi.fn<() => void>();
   vi.stubGlobal('speechSynthesis', { cancel });
   const send = held();
@@ -255,7 +259,7 @@ test('Space pauses from anywhere but a control, which keeps its own Space, and E
 });
 
 test('each trial starts on a fresh board, never animating out of the previous one', async () => {
-  vi.stubGlobal('matchMedia', () => ({ matches: true }));
+  prefersReduced(true);
   const send = held();
   const user = userEvent.setup();
   render(<BuildDesk canFile />);
@@ -272,8 +276,34 @@ test('each trial starts on a fresh board, never animating out of the previous on
   expect(first?.isConnected).toBe(false);
 });
 
+test('a done that arrives after the press keeps the same rig, so its sequence is not played again', async () => {
+  prefersReduced(true);
+  const send = held();
+  const user = userEvent.setup();
+  render(<BuildDesk canFile />);
+  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  send((requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }));
+  // A pressed attempt played to its last step waits for done, its card on the running desk.
+  await vi.waitFor(() =>
+    expect(
+      screen
+        .getByRole('img', { name: 'Pressed' })
+        .querySelector('[data-button]')
+        ?.getAttribute('data-pressed'),
+    ).toBe('true'),
+  );
+  const rig = document.querySelector('svg[data-variant="desk"]');
+  expect(rig).toBeTruthy();
+
+  send((requestId) => ({ type: 'done', requestId, header: header([pressed(1)]) }));
+  await vi.waitFor(() =>
+    expect(screen.getByRole('status').textContent).toBe('One button. An extraordinary amount of paperwork.'),
+  );
+  expect(rig?.isConnected).toBe(true);
+});
+
 test('replay starts on a fresh board, never animating the same trial backward', async () => {
-  vi.stubGlobal('matchMedia', () => ({ matches: false }));
+  prefersReduced(false);
   const send = held();
   const user = userEvent.setup();
   render(<BuildDesk canFile />);

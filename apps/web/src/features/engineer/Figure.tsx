@@ -9,9 +9,19 @@ export type Variant = 'desk' | 'phone';
 export const VIEW_BOX: Record<Variant, string> = { desk: '0 0 360 320', phone: '125 -5 140 140' };
 
 // One inline SVG; the mood is a class on it and every move is a CSS transform, so nothing here can change state.
-export function Figure({ mood, variant, cameo }: { mood: Mood; variant: Variant; cameo: boolean }) {
+export function Figure({
+  mood,
+  variant,
+  cameo,
+  press,
+}: {
+  mood: Mood;
+  variant: Variant;
+  cameo: boolean;
+  press: boolean;
+}) {
   const id = useId();
-  const classes = [styles.rig, styles[mood], styles[variant], cameo && styles.cameo]
+  const classes = [styles.rig, styles[mood], styles[variant], cameo && styles.cameo, press && styles.press]
     .filter(Boolean)
     .join(' ');
   return (

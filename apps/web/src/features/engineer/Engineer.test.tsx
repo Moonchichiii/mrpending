@@ -86,6 +86,35 @@ describe('mood', () => {
   });
 });
 
+describe('the press', () => {
+  const press = (container: Element) => rigs(container).map((svg) => has(svg, styles.press));
+
+  test('the pressed lines run the timed sequence on both rigs and settle on the verdict mood', () => {
+    const { container, rerender } = render(
+      <Engineer status="running" line={line('handoff', 'excited')}>
+        <p />
+      </Engineer>,
+    );
+    expect(press(container)).toEqual([false, false]);
+
+    // The verdict, the last of the three lines at the button's step, is deadpan; the sequence plays excited first.
+    rerender(
+      <Engineer status="pressed" line={line('pressed', 'deadpan')}>
+        <p />
+      </Engineer>,
+    );
+    expect(press(container)).toEqual([true, true]);
+    expect(rigs(container).map(moods)).toEqual([['deadpan'], ['deadpan']]);
+  });
+
+  test('with reduced motion the verdict mood shows without the sequence', () => {
+    prefersReduced(true);
+    const container = card('pressed', line('pressed', 'deadpan'));
+    expect(press(container)).toEqual([false, false]);
+    expect(rigs(container).map(moods)).toEqual([['deadpan'], ['deadpan']]);
+  });
+});
+
 describe('error boundary', () => {
   // The full rig in the desk's 360 × 320 box and the head alone in the phone's, both static and slow.
   const stillRig = (container: Element) => {

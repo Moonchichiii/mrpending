@@ -71,6 +71,7 @@ export function BuildDesk({
     </button>
   );
 
+  // The line card keeps one key in every phase, so its rig is not remounted and a press plays once.
   const body = () => {
     switch (session.status) {
       case 'idle':
@@ -79,7 +80,7 @@ export function BuildDesk({
         return (
           <>
             {session.partial.title && <p className={styles.title}>{session.partial.title}</p>}
-            <Lines status={session.status} lines={said(session.lines, 1, 0)} />
+            <Lines key="lines" status={session.status} lines={said(session.lines, 1, 0)} />
             {withdraw}
           </>
         );
@@ -103,6 +104,7 @@ export function BuildDesk({
               stepMs={STEP_MS[session.speed]}
             />
             <Lines
+              key="lines"
               status={session.status}
               lines={said(session.lines, head?.attempt.n ?? 1, head?.step ?? 0)}
             />
@@ -122,7 +124,11 @@ export function BuildDesk({
               onSpeed={setSpeed}
             />
             <Trial take={take} attempts={session.attempts} attempt={session.attempts.at(-1)} />
-            <Lines status={session.status} lines={said(session.lines, session.attempts.length + 1, 0)} />
+            <Lines
+              key="lines"
+              status={session.status}
+              lines={said(session.lines, session.attempts.length + 1, 0)}
+            />
             {withdraw}
           </>
         );
@@ -138,7 +144,7 @@ export function BuildDesk({
               </p>
             )}
             <Trial take={take} attempts={session.build.attempts} attempt={session.build.attempts.at(-1)} />
-            <Lines status={session.status} lines={session.build.lines} />
+            <Lines key="lines" status={session.status} lines={session.build.lines} />
             <button type="button" className={styles.action} onClick={then(replay)}>
               Replay from the start
             </button>

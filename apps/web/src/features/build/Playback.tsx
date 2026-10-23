@@ -29,6 +29,7 @@ export function Playback({ build }: { build: Build }) {
     status.current?.focus();
   };
 
+  // The line card keeps one key in every phase, so its rig is not remounted and a press plays once.
   const body = () => {
     switch (session.status) {
       case 'running': {
@@ -51,6 +52,7 @@ export function Playback({ build }: { build: Build }) {
               stepMs={STEP_MS[session.speed]}
             />
             <Lines
+              key="lines"
               status={session.status}
               lines={said(session.lines, head?.attempt.n ?? 1, head?.step ?? 0)}
             />
@@ -62,7 +64,7 @@ export function Playback({ build }: { build: Build }) {
         return (
           <>
             <Trial take={take} attempts={session.build.attempts} attempt={session.build.attempts.at(-1)} />
-            <Lines status={session.status} lines={session.build.lines} />
+            <Lines key="lines" status={session.status} lines={session.build.lines} />
             <button type="button" className={styles.action} onClick={replay}>
               Replay from the start
             </button>

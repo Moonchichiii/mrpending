@@ -14,10 +14,12 @@ function Rig({ status, line }: { status: Phase; line: Line | undefined }) {
   const reduced = useReducedMotion();
   const current = mood(status, line);
   const cameo = line?.beat === 'cameo' && !reduced;
+  // The press lines arrive together at the button's step; the stylesheet times excited and the cut to deadpan.
+  const press = line?.beat === 'pressed' && !reduced;
   return (
     <>
-      <Figure variant="desk" mood={current} cameo={cameo} />
-      <Figure variant="phone" mood={current} cameo={cameo} />
+      <Figure variant="desk" mood={current} cameo={cameo} press={press} />
+      <Figure variant="phone" mood={current} cameo={cameo} press={press} />
     </>
   );
 }
