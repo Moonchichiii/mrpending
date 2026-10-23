@@ -5,8 +5,9 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 const root = decodeURIComponent(new URL('..', import.meta.url).pathname);
 
 // Builds the production bundle in memory with the real config and returns every emitted file's text.
-async function bundle(mode: 'static' | 'local'): Promise<string> {
+async function bundle(mode: 'static' | 'local', commit = ''): Promise<string> {
   vi.stubEnv('VITE_SITE_MODE', mode);
+  vi.stubEnv('VITE_COMMIT', commit);
   const result = await build({ root, logLevel: 'silent', build: { write: false } });
   const outputs = (Array.isArray(result) ? result : [result]).flatMap((r) => ('output' in r ? r.output : []));
   return outputs
@@ -29,4 +30,16 @@ describe('site modes', () => {
     expect(text).toContain('/api/build');
     expect(text).toContain('/api/config');
   });
+
+  test(
+    'the static bundle names the commit it was built from, and refuses anything but a full SHA',
+    { timeout: 60_000 },
+    async () => {
+      const sha = 'a'.repeat(40);
+      expect(await bundle('static', sha)).toContain(sha);
+      await expect(bundle('static', 'main')).rejects.toThrow(
+        'VITE_COMMIT must be a full commit SHA, not main',
+      );
+    },
+  );
 });

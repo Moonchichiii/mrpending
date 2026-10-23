@@ -1,0 +1,41 @@
+# The public site: the static build only, no agent, no API, no secrets (ARCHITECTURE "Deployments").
+# Unlisted preview: noindex on every response; every deploy is started by hand, since each one needs approval.
+services:
+  - type: web
+    runtime: static
+    name: mrpending-preview
+    branch: main
+    autoDeployTrigger: 'off'
+    pullRequestPreviewsEnabled: false
+    buildCommand: bun install --frozen-lockfile && VITE_COMMIT="$RENDER_GIT_COMMIT" bun run build
+    staticPublishPath: apps/web/dist
+    envVars:
+      - key: VITE_SITE_MODE
+        value: static
+      - key: BUN_VERSION
+        value: 1.4.3
+    # SECURITY-AND-FAILURE-CONTRACT section 7; the smoke suite asserts these exact values on the preview.
+    headers:
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; connect-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; frame-ancestors 'none'"
+      - path: /*
+        name: Strict-Transport-Security
+        value: max-age=31536000
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Permissions-Policy
+        value: microphone=()
+      - path: /*
+        name: X-Robots-Tag
+        value: noindex
+    # The one route: /r/<slug> is answered by the page itself, which reads the path once on mount.
+    routes:
+      - type: rewrite
+        source: /r/*
+        destination: /index.html

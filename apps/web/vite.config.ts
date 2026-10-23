@@ -10,6 +10,14 @@ const siteMode = (mode: string) => {
   return value;
 };
 
+// VITE_COMMIT is the full SHA the host built from (render.yaml passes RENDER_GIT_COMMIT); unset outside a deploy.
+const commit = (mode: string) => {
+  const value = loadEnv(mode, '.', 'VITE_').VITE_COMMIT ?? '';
+  if (value !== '' && !/^[0-9a-f]{40}$/.test(value))
+    throw new Error(`VITE_COMMIT must be a full commit SHA, not ${value}`);
+  return value;
+};
+
 // The agent sees the proxy's loopback socket, so only a loopback browser may use it or a remote one is told "this machine".
 export const loopbackClient = (address: string | undefined): boolean => {
   const bare = address?.replace(/^::ffff:/i, '');
@@ -18,7 +26,10 @@ export const loopbackClient = (address: string | undefined): boolean => {
 
 export default defineConfig(({ mode }) => ({
   plugins: [react()],
-  define: { 'import.meta.env.VITE_SITE_MODE': JSON.stringify(siteMode(mode)) },
+  define: {
+    'import.meta.env.VITE_SITE_MODE': JSON.stringify(siteMode(mode)),
+    'import.meta.env.VITE_COMMIT': JSON.stringify(commit(mode)),
+  },
   // The local installation runs the agent beside the dev server (apps/agent, PORT 4111); bypass false answers 404.
   server: {
     proxy: {
