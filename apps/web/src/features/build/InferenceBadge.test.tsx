@@ -18,7 +18,7 @@ const config = (inference: string) => ({
   model: { mode: 'hosted', id: 'gemma4:e2b', host: 'openrouter' },
   voice: { elevenlabs: false },
   telemetry: false,
-  repairs: 2,
+  repairs: 5,
   contractVersion: 'c1',
   rulesVersion: 'r2',
 });

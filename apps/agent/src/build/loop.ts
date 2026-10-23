@@ -8,7 +8,7 @@ import type { Draft } from './beats';
 import { designPrompt, failureBrief } from './brief';
 
 // SECURITY-AND-FAILURE-CONTRACT section 4 and MACHINE-RULES section 6.
-export const APP_REPAIRS = 2;
+export const APP_REPAIRS = 5;
 export const EVAL_REPAIRS = 5;
 const MAX_VIOLATIONS = 8;
 const MAX_VIOLATION_CHARS = 120;

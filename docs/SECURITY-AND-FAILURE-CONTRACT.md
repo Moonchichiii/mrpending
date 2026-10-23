@@ -43,10 +43,10 @@ A build that ends `exhausted` is not an error: it is a complete `Build` with `pr
 | Resource | Limit | Where |
 |---|---|---|
 | Form | `nature` 180 chars, body 4 KB; every other size is a `.max()` in the contract | server zod → 400 / 413, client counter |
-| Model calls per build | 1 design + ≤ 2 repairs, each re-asked at most once | `loop.ts` |
+| Model calls per build | 1 design + ≤ 5 repairs, each re-asked at most once (the app and the eval allow the same five) | `loop.ts` |
 | Model output | 1,024 tokens per call; every text field has a `.max()` | agent call, contract |
 | First token / one call | 15 s / 45 s hosted; 90 s / 90 s local (the spike's measured design p95 was 31.3 s on E2B and 53.8 s on E4B; [spike decision](../eval/results/2026-10-22-spike-decision.md)) | route → 504 |
-| Whole build | 3 min hosted, 6 min local | route → 504 |
+| Whole build | 3 min hosted, 6 min local. Six calls at the 90 s per-call worst case can exceed 6 min, and the whole-build timeout then ends the build; in the eval every build that did not press ran six model calls and the slowest build took 112.1 s ([E2B v1](../eval/results/2026-10-22-gemma4-e2b-v1-A.md), [E2B v2](../eval/results/2026-10-22-gemma4-e2b-v2-B.md), [E4B v2](../eval/results/2026-10-22-gemma4-e4b-v2-D.md)) | route → 504 |
 | Concurrent builds | 1 per identity; `MAX_CONCURRENT_BUILDS` globally, default 1 in `local` (one model, CPU-bound on a laptop), 10 in `hosted` | semaphore; a build over the cap is not queued: 429 + `Retry-After: 30` |
 | Builds | 10 per 10 min per identity | sliding window |
 | TTS | 10 per 10 min per identity, one `Line` per request | `/api/tts` |
