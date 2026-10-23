@@ -5,6 +5,7 @@ import { Figure } from './Figure';
 import { mood } from './model/mood';
 import type { Phase } from './model/mood';
 import { Sloth } from './Sloth';
+import { Still } from './Still';
 import { useReducedMotion } from './useReducedMotion';
 import styles from './Engineer.module.css';
 
@@ -21,7 +22,8 @@ function Rig({ status, line }: { status: Phase; line: Line | undefined }) {
   );
 }
 
-// A drawing that throws is replaced by its fallback and the rest of the page carries on.
+// A drawing that throws is replaced by its fallback and the rest of the page carries on; character sheet
+// section 4 puts a static slow-mood rig in the portrait's box.
 class Boundary extends Component<{ fallback: ReactNode; children: ReactNode }, { failed: boolean }> {
   override state = { failed: false };
 
@@ -33,14 +35,6 @@ class Boundary extends Component<{ fallback: ReactNode; children: ReactNode }, {
     return this.state.failed ? this.props.fallback : this.props.children;
   }
 }
-
-// Character sheet section 4: if the rig throws, a static slow-mood rig takes its box.
-const still = (
-  <div data-fallback="">
-    <Figure variant="desk" mood="slow" cameo={false} />
-    <Figure variant="phone" mood="slow" cameo={false} />
-  </div>
-);
 
 // Mr. Pending's line card: the rig in the corner, the line beside it, and on the cameo line the sloth on its top edge.
 export function Engineer({
@@ -61,7 +55,7 @@ export function Engineer({
         </Boundary>
       )}
       <div className={styles.portrait}>
-        <Boundary fallback={still}>
+        <Boundary fallback={<Still />}>
           <Rig status={status} line={line} />
         </Boundary>
       </div>

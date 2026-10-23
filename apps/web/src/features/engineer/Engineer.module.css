@@ -38,7 +38,6 @@
 .rig.phone {
   width: 72px;
 }
-
 /* Flat fills from the tokens; the rig inherits its 4 px ink outline. */
 .amber {
   fill: var(--amber);
@@ -507,6 +506,11 @@
   .rig.phone,
   .slothFigure.phone {
     display: block;
+  }
+
+  /* The fallback rig is the head alone, so a phone shows it at the phone rig's size. */
+  .rig.still {
+    width: 72px;
   }
 
   .card {

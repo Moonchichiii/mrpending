@@ -3,10 +3,24 @@ import type { Beat } from '@pending/contract';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { Engineer } from './Engineer';
+import type * as Drawing from './Figure';
 import { mood } from './model/mood';
 import type { Phase } from './model/mood';
 import { Sloth } from './Sloth';
 import styles from './Engineer.module.css';
+
+// The drawing itself can be made to throw, to show the fallback never re-enters it.
+const drawing = vi.hoisted(() => ({ broken: false }));
+vi.mock('./Figure', async (importOriginal) => {
+  const actual = await importOriginal<typeof Drawing>();
+  return {
+    ...actual,
+    Figure: (props: Parameters<typeof Drawing.Figure>[0]) => {
+      if (drawing.broken) throw new Error('the drawing broke');
+      return <actual.Figure {...props} />;
+    },
+  };
+});
 
 const line = (beat: Beat, mood: Line['mood'], text = 'This is why we employ snails.') =>
   Object.freeze(
@@ -18,6 +32,7 @@ const prefersReduced = (matches: boolean) =>
 
 beforeEach(() => prefersReduced(false));
 afterEach(() => {
+  drawing.broken = false;
   cleanup();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
@@ -72,19 +87,29 @@ describe('mood', () => {
 });
 
 describe('error boundary', () => {
+  const stillRig = (container: Element) => {
+    const fallback = container.querySelector('[data-fallback]');
+    expect(fallback?.tagName.toLowerCase()).toBe('svg');
+    expect(rigs(container)).toEqual([]);
+    expect(fallback && moods(fallback)).toEqual(['slow']);
+    expect(fallback && has(fallback, styles.cameo)).toBe(false);
+  };
+
   test('a throw inside the rig leaves a static slow rig and the rest of the card', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.stubGlobal('matchMedia', () => {
       throw new Error('no media queries here');
     });
     const container = card('running', line('handoff', 'excited', 'A successful descent!'));
-    const fallback = container.querySelector('[data-fallback]');
-    expect(fallback).not.toBeNull();
-    expect(fallback?.querySelectorAll('svg[data-variant]')).toHaveLength(2);
-    for (const svg of rigs(container)) {
-      expect(moods(svg)).toEqual(['slow']);
-      expect(has(svg, styles.cameo)).toBe(false);
-    }
+    stillRig(container);
+    expect(screen.getByText('A successful descent!')).toBeDefined();
+  });
+
+  test('a throw inside the drawing itself does not reach the fallback', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    drawing.broken = true;
+    const container = card('running', line('handoff', 'excited', 'A successful descent!'));
+    stillRig(container);
     expect(screen.getByText('A successful descent!')).toBeDefined();
   });
 
