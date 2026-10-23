@@ -12,7 +12,7 @@ import { relative, resolve } from 'node:path';
 
 const root = process.env.CLAUDE_PROJECT_DIR ?? process.cwd();
 const protectedPaths = ['package.json', '**/package.json', 'bun.lock', 'bunfig.toml', '.github/**', '.claude/**', 'AGENTS.md', 'CLAUDE.md', 'vite.config.ts', 'packages/contract/**',
-  'ARCHITECTURE.md', 'MACHINE-RULES.md', 'SECURITY-AND-FAILURE-CONTRACT.md', 'MR-PENDING-CHARACTER-SHEET.md', 'LICENSE'];
+  'docs/ARCHITECTURE.md', 'docs/MACHINE-RULES.md', 'docs/SECURITY-AND-FAILURE-CONTRACT.md', 'docs/MR-PENDING-CHARACTER-SHEET.md', 'LICENSE'];
 const CACHE_TTL_MS = 10 * 60 * 1000;
 
 const toRegex = (glob) => new RegExp('^' + glob.replace(/[.+^${}()|[\]\\]/g, '\\$&')
