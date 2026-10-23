@@ -34,6 +34,8 @@ The target is WCAG 2.2 AA in full plus every applicable AAA criterion. No AAA co
 
 **Manual checklist** (to be completed and dated by a person):
 
+The maintainer performs and dates this checklist before the production release in #23, which is gated on it.
+
 - [ ] Screen reader through one build (filing, the trials, the correction, the press, the report)
 - [ ] Keyboard-only through one build in a real browser, focus visible throughout
 - [ ] 400 percent browser zoom and 200 percent text-only zoom in a real browser
