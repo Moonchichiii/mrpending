@@ -31,7 +31,8 @@ export async function expectAxeClean(page: Page, label: string) {
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'wcag2aaa'])
     .analyze();
   process.stdout.write(
-    `axe ${label}: ${violations.length} violations, ${passes.length} rules passed, ${incomplete.length} incomplete\n`,
+    `axe ${label}: ${violations.length} violations, ${passes.length} rules passed, ${incomplete.length} incomplete` +
+      `${incomplete.map((r) => ` ${r.id} (${r.nodes.length} nodes)`).join(',')}\n`,
   );
   expect(violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
 }

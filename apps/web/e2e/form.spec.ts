@@ -1,8 +1,55 @@
+import { readFileSync } from 'node:fs';
+import { Attempt, BuildHeader, Form } from '@pending/contract';
+import type { StreamEvent } from '@pending/contract';
+import { report } from '@pending/machine';
 import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
 import { VIEWPORTS, expectAxeClean, expectNoOverflow } from './layout';
 
 const ID = '00000000-0000-4000-8000-000000000001';
+
+// A recorded build in two trials: lost, then repaired by removing p4 and pressed (MACHINE-RULES section 7 fixtures).
+const fixture = (name: string, file: string): unknown =>
+  JSON.parse(
+    readFileSync(new URL(`../../../packages/machine/fixtures/${name}/${file}.json`, import.meta.url), 'utf8'),
+  );
+const FORM = Form.parse(fixture('lost', 'form'));
+const ATTEMPTS = [
+  Attempt.parse({
+    n: 1,
+    blueprint: fixture('lost', 'blueprint'),
+    violations: [],
+    events: fixture('lost', 'events'),
+    outcome: 'lost',
+    failedAt: 'L3',
+  }),
+  Attempt.parse({
+    n: 2,
+    blueprint: fixture('repaired', 'blueprint'),
+    violations: [],
+    events: fixture('repaired', 'events'),
+    outcome: 'pressed',
+    patch: fixture('repaired', 'patch'),
+  }),
+];
+const recorded = (requestId: string): StreamEvent[] => [
+  ...ATTEMPTS.map((attempt): StreamEvent => ({ type: 'attempt', requestId, attempt })),
+  {
+    type: 'done',
+    requestId,
+    header: BuildHeader.parse({
+      id: 'b1',
+      contractVersion: 'c1',
+      rulesVersion: 'r2',
+      promptVersion: 'p1',
+      form: FORM,
+      model: { mode: 'local', id: 'gemma4:e2b', host: 'ollama' },
+      title: 'The Scenic Route',
+      report: report(ATTEMPTS),
+      createdAt: '2026-10-22T10:00:00.000Z',
+    }),
+  },
+];
 
 // The local front door with the agent mocked at the network boundary.
 async function open(page: Page) {
@@ -83,6 +130,39 @@ test('without a confirmed config the form is editable, files nothing and is axe 
   await expect(page.getByRole('button', { name: 'Ask the Department again' })).toBeVisible();
   await expectAxeClean(page, 'form with unconfirmed config');
   expect(builds).toEqual([]);
+});
+
+// The page clock drives playback, so each state is held on a known step while axe reads it.
+test('the board is axe clean while a trial runs and beside the correction', async ({ page }) => {
+  await page.clock.install();
+  await open(page);
+  await page.route('**/api/build', (route) => {
+    const requestId = route.request().headers()['x-request-id'] ?? '';
+    return route.fulfill({
+      body: recorded(requestId)
+        .map((e) => `${JSON.stringify(e)}\n`)
+        .join(''),
+    });
+  });
+  await page.getByLabel('1. Nature of the request').fill(FORM.nature);
+  await page.getByRole('button', { name: 'File Form 27B/6' }).click();
+  const status = page.getByRole('status');
+  const pause = page.getByRole('button', { name: 'Pause' });
+
+  await expect(status).toHaveText('Trial 1 in progress.');
+  await page.clock.runFor(120 * 4);
+  await pause.click();
+  await expect(pause).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-ball]')).toHaveCount(1);
+  await expect(page.locator('[data-change]')).toHaveCount(0);
+  await expectAxeClean(page, 'board running, trial 1');
+
+  await pause.click();
+  await page.clock.runFor(120 * (ATTEMPTS[0]?.events.at(-1)?.step ?? 0));
+  await expect(status).toHaveText('Trial 2 in progress.');
+  await pause.click();
+  await expect(page.locator('[data-change="removed"]')).toHaveCount(1);
+  await expectAxeClean(page, 'board running, trial 2 with the correction diff');
 });
 
 for (const viewport of VIEWPORTS) {

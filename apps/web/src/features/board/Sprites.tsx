@@ -111,10 +111,10 @@ function Shape({ part, fallen }: { part: Part; fallen: number[] }) {
 }
 
 // A fan's wind is drawn in each cell it covers, one arrow per cell of power, pointing the way it blows.
-function Wind({ view }: { view: PartView }) {
+function Wind({ view, className }: { view: PartView; className: string }) {
   const sign = view.part.dir === 'east' ? 1 : -1;
   return (
-    <g className={styles.wind} data-wind={view.part.id}>
+    <g className={className} data-wind={view.part.id}>
       {view.wind.map(({ x, y }) => (
         <path
           key={x}
@@ -125,13 +125,15 @@ function Wind({ view }: { view: PartView }) {
   );
 }
 
+// A correction's styling (dashed, faded) marks the fan's wind as well as the fan.
 export function PartSprite({ view, className }: { view: PartView; className?: string | undefined }) {
   const { part, at, fallen } = view;
+  const marked = (base: string | undefined) => [base, className].filter(Boolean).join(' ');
   return (
     <>
-      {view.wind.length > 0 && <Wind view={view} />}
+      {view.wind.length > 0 && <Wind view={view} className={marked(styles.wind)} />}
       <g
-        className={[styles.part, className].filter(Boolean).join(' ')}
+        className={marked(styles.part)}
         data-part={part.id}
         data-kind={part.kind}
         data-dir={part.dir}

@@ -4,6 +4,7 @@ import { cleanup, render, within } from '@testing-library/react';
 import { afterEach, describe, expect, test } from 'vitest';
 import { Correction } from './Correction';
 import { diff } from './model/diff';
+import styles from './Board.module.css';
 
 afterEach(cleanup);
 
@@ -99,6 +100,26 @@ describe('diff symbols per op kind', () => {
       'Moved fan p4 from H4 to H3.',
     ]);
   });
+});
+
+test("a removed or unchanged fan's wind carries the fan's styling", () => {
+  const fans = Blueprint.parse({
+    title: 'Two fans',
+    parts: [
+      { id: 'p7', kind: 'fan', cell: 'B3', dir: 'east', power: 2 },
+      { id: 'p8', kind: 'fan', cell: 'J5', dir: 'west', power: 1 },
+    ],
+  });
+  const { container } = drawn(fans, Patch.parse([{ op: 'remove', id: 'p7' }]));
+  const classes = (selector: string) => container.querySelector(selector)?.getAttribute('class')?.split(' ');
+  for (const [id, mark] of [
+    ['p7', styles.removed],
+    ['p8', styles.unchanged],
+  ] as const) {
+    expect(mark).toBeTruthy();
+    expect(classes(`[data-part="${id}"]`)).toContain(mark);
+    expect(classes(`[data-wind="${id}"]`)).toEqual([styles.wind, mark]);
+  }
 });
 
 test('an op the machine skipped is not drawn or written', () => {
