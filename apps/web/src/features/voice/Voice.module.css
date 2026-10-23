@@ -1,0 +1,51 @@
+.voice {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  max-width: var(--measure);
+}
+
+/* Captions are paper with ink text; an empty caption keeps its line so the controls do not jump. */
+.caption {
+  min-height: calc(var(--text-body) * var(--leading));
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  background: var(--paper);
+  color: var(--ink);
+  border: var(--border-paper);
+  border-radius: var(--radius-paper);
+}
+
+.memo {
+  color: var(--copper-text);
+  font-family: var(--font-note);
+}
+
+.disclosure {
+  margin: 0;
+  font-size: var(--text-small);
+}
+
+/* Instruments are level; every control is at least 52 px (character sheet section 8). */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.control {
+  min-width: var(--target);
+  min-height: var(--target);
+  padding: var(--space-2) var(--space-3);
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 700;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.control[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--paper);
+}
