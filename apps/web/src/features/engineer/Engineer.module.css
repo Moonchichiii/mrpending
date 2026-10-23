@@ -508,11 +508,6 @@
     display: block;
   }
 
-  /* The fallback rig is the head alone, so a phone shows it at the phone rig's size. */
-  .rig.still {
-    width: 72px;
-  }
-
   .card {
     grid-template-columns: 1fr auto;
   }

@@ -87,12 +87,20 @@ describe('mood', () => {
 });
 
 describe('error boundary', () => {
+  // The full rig in the desk's 360 × 320 box and the head alone in the phone's, both static and slow.
   const stillRig = (container: Element) => {
-    const fallback = container.querySelector('[data-fallback]');
-    expect(fallback?.tagName.toLowerCase()).toBe('svg');
+    const fallbacks = [...container.querySelectorAll('svg[data-fallback]')];
     expect(rigs(container)).toEqual([]);
-    expect(fallback && moods(fallback)).toEqual(['slow']);
-    expect(fallback && has(fallback, styles.cameo)).toBe(false);
+    expect(fallbacks.map((svg) => svg.getAttribute('viewBox'))).toEqual(['0 0 360 320', '125 -5 140 140']);
+    const [desk, phone] = fallbacks;
+    expect(desk && has(desk, styles.desk)).toBe(true);
+    expect(phone && has(phone, styles.phone)).toBe(true);
+    expect(desk?.querySelector(`.${styles.shell}`)).not.toBeNull();
+    expect(phone?.querySelector(`.${styles.shell}`)).toBeNull();
+    for (const fallback of fallbacks) {
+      expect(moods(fallback)).toEqual(['slow']);
+      expect(has(fallback, styles.cameo)).toBe(false);
+    }
   };
 
   test('a throw inside the rig leaves a static slow rig and the rest of the card', () => {

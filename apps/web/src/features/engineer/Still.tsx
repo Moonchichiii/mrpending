@@ -1,15 +1,19 @@
+import { Body } from './Body';
+import { VIEW_BOX } from './Figure';
+import type { Variant } from './Figure';
 import styles from './Engineer.module.css';
 
-// Character sheet section 4: the static slow-mood rig the boundary shows when the rig throws. It shares no
-// component with Figure, so a fault in the drawing cannot reach it; the lids are drawn at half-mast, not moved there.
-export function Still() {
+// Character sheet section 4: the static slow-mood rig the boundary shows when the rig throws. It never renders
+// Figure, so a fault in the drawing cannot reach it; the lids are drawn at half-mast, not moved there.
+function Drawing({ variant }: { variant: Variant }) {
   return (
     <svg
-      className={`${styles.rig} ${styles.slow} ${styles.still}`}
-      viewBox="125 -5 140 140"
+      className={`${styles.rig} ${styles.slow} ${styles[variant]}`}
+      viewBox={VIEW_BOX[variant]}
       aria-hidden="true"
-      data-fallback=""
+      data-fallback={variant}
     >
+      {variant === 'desk' && <Body />}
       <ellipse className={styles.mint} cx="195" cy="104" rx="42" ry="30" />
       <g transform="rotate(-25.94 186 80)">
         <line className={styles.stalkOutline} x1="186" y1="80" x2="186" y2="38.85" />
@@ -36,5 +40,15 @@ export function Still() {
       </g>
       <path d="M186 112q9 7 18 0" />
     </svg>
+  );
+}
+
+// Like the live rig, both variants are drawn and the stylesheet shows one: the full rig on a desk, the head on a phone.
+export function Still() {
+  return (
+    <>
+      <Drawing variant="desk" />
+      <Drawing variant="phone" />
+    </>
   );
 }

@@ -50,7 +50,10 @@ export function Playback({ build }: { build: Build }) {
               step={head?.step}
               stepMs={STEP_MS[session.speed]}
             />
-            <Lines lines={said(session.lines, head?.attempt.n ?? 1, head?.step ?? 0)} />
+            <Lines
+              status={session.status}
+              lines={said(session.lines, head?.attempt.n ?? 1, head?.step ?? 0)}
+            />
           </>
         );
       }
@@ -59,7 +62,7 @@ export function Playback({ build }: { build: Build }) {
         return (
           <>
             <Trial take={take} attempts={session.build.attempts} attempt={session.build.attempts.at(-1)} />
-            <Lines lines={session.build.lines} />
+            <Lines status={session.status} lines={session.build.lines} />
             <button type="button" className={styles.action} onClick={replay}>
               Replay from the start
             </button>

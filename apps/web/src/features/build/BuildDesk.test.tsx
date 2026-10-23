@@ -192,6 +192,10 @@ test('reduced motion: final frames, the full minutes, the correction diff and th
   const lines = screen.getByRole('list', { name: 'Mr. Pending' });
   expect(lines.getAttribute('aria-live')).toBe('polite');
   expect(lines.textContent).toBe('Memo: Less catapult.');
+  // They sit on Mr. Pending's line card, beside his rig in both its variants.
+  const card = lines.parentElement?.parentElement;
+  const rigs = card?.querySelectorAll('svg[data-variant]');
+  expect([...(rigs ?? [])].map((svg) => svg.getAttribute('data-variant'))).toEqual(['desk', 'phone']);
 
   // Replaying from the keyboard moves focus to the status, never onto the control that takes the button's place.
   screen.getByRole('button', { name: 'Replay from the start' }).focus();
