@@ -12,7 +12,10 @@ export function RecordPage({ build, corrected }: { build: Build; corrected: bool
         {build.title}
       </h3>
       <p className={styles.provenance}>
-        {provenance(build).join(' · ')} · <a href={GUIDE}>How the gallery was produced</a>
+        {provenance(build).join(' · ')} ·{' '}
+        <a className={styles.link} href={GUIDE}>
+          How the gallery was produced
+        </a>
       </p>
       {corrected && (
         <p className={styles.note}>
@@ -30,7 +33,9 @@ export function RecordPage({ build, corrected }: { build: Build; corrected: bool
         {build.report.failedAt === undefined ? '' : ` · stopped at ${build.report.failedAt}`}
       </p>
       <p>{build.report.verdict}</p>
-      <a href={import.meta.env.BASE_URL}>Back to the gallery</a>
+      <a className={styles.link} href={import.meta.env.BASE_URL}>
+        Back to the gallery
+      </a>
     </article>
   );
 }

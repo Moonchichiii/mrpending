@@ -429,7 +429,15 @@
 .changes,
 .minutes ol {
   margin: 0;
+}
+
+.changes {
   padding-inline-start: var(--space-4);
+}
+
+/* A trial has up to 400 events, so the gutter holds a marker like "400." instead of spilling past a phone's edge. */
+.minutes ol {
+  padding-inline-start: 5ch;
 }
 
 .minutes h3 {
