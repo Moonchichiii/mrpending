@@ -147,7 +147,10 @@ test('every playback control is a button operated from the keyboard, and speed s
   control('Replay').focus();
   await user.keyboard('{Enter}');
   expect(minutes()).toBeLessThan(pressed(1).events.length);
-  expect(control('Skip voice')).toBeTruthy();
+  // Skip voice belongs to the voice control, not to playback.
+  expect(within(playback).queryByRole('button', { name: 'Skip voice' })).toBeNull();
+  const voice = screen.getByRole('region', { name: 'Voice' });
+  expect(within(voice).getByRole('button', { name: 'Skip voice' })).toBeTruthy();
 });
 
 test('reduced motion: final frames, the full minutes, the correction diff and the lines, without movement', async () => {
@@ -218,15 +221,59 @@ const held = () => {
   return (event: (requestId: string) => StreamEvent) => write(event);
 };
 
-test('Space pauses from anywhere but a control, which keeps its own Space, and Escape skips voice', async () => {
-  vi.stubGlobal('matchMedia', () => ({ matches: false }));
-  const cancel = vi.fn<() => void>();
-  vi.stubGlobal('speechSynthesis', { cancel });
+// Just the surface of the Web Speech API the voice uses: one on-device voice, and speech starts when queued.
+class FakeUtterance {
+  text: string;
+  voice: SpeechSynthesisVoice | null = null;
+  lang = '';
+  rate = 1;
+  onstart: (() => void) | null = null;
+  onend: (() => void) | null = null;
+  onerror: ((event: { error: string }) => void) | null = null;
+  constructor(text: string) {
+    this.text = text;
+  }
+}
+const withSynth = () => {
+  const spoken: FakeUtterance[] = [];
+  const local = { name: 'en-GB', lang: 'en-GB', localService: true, default: false, voiceURI: 'en-GB' };
+  const synth = Object.assign(new EventTarget(), {
+    getVoices: () => [local],
+    speak: (utterance: FakeUtterance) => {
+      spoken.push(utterance);
+      utterance.onstart?.();
+    },
+    cancel: vi.fn<() => void>(() => spoken.at(-1)?.onerror?.({ error: 'interrupted' })),
+  });
+  vi.stubGlobal('speechSynthesis', synth);
+  vi.stubGlobal('SpeechSynthesisUtterance', FakeUtterance);
+  return { spoken, cancel: synth.cancel };
+};
+
+test('Space pauses from anywhere but a control, which keeps its own Space, and Escape skips voice once', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+  const { spoken, cancel } = withSynth();
   const send = held();
   const user = userEvent.setup();
   render(<BuildDesk canFile />);
   await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  send((requestId) => ({
+    type: 'line',
+    requestId,
+    line: {
+      id: 'l1',
+      beat: 'designing',
+      mood: 'slow',
+      text: 'The Department is drafting.',
+      source: 'table',
+      at: { attempt: 1, step: 0 },
+    },
+  }));
   send((requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }));
+  // The rig is drawn in the card that holds the lines, and the line said is being spoken.
+  const lines = await screen.findByRole('list', { name: 'Mr. Pending' });
+  expect(lines.parentElement?.parentElement?.querySelector('svg[data-variant="desk"]')).not.toBeNull();
+  await vi.waitFor(() => expect(spoken.map((u) => u.text)).toEqual(['The Department is drafting.']));
   const playback = await screen.findByRole('group', { name: 'Playback' });
   const pause = within(playback).getByRole('button', { name: 'Pause' });
 
@@ -246,6 +293,7 @@ test('Space pauses from anywhere but a control, which keeps its own Space, and E
   await user.keyboard(' ');
   expect(pause.getAttribute('aria-pressed')).toBe('true');
 
+  // Esc is handled by the voice alone, so the line is skipped once, not once per listener.
   await user.keyboard('{Escape}');
   expect(cancel).toHaveBeenCalledTimes(1);
 });

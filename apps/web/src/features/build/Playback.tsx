@@ -5,7 +5,7 @@ import { Controls } from './Controls';
 import { STEP_MS, playhead, reduce, said } from './model/session';
 import type { Session } from './model/session';
 import { Lines } from './Lines';
-import { Trial, skipVoice } from './Trial';
+import { Trial } from './Trial';
 import { useTicks } from './useTicks';
 import styles from './BuildDesk.module.css';
 
@@ -40,7 +40,6 @@ export function Playback({ build }: { build: Build }) {
               paused={session.paused}
               onPause={(paused) => dispatch({ type: 'PAUSE', requestId: build.id, paused })}
               onReplay={replay}
-              onSkipVoice={skipVoice}
               onSpeed={(speed) => dispatch({ type: 'SPEED', requestId: build.id, speed })}
             />
             <Trial
