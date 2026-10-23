@@ -13,15 +13,15 @@ export function Figure({
   mood,
   variant,
   cameo,
-  press,
+  cut,
 }: {
   mood: Mood;
   variant: Variant;
   cameo: boolean;
-  press: boolean;
+  cut: boolean;
 }) {
   const id = useId();
-  const classes = [styles.rig, styles[mood], styles[variant], cameo && styles.cameo, press && styles.press]
+  const classes = [styles.rig, styles[mood], styles[variant], cameo && styles.cameo, cut && styles.cut]
     .filter(Boolean)
     .join(' ');
   return (

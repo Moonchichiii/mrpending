@@ -178,6 +178,19 @@
   transform-origin: 292px 160px;
 }
 
+/* Character sheet section 6: the press ends in one hard cut to deadpan, so that change takes no transition. */
+.cut .head,
+.cut .stalkL,
+.cut .stalkR,
+.cut .eyeL,
+.cut .eyeR,
+.cut .pupil,
+.cut .lidL,
+.cut .lidR,
+.cut .hatch {
+  transition: none;
+}
+
 /* slow: lids half-mast and uneven (left to y 35, right to y 31), pupils centred, stalks up, a small curve of a mouth. */
 .slow .lidL {
   transform: translateY(18px);
@@ -295,191 +308,6 @@
 
 .cameo.phone .pupil {
   animation: cameo-phone-pupil 900ms var(--overshoot) forwards;
-}
-
-/* The press (section 6) on the clock from button.pressed: excited at 0.90 s, then the base deadpan by a hard cut at 1.60 s. */
-.press .head,
-.press .stalkL,
-.press .stalkR,
-.press .eyeL,
-.press .eyeR,
-.press .pupil,
-.press .lidL,
-.press .lidR,
-.press .hatch {
-  animation: 1600ms var(--overshoot);
-}
-
-.press .head {
-  animation-name: press-head;
-}
-
-.press .stalkL {
-  animation-name: press-stalk-left;
-}
-
-.press .stalkR {
-  animation-name: press-stalk-right;
-}
-
-.press .eyeL {
-  animation-name: press-eye-left;
-}
-
-.press .eyeR {
-  animation-name: press-eye-right;
-}
-
-.press .pupil {
-  animation-name: press-pupil;
-}
-
-.press .lidL {
-  animation-name: press-lid-left;
-}
-
-.press .lidR {
-  animation-name: press-lid-right;
-}
-
-.press .hatch {
-  animation-name: press-hatch;
-}
-
-.press .mouthSlow,
-.press .mouthOpen,
-.press .burst {
-  display: inline;
-}
-
-.press .mouthSlow {
-  animation: press-before 1600ms step-end forwards;
-}
-
-.press .mouthOpen,
-.press .burst {
-  animation: press-during 1600ms step-end forwards;
-}
-
-.press .mouthFlat {
-  animation: cameo-mouth-in 1600ms step-end forwards;
-}
-
-@keyframes press-before {
-  0% {
-    opacity: 1;
-  }
-  56.25%,
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes press-during {
-  0% {
-    opacity: 0;
-  }
-  56.25% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes press-head {
-  0%,
-  100% {
-    transform: none;
-  }
-}
-
-@keyframes press-stalk-left {
-  0%,
-  56.25% {
-    transform: rotate(-25.94deg);
-  }
-  67.5%,
-  100% {
-    transform: rotate(-24.78deg) scaleY(1.392);
-  }
-}
-
-@keyframes press-stalk-right {
-  0%,
-  56.25% {
-    transform: none;
-  }
-  67.5%,
-  100% {
-    transform: rotate(8.43deg) scaleY(1.475);
-  }
-}
-
-@keyframes press-eye-left {
-  0%,
-  56.25% {
-    transform: none;
-  }
-  67.5%,
-  100% {
-    transform: translate(-6px, -14px);
-  }
-}
-
-@keyframes press-eye-right {
-  0%,
-  56.25% {
-    transform: none;
-  }
-  67.5%,
-  100% {
-    transform: translate(8px, -16px);
-  }
-}
-
-@keyframes press-pupil {
-  0%,
-  56.25% {
-    transform: none;
-  }
-  67.5%,
-  100% {
-    transform: scale(1.4);
-  }
-}
-
-@keyframes press-lid-left {
-  0%,
-  56.25% {
-    transform: translateY(18px);
-  }
-  67.5%,
-  100% {
-    transform: none;
-  }
-}
-
-@keyframes press-lid-right {
-  0%,
-  56.25% {
-    transform: translateY(14px);
-  }
-  67.5%,
-  100% {
-    transform: none;
-  }
-}
-
-@keyframes press-hatch {
-  0%,
-  56.25% {
-    transform: none;
-  }
-  67.5%,
-  100% {
-    transform: rotate(-80deg);
-  }
 }
 
 @keyframes cameo-mouth-in {

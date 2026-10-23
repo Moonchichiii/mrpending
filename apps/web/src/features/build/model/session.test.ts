@@ -2,7 +2,7 @@ import { Line } from '@pending/contract';
 import type { Attempt } from '@pending/contract';
 import { describe, expect, test } from 'vitest';
 import { appError } from './errors';
-import { IDLE, failedOn, pressedAt, reduce, said } from './session';
+import { IDLE, failedOn, reduce, said } from './session';
 import type { Motion, Session, SessionEvent, Speed } from './session';
 import { form, header, lost, pressed } from './testBuild';
 
@@ -216,31 +216,24 @@ test('lines are said only once the playhead reaches their place', () => {
   expect(said(lines, 2, 2).map((l) => l.id)).toEqual(['a', 'b', 'c']);
 });
 
-test('the press is reached by the button event on the board, never by a line', () => {
-  const won = pressed(1);
-  const at = won.events.find((event) => event.type === 'button.pressed')?.step;
-  if (at === undefined) throw new Error('the pressed fixture has no button event');
-  expect(pressedAt({ attempt: won, step: at - 1 })).toBe(false);
-  expect(pressedAt({ attempt: won, step: at })).toBe(true);
-  // A failed trial has no button event, whatever a record's lines claim about it.
-  expect(pressedAt({ attempt: lost(1), step: lastStep(lost(1)) })).toBe(false);
-  expect(pressedAt(undefined)).toBe(false);
-});
-
-test('a line counts as on a failure only when the simulator failed the attempt it sits on', () => {
-  const cameo = (attempt: number) =>
+test('a line counts as on a failure only when it sits on the first failure the simulator completed', () => {
+  const cameo = (attempt: number, step = lastStep(lost(1))) =>
     Line.parse({
       id: 'c',
       beat: 'cameo',
       mood: 'deadpan',
       text: 'c',
       source: 'table',
-      at: { attempt, step: 0 },
+      at: { attempt, step },
     });
-  const held = [lost(1), pressed(2)];
+  const held = [lost(1), lost(2), pressed(3)];
   expect(failedOn(held, cameo(1))).toBe(true);
-  // A record can place the cameo line on its pressed trial, or on a trial it never held.
+  // A record can place the cameo line before the failure's terminal step, on a later failure, on its pressed trial,
+  // or on a trial it never held.
+  expect(failedOn(held, cameo(1, lastStep(lost(1)) - 1))).toBe(false);
   expect(failedOn(held, cameo(2))).toBe(false);
   expect(failedOn(held, cameo(3))).toBe(false);
+  expect(failedOn(held, cameo(4))).toBe(false);
+  expect(failedOn([pressed(1)], cameo(1))).toBe(false);
   expect(failedOn(held, undefined)).toBe(false);
 });

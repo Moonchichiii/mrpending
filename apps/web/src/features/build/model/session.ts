@@ -70,13 +70,17 @@ export function playhead(attempts: Attempt[], step: number): { attempt: Attempt;
   return last && { attempt: last, step: span(last) - 1 };
 }
 
-// Whether the board has reached the button: the simulator's event says so, never a line, which a record can forge.
-export const pressedAt = (head: { attempt: Attempt; step: number } | undefined): boolean =>
-  head?.attempt.events.some((event) => event.type === 'button.pressed' && event.step <= head.step) ?? false;
-
-// Whether the simulator failed the attempt a line sits on: the cameo needs that failure, never just a line claiming it.
-export const failedOn = (attempts: Attempt[], line: Line | undefined): boolean =>
-  line !== undefined && attempts.some((a) => a.n === line.at.attempt && a.outcome !== 'pressed');
+// Whether a line sits on the build's first failure, at or after its terminal step: the cameo needs that failure in the
+// simulator's attempts, never a line claiming it, which a record can place on a pressed, later or unfinished trial.
+export function failedOn(attempts: Attempt[], line: Line | undefined): boolean {
+  const first = attempts.find((attempt) => attempt.outcome !== 'pressed');
+  return (
+    line !== undefined &&
+    first !== undefined &&
+    line.at.attempt === first.n &&
+    line.at.step >= lastStep(first.events)
+  );
+}
 
 // The lines placed at or before the playhead: earlier attempts in full, the current one up to its step.
 export const said = (lines: Line[], attempt: number, step: number): Line[] =>

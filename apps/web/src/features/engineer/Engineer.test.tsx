@@ -51,9 +51,9 @@ afterEach(() => {
 });
 
 // By default the line's attempt is one the simulator failed, as the cameo line's always is in a real build.
-const card = (status: Phase, current: Line | undefined, pressed = false, failed = true) =>
+const card = (status: Phase, current: Line | undefined, failed = true) =>
   render(
-    <Engineer status={status} line={current} failed={failed} pressed={pressed}>
+    <Engineer status={status} line={current} failed={failed}>
       <p>{current?.text}</p>
     </Engineer>,
   ).container;
@@ -90,47 +90,21 @@ describe('mood', () => {
     for (const svg of drawn) expect(moods(svg)).toEqual([expected]);
   });
 
+  test('the press cuts to deadpan without a transition, while every other mood change keeps one', () => {
+    const cut = (container: Element) => rigs(container).map((svg) => has(svg, styles.cut));
+    expect(cut(card('pressed', line('pressed', 'deadpan')))).toEqual([true, true]);
+    cleanup();
+    expect(cut(card('pressed', line('pressed', 'excited')))).toEqual([false, false]);
+    cleanup();
+    expect(cut(card('running', line('failed', 'deadpan')))).toEqual([false, false]);
+  });
+
   test('the phone rig draws only the head, stalks and spectacles', () => {
     const [desk, phone] = rigs(card('idle', undefined));
     expect(desk?.querySelector(`.${styles.shell}`)).not.toBeNull();
     expect(phone?.querySelector(`.${styles.shell}`)).toBeNull();
     for (const part of ['head', 'stalks', 'eyes', 'lids', 'spectacles'] as const)
       expect(phone?.querySelector(`.${styles[part]}`)).not.toBeNull();
-  });
-});
-
-describe('the press', () => {
-  const press = (container: Element) => rigs(container).map((svg) => has(svg, styles.press));
-
-  test('the button event runs the timed sequence on both rigs and settles on the verdict mood', () => {
-    const { container, rerender } = render(
-      <Engineer status="running" line={line('handoff', 'excited')} failed={false} pressed={false}>
-        <p />
-      </Engineer>,
-    );
-    expect(press(container)).toEqual([false, false]);
-
-    // The verdict, the last of the three lines at the button's step, is deadpan; the sequence plays excited first.
-    rerender(
-      <Engineer status="pressed" line={line('pressed', 'deadpan')} failed={false} pressed>
-        <p />
-      </Engineer>,
-    );
-    expect(press(container)).toEqual([true, true]);
-    expect(rigs(container).map(moods)).toEqual([['deadpan'], ['deadpan']]);
-  });
-
-  test('a pressed line without the button event on the board plays no press', () => {
-    // An imported record can carry a forged pressed line on a trial the rules say failed.
-    const container = card('running', line('pressed', 'excited'), false);
-    expect(press(container)).toEqual([false, false]);
-  });
-
-  test('with reduced motion the verdict mood shows without the sequence', () => {
-    prefersReduced(true);
-    const container = card('pressed', line('pressed', 'deadpan'), true);
-    expect(press(container)).toEqual([false, false]);
-    expect(rigs(container).map(moods)).toEqual([['deadpan'], ['deadpan']]);
   });
 });
 
@@ -195,7 +169,7 @@ describe('the Sloth Incident', () => {
 
   test('the look sequence and the sloth appear only on the cameo line', () => {
     const { container, rerender } = render(
-      <Engineer status="running" line={line('failed', 'deadpan')} failed pressed={false}>
+      <Engineer status="running" line={line('failed', 'deadpan')} failed>
         <p />
       </Engineer>,
     );
@@ -203,7 +177,7 @@ describe('the Sloth Incident', () => {
     expect(cameo(container)).toBe(false);
 
     rerender(
-      <Engineer status="repairing" line={line('cameo', 'deadpan')} failed pressed={false}>
+      <Engineer status="repairing" line={line('cameo', 'deadpan')} failed>
         <p />
       </Engineer>,
     );
@@ -212,7 +186,7 @@ describe('the Sloth Incident', () => {
     expect(rigs(container).map(moods)).toEqual([['deadpan'], ['deadpan']]);
 
     rerender(
-      <Engineer status="running" line={line('repaired', 'slow')} failed={false} pressed={false}>
+      <Engineer status="running" line={line('repaired', 'slow')} failed={false}>
         <p />
       </Engineer>,
     );
@@ -222,7 +196,7 @@ describe('the Sloth Incident', () => {
 
   test('a cameo line on an attempt the simulator did not fail brings neither the sloth nor the looks', () => {
     // A forged record can carry the cameo line on a pressed trial; the line still shows, nothing else does.
-    const container = card('running', line('cameo', 'deadpan'), true, false);
+    const container = card('running', line('cameo', 'deadpan'), false);
     expect(sloth(container)).toBeNull();
     expect(cameo(container)).toBe(false);
     expect(container.querySelector(`.${styles.withSloth}`)).toBeNull();

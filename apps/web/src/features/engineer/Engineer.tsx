@@ -10,26 +10,16 @@ import { useReducedMotion } from './useReducedMotion';
 import styles from './Engineer.module.css';
 
 // Both variants are drawn and the stylesheet shows one, so a phone needs no script to pick it.
-function Rig({
-  status,
-  line,
-  cameo,
-  pressed,
-}: {
-  status: Phase;
-  line: Line | undefined;
-  cameo: boolean;
-  pressed: boolean;
-}) {
+function Rig({ status, line, cameo }: { status: Phase; line: Line | undefined; cameo: boolean }) {
   const reduced = useReducedMotion();
   const current = mood(status, line);
   const looks = cameo && !reduced;
-  // The board's button event starts the press, never a line; the stylesheet times excited and the cut to deadpan.
-  const press = pressed && !reduced;
+  // The press clock shows a pressed deadpan line only at its 1.60 s beat, which is one hard cut, never a transition.
+  const cut = line?.beat === 'pressed' && current === 'deadpan';
   return (
     <>
-      <Figure variant="desk" mood={current} cameo={looks} press={press} />
-      <Figure variant="phone" mood={current} cameo={looks} press={press} />
+      <Figure variant="desk" mood={current} cameo={looks} cut={cut} />
+      <Figure variant="phone" mood={current} cameo={looks} cut={cut} />
     </>
   );
 }
@@ -54,13 +44,11 @@ export function Engineer({
   status,
   line,
   failed,
-  pressed,
   children,
 }: {
   status: Phase;
   line: Line | undefined;
   failed: boolean;
-  pressed: boolean;
   children: ReactNode;
 }) {
   const cameo = line?.beat === 'cameo' && failed;
@@ -73,7 +61,7 @@ export function Engineer({
       )}
       <div className={styles.portrait}>
         <Boundary fallback={<Still />}>
-          <Rig status={status} line={line} cameo={cameo} pressed={pressed} />
+          <Rig status={status} line={line} cameo={cameo} />
         </Boundary>
       </div>
       <div className={styles.text}>{children}</div>

@@ -38,8 +38,3 @@ export function Trial({
     </>
   );
 }
-
-// No voice tier exists yet beyond the browser's own; skipping cancels whatever it is saying.
-export const skipVoice = () => {
-  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-};
