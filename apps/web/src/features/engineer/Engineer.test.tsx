@@ -3,14 +3,15 @@ import type { Beat } from '@pending/contract';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { Engineer } from './Engineer';
+import type * as BodyDrawing from './Body';
 import type * as Drawing from './Figure';
 import { mood } from './model/mood';
 import type { Phase } from './model/mood';
 import { Sloth } from './Sloth';
 import styles from './Engineer.module.css';
 
-// The drawing itself can be made to throw, to show the fallback never re-enters it.
-const drawing = vi.hoisted(() => ({ broken: false }));
+// The drawing and the body under it can each be made to throw, to show the fallback never re-enters either.
+const drawing = vi.hoisted(() => ({ broken: false, bodyBroken: false }));
 vi.mock('./Figure', async (importOriginal) => {
   const actual = await importOriginal<typeof Drawing>();
   return {
@@ -18,6 +19,16 @@ vi.mock('./Figure', async (importOriginal) => {
     Figure: (props: Parameters<typeof Drawing.Figure>[0]) => {
       if (drawing.broken) throw new Error('the drawing broke');
       return <actual.Figure {...props} />;
+    },
+  };
+});
+vi.mock('./Body', async (importOriginal) => {
+  const actual = await importOriginal<typeof BodyDrawing>();
+  return {
+    ...actual,
+    Body: () => {
+      if (drawing.bodyBroken) throw new Error('the body broke');
+      return <actual.Body />;
     },
   };
 });
@@ -33,14 +44,15 @@ const prefersReduced = (matches: boolean) =>
 beforeEach(() => prefersReduced(false));
 afterEach(() => {
   drawing.broken = false;
+  drawing.bodyBroken = false;
   cleanup();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
 
-const card = (status: Phase, current: Line | undefined) =>
+const card = (status: Phase, current: Line | undefined, pressed = false) =>
   render(
-    <Engineer status={status} line={current}>
+    <Engineer status={status} line={current} pressed={pressed}>
       <p>{current?.text}</p>
     </Engineer>,
   ).container;
@@ -89,9 +101,9 @@ describe('mood', () => {
 describe('the press', () => {
   const press = (container: Element) => rigs(container).map((svg) => has(svg, styles.press));
 
-  test('the pressed lines run the timed sequence on both rigs and settle on the verdict mood', () => {
+  test('the button event runs the timed sequence on both rigs and settles on the verdict mood', () => {
     const { container, rerender } = render(
-      <Engineer status="running" line={line('handoff', 'excited')}>
+      <Engineer status="running" line={line('handoff', 'excited')} pressed={false}>
         <p />
       </Engineer>,
     );
@@ -99,7 +111,7 @@ describe('the press', () => {
 
     // The verdict, the last of the three lines at the button's step, is deadpan; the sequence plays excited first.
     rerender(
-      <Engineer status="pressed" line={line('pressed', 'deadpan')}>
+      <Engineer status="pressed" line={line('pressed', 'deadpan')} pressed>
         <p />
       </Engineer>,
     );
@@ -107,9 +119,15 @@ describe('the press', () => {
     expect(rigs(container).map(moods)).toEqual([['deadpan'], ['deadpan']]);
   });
 
+  test('a pressed line without the button event on the board plays no press', () => {
+    // An imported record can carry a forged pressed line on a trial the rules say failed.
+    const container = card('running', line('pressed', 'excited'), false);
+    expect(press(container)).toEqual([false, false]);
+  });
+
   test('with reduced motion the verdict mood shows without the sequence', () => {
     prefersReduced(true);
-    const container = card('pressed', line('pressed', 'deadpan'));
+    const container = card('pressed', line('pressed', 'deadpan'), true);
     expect(press(container)).toEqual([false, false]);
     expect(rigs(container).map(moods)).toEqual([['deadpan'], ['deadpan']]);
   });
@@ -150,6 +168,14 @@ describe('error boundary', () => {
     expect(screen.getByText('A successful descent!')).toBeDefined();
   });
 
+  test('a throw inside the body does not reach the fallback', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    drawing.bodyBroken = true;
+    const container = card('running', line('handoff', 'excited', 'A successful descent!'));
+    stillRig(container);
+    expect(screen.getByText('A successful descent!')).toBeDefined();
+  });
+
   test('on the cameo line a throwing sloth is dropped and the card still stands', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.stubGlobal('matchMedia', () => {
@@ -168,7 +194,7 @@ describe('the Sloth Incident', () => {
 
   test('the look sequence and the sloth appear only on the cameo line', () => {
     const { container, rerender } = render(
-      <Engineer status="running" line={line('failed', 'deadpan')}>
+      <Engineer status="running" line={line('failed', 'deadpan')} pressed={false}>
         <p />
       </Engineer>,
     );
@@ -176,7 +202,7 @@ describe('the Sloth Incident', () => {
     expect(cameo(container)).toBe(false);
 
     rerender(
-      <Engineer status="repairing" line={line('cameo', 'deadpan')}>
+      <Engineer status="repairing" line={line('cameo', 'deadpan')} pressed={false}>
         <p />
       </Engineer>,
     );
@@ -185,7 +211,7 @@ describe('the Sloth Incident', () => {
     expect(rigs(container).map(moods)).toEqual([['deadpan'], ['deadpan']]);
 
     rerender(
-      <Engineer status="running" line={line('repaired', 'slow')}>
+      <Engineer status="running" line={line('repaired', 'slow')} pressed={false}>
         <p />
       </Engineer>,
     );

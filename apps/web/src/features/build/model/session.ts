@@ -70,6 +70,10 @@ export function playhead(attempts: Attempt[], step: number): { attempt: Attempt;
   return last && { attempt: last, step: span(last) - 1 };
 }
 
+// Whether the board has reached the button: the simulator's event says so, never a line, which a record can forge.
+export const pressedAt = (head: { attempt: Attempt; step: number } | undefined): boolean =>
+  head?.attempt.events.some((event) => event.type === 'button.pressed' && event.step <= head.step) ?? false;
+
 // The lines placed at or before the playhead: earlier attempts in full, the current one up to its step.
 export const said = (lines: Line[], attempt: number, step: number): Line[] =>
   lines.filter((line) => line.at.attempt < attempt || (line.at.attempt === attempt && line.at.step <= step));

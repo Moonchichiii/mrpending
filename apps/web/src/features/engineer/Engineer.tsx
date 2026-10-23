@@ -10,12 +10,12 @@ import { useReducedMotion } from './useReducedMotion';
 import styles from './Engineer.module.css';
 
 // Both variants are drawn and the stylesheet shows one, so a phone needs no script to pick it.
-function Rig({ status, line }: { status: Phase; line: Line | undefined }) {
+function Rig({ status, line, pressed }: { status: Phase; line: Line | undefined; pressed: boolean }) {
   const reduced = useReducedMotion();
   const current = mood(status, line);
   const cameo = line?.beat === 'cameo' && !reduced;
-  // The press lines arrive together at the button's step; the stylesheet times excited and the cut to deadpan.
-  const press = line?.beat === 'pressed' && !reduced;
+  // The board's button event starts the press, never a line; the stylesheet times excited and the cut to deadpan.
+  const press = pressed && !reduced;
   return (
     <>
       <Figure variant="desk" mood={current} cameo={cameo} press={press} />
@@ -42,10 +42,12 @@ class Boundary extends Component<{ fallback: ReactNode; children: ReactNode }, {
 export function Engineer({
   status,
   line,
+  pressed,
   children,
 }: {
   status: Phase;
   line: Line | undefined;
+  pressed: boolean;
   children: ReactNode;
 }) {
   const cameo = line?.beat === 'cameo';
@@ -58,7 +60,7 @@ export function Engineer({
       )}
       <div className={styles.portrait}>
         <Boundary fallback={<Still />}>
-          <Rig status={status} line={line} />
+          <Rig status={status} line={line} pressed={pressed} />
         </Boundary>
       </div>
       <div className={styles.text}>{children}</div>

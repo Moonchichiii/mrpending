@@ -2,7 +2,7 @@ import type { Build } from '@pending/contract';
 import { useReducer, useRef, useState } from 'react';
 import { assertNever } from '../../shared/assertNever';
 import { Controls } from './Controls';
-import { STEP_MS, playhead, reduce, said } from './model/session';
+import { STEP_MS, playhead, pressedAt, reduce, said } from './model/session';
 import type { Session } from './model/session';
 import { Lines } from './Lines';
 import { Trial, skipVoice } from './Trial';
@@ -55,6 +55,7 @@ export function Playback({ build }: { build: Build }) {
               key="lines"
               status={session.status}
               lines={said(session.lines, head?.attempt.n ?? 1, head?.step ?? 0)}
+              pressed={pressedAt(head)}
             />
           </>
         );
@@ -64,7 +65,12 @@ export function Playback({ build }: { build: Build }) {
         return (
           <>
             <Trial take={take} attempts={session.build.attempts} attempt={session.build.attempts.at(-1)} />
-            <Lines key="lines" status={session.status} lines={session.build.lines} />
+            <Lines
+              key="lines"
+              status={session.status}
+              lines={session.build.lines}
+              pressed={session.build.report.pressed}
+            />
             <button type="button" className={styles.action} onClick={replay}>
               Replay from the start
             </button>

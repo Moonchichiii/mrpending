@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { assertNever } from '../../shared/assertNever';
 import { Controls } from './Controls';
 import { errorCopy } from './model/errors';
-import { STEP_MS, playhead, said } from './model/session';
+import { STEP_MS, playhead, pressedAt, said } from './model/session';
 import type { Session } from './model/session';
 import { Form27B6 } from './Form27B6';
 import { Lines } from './Lines';
@@ -80,7 +80,7 @@ export function BuildDesk({
         return (
           <>
             {session.partial.title && <p className={styles.title}>{session.partial.title}</p>}
-            <Lines key="lines" status={session.status} lines={said(session.lines, 1, 0)} />
+            <Lines key="lines" status={session.status} lines={said(session.lines, 1, 0)} pressed={false} />
             {withdraw}
           </>
         );
@@ -107,6 +107,7 @@ export function BuildDesk({
               key="lines"
               status={session.status}
               lines={said(session.lines, head?.attempt.n ?? 1, head?.step ?? 0)}
+              pressed={pressedAt(head)}
             />
             {withdraw}
           </>
@@ -128,6 +129,7 @@ export function BuildDesk({
               key="lines"
               status={session.status}
               lines={said(session.lines, session.attempts.length + 1, 0)}
+              pressed={false}
             />
             {withdraw}
           </>
@@ -144,7 +146,12 @@ export function BuildDesk({
               </p>
             )}
             <Trial take={take} attempts={session.build.attempts} attempt={session.build.attempts.at(-1)} />
-            <Lines key="lines" status={session.status} lines={session.build.lines} />
+            <Lines
+              key="lines"
+              status={session.status}
+              lines={session.build.lines}
+              pressed={session.build.report.pressed}
+            />
             <button type="button" className={styles.action} onClick={then(replay)}>
               Replay from the start
             </button>

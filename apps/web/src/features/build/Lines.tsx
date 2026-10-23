@@ -4,10 +4,11 @@ import type { Phase } from '../engineer';
 import styles from './BuildDesk.module.css';
 
 // Mr. Pending's lines said so far, announced politely as they arrive; a model memo is shown under a memo label.
-// They sit on his line card, whose rig takes its mood from the phase and the latest line.
-export function Lines({ status, lines }: { status: Phase; lines: Line[] }) {
+// They sit on his line card, whose rig takes its mood from the phase and the latest line, and plays the press when
+// the board has reached the button.
+export function Lines({ status, lines, pressed }: { status: Phase; lines: Line[]; pressed: boolean }) {
   return (
-    <Engineer status={status} line={lines.at(-1)}>
+    <Engineer status={status} line={lines.at(-1)} pressed={pressed}>
       <ol className={styles.lines} aria-live="polite" aria-label="Mr. Pending">
         {lines.map((line) => (
           <li key={line.id} data-mood={line.mood}>
