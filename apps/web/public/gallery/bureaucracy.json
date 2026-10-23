@@ -1,0 +1,855 @@
+{
+  "id": "B-2026-10-22-bureaucracy-1",
+  "contractVersion": "c1",
+  "rulesVersion": "r2",
+  "promptVersion": "v2",
+  "form": {
+    "nature": "Maximum bureaucracy. Every part must be countersigned by another part.",
+    "minParts": 8,
+    "maxParts": 14
+  },
+  "model": {
+    "mode": "local",
+    "id": "gemma4:e2b",
+    "host": "ollama",
+    "digest": "sha256:b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+    "runtime": "ollama-0.40.7"
+  },
+  "title": "Button Press Mechanism Design",
+  "report": {
+    "attempts": 6,
+    "parts": 7,
+    "pressed": false,
+    "verdict": "Your request is pending. Naturally."
+  },
+  "createdAt": "2026-10-22T23:10:12.867Z",
+  "attempts": [
+    {
+      "n": 1,
+      "blueprint": {
+        "title": "Button Press Mechanism Design",
+        "parts": [
+          {
+            "id": "p1",
+            "cell": "A2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          },
+          {
+            "id": "p2",
+            "cell": "C3",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 3
+          },
+          {
+            "id": "p3",
+            "cell": "C2",
+            "dir": "east",
+            "kind": "ramp",
+            "length": 3
+          },
+          {
+            "id": "p4",
+            "cell": "D6",
+            "dir": "east",
+            "kind": "seesaw"
+          },
+          {
+            "id": "p5",
+            "cell": "F6",
+            "dir": "east",
+            "kind": "catapult",
+            "power": 3
+          },
+          {
+            "id": "p6",
+            "cell": "G4",
+            "dir": "east",
+            "kind": "fan",
+            "power": 2
+          },
+          {
+            "id": "p7",
+            "cell": "H7",
+            "dir": "east",
+            "kind": "dominoes",
+            "length": 3
+          }
+        ]
+      },
+      "violations": ["p3 overlaps p2 at D3", "the blueprint has 7 parts; the form asks for at least 8"],
+      "events": [],
+      "outcome": "invalid"
+    },
+    {
+      "n": 2,
+      "blueprint": {
+        "title": "Button Press Mechanism Design",
+        "parts": [
+          {
+            "id": "p1",
+            "cell": "A2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          },
+          {
+            "id": "p2",
+            "cell": "C3",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 3
+          },
+          {
+            "id": "p3",
+            "cell": "C2",
+            "dir": "east",
+            "kind": "ramp",
+            "length": 3
+          },
+          {
+            "id": "p4",
+            "cell": "D6",
+            "dir": "east",
+            "kind": "seesaw"
+          },
+          {
+            "id": "p5",
+            "cell": "F6",
+            "dir": "east",
+            "kind": "catapult",
+            "power": 3
+          },
+          {
+            "id": "p6",
+            "cell": "G4",
+            "dir": "east",
+            "kind": "fan",
+            "power": 2
+          },
+          {
+            "id": "p7",
+            "cell": "H7",
+            "dir": "east",
+            "kind": "dominoes",
+            "length": 3
+          },
+          {
+            "id": "p8",
+            "cell": "B2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          }
+        ]
+      },
+      "violations": ["p3 overlaps p2 at D3", "p8 overlaps p1 at B2", "p8 overlaps p3 at C2"],
+      "events": [],
+      "outcome": "invalid",
+      "patch": [
+        {
+          "op": "add",
+          "part": {
+            "id": "p8",
+            "cell": "B2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          }
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "blueprint": {
+        "title": "Button Press Mechanism Design",
+        "parts": [
+          {
+            "id": "p1",
+            "cell": "A2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          },
+          {
+            "id": "p2",
+            "cell": "C3",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 3
+          },
+          {
+            "id": "p3",
+            "cell": "C2",
+            "dir": "east",
+            "kind": "ramp",
+            "length": 3
+          },
+          {
+            "id": "p4",
+            "cell": "D6",
+            "dir": "east",
+            "kind": "seesaw"
+          },
+          {
+            "id": "p5",
+            "cell": "F6",
+            "dir": "east",
+            "kind": "catapult",
+            "power": 3
+          },
+          {
+            "id": "p6",
+            "cell": "G4",
+            "dir": "east",
+            "kind": "fan",
+            "power": 2
+          },
+          {
+            "id": "p7",
+            "cell": "H7",
+            "dir": "east",
+            "kind": "dominoes",
+            "length": 3
+          },
+          {
+            "id": "p9",
+            "cell": "B2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          }
+        ]
+      },
+      "violations": ["p3 overlaps p2 at D3", "p9 overlaps p1 at B2", "p9 overlaps p3 at C2"],
+      "events": [],
+      "outcome": "invalid",
+      "patch": [
+        {
+          "op": "remove",
+          "id": "p8"
+        },
+        {
+          "op": "add",
+          "part": {
+            "id": "p9",
+            "cell": "B2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          }
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "blueprint": {
+        "title": "Button Press Mechanism Design",
+        "parts": [
+          {
+            "id": "p1",
+            "cell": "A2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          },
+          {
+            "id": "p2",
+            "cell": "C3",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 3
+          },
+          {
+            "id": "p3",
+            "cell": "C2",
+            "dir": "east",
+            "kind": "ramp",
+            "length": 3
+          },
+          {
+            "id": "p4",
+            "cell": "D6",
+            "dir": "east",
+            "kind": "seesaw"
+          },
+          {
+            "id": "p5",
+            "cell": "F6",
+            "dir": "east",
+            "kind": "catapult",
+            "power": 3
+          },
+          {
+            "id": "p6",
+            "cell": "G4",
+            "dir": "east",
+            "kind": "fan",
+            "power": 2
+          },
+          {
+            "id": "p7",
+            "cell": "H7",
+            "dir": "east",
+            "kind": "dominoes",
+            "length": 3
+          },
+          {
+            "id": "p10",
+            "cell": "B2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          }
+        ]
+      },
+      "violations": ["p3 overlaps p2 at D3", "p10 overlaps p1 at B2", "p10 overlaps p3 at C2"],
+      "events": [],
+      "outcome": "invalid",
+      "patch": [
+        {
+          "op": "remove",
+          "id": "p9"
+        },
+        {
+          "op": "add",
+          "part": {
+            "id": "p10",
+            "cell": "B2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          }
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "blueprint": {
+        "title": "Button Press Mechanism Design",
+        "parts": [
+          {
+            "id": "p1",
+            "cell": "A2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          },
+          {
+            "id": "p2",
+            "cell": "C3",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 3
+          },
+          {
+            "id": "p4",
+            "cell": "D6",
+            "dir": "east",
+            "kind": "seesaw"
+          },
+          {
+            "id": "p5",
+            "cell": "F6",
+            "dir": "east",
+            "kind": "catapult",
+            "power": 3
+          },
+          {
+            "id": "p6",
+            "cell": "G4",
+            "dir": "east",
+            "kind": "fan",
+            "power": 2
+          },
+          {
+            "id": "p7",
+            "cell": "H7",
+            "dir": "east",
+            "kind": "dominoes",
+            "length": 3
+          },
+          {
+            "id": "p10",
+            "cell": "B2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          },
+          {
+            "id": "p11",
+            "cell": "D3",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          }
+        ]
+      },
+      "violations": ["p10 overlaps p1 at B2", "p11 overlaps p2 at D3 and E3"],
+      "events": [],
+      "outcome": "invalid",
+      "patch": [
+        {
+          "op": "remove",
+          "id": "p3"
+        },
+        {
+          "op": "add",
+          "part": {
+            "id": "p11",
+            "cell": "D3",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          }
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "blueprint": {
+        "title": "Button Press Mechanism Design",
+        "parts": [
+          {
+            "id": "p1",
+            "cell": "A2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          },
+          {
+            "id": "p2",
+            "cell": "C3",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 3
+          },
+          {
+            "id": "p4",
+            "cell": "D6",
+            "dir": "east",
+            "kind": "seesaw"
+          },
+          {
+            "id": "p5",
+            "cell": "F6",
+            "dir": "east",
+            "kind": "catapult",
+            "power": 3
+          },
+          {
+            "id": "p6",
+            "cell": "G4",
+            "dir": "east",
+            "kind": "fan",
+            "power": 2
+          },
+          {
+            "id": "p7",
+            "cell": "H7",
+            "dir": "east",
+            "kind": "dominoes",
+            "length": 3
+          },
+          {
+            "id": "p12",
+            "cell": "B2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          }
+        ]
+      },
+      "violations": ["p12 overlaps p1 at B2", "the blueprint has 7 parts; the form asks for at least 8"],
+      "events": [],
+      "outcome": "invalid",
+      "patch": [
+        {
+          "op": "remove",
+          "id": "p10"
+        },
+        {
+          "op": "remove",
+          "id": "p11"
+        },
+        {
+          "op": "add",
+          "part": {
+            "id": "p12",
+            "cell": "B2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          }
+        }
+      ]
+    }
+  ],
+  "lines": [
+    {
+      "id": "l1",
+      "beat": "intake",
+      "mood": "slow",
+      "text": "Form 27B/6 received. Stamped, filed, placed on top of the other forms. This will take some time.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l2",
+      "beat": "designing",
+      "mood": "slow",
+      "text": "Drafting. Please do not rush the Department.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l3",
+      "beat": "designed",
+      "mood": "slow",
+      "text": "The assembly meets the minimum part requirement for the Form.",
+      "source": "model",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l4",
+      "beat": "designed",
+      "mood": "slow",
+      "text": "Blueprint 1: “Button Press Mechanism Design”. 7 components for one button. Proportionate.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l5",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "Finding: the blueprint breaches p3 overlaps p2 at D3.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l6",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "Engineering has identified a problem. Engineering would prefer not to discuss it.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l7",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "A correction will be issued.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l8",
+      "beat": "cameo",
+      "mood": "deadpan",
+      "text": "This is why we employ snails.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l9",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "An additional conveyor has been introduced to satisfy the minimum part count requirement.",
+      "source": "model",
+      "at": {
+        "attempt": 2,
+        "step": 0
+      }
+    },
+    {
+      "id": "l10",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "Correction 1: added conveyor at B2.",
+      "source": "table",
+      "at": {
+        "attempt": 2,
+        "step": 0
+      }
+    },
+    {
+      "id": "l11",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "A repair has been submitted. Optimism remains strictly provisional.",
+      "source": "table",
+      "at": {
+        "attempt": 2,
+        "step": 0
+      }
+    },
+    {
+      "id": "l12",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "Finding: the blueprint breaches p3 overlaps p2 at D3.",
+      "source": "table",
+      "at": {
+        "attempt": 2,
+        "step": 0
+      }
+    },
+    {
+      "id": "l13",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "A correction will be issued.",
+      "source": "table",
+      "at": {
+        "attempt": 2,
+        "step": 0
+      }
+    },
+    {
+      "id": "l14",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "The overlapping components have been rectified by removing p8 and introducing p9.",
+      "source": "model",
+      "at": {
+        "attempt": 3,
+        "step": 0
+      }
+    },
+    {
+      "id": "l15",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "Correction 2: removed conveyor at B2, added conveyor at B2.",
+      "source": "table",
+      "at": {
+        "attempt": 3,
+        "step": 0
+      }
+    },
+    {
+      "id": "l16",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "A repair has been submitted. Optimism remains strictly provisional.",
+      "source": "table",
+      "at": {
+        "attempt": 3,
+        "step": 0
+      }
+    },
+    {
+      "id": "l17",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "Finding: the blueprint breaches p3 overlaps p2 at D3.",
+      "source": "table",
+      "at": {
+        "attempt": 3,
+        "step": 0
+      }
+    },
+    {
+      "id": "l18",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "A correction will be issued.",
+      "source": "table",
+      "at": {
+        "attempt": 3,
+        "step": 0
+      }
+    },
+    {
+      "id": "l19",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "The overlapping components have been rectified by removing p9 and introducing p10.",
+      "source": "model",
+      "at": {
+        "attempt": 4,
+        "step": 0
+      }
+    },
+    {
+      "id": "l20",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "Correction 3: removed conveyor at B2, added conveyor at B2.",
+      "source": "table",
+      "at": {
+        "attempt": 4,
+        "step": 0
+      }
+    },
+    {
+      "id": "l21",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "A repair has been submitted. Optimism remains strictly provisional.",
+      "source": "table",
+      "at": {
+        "attempt": 4,
+        "step": 0
+      }
+    },
+    {
+      "id": "l22",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "Finding: the blueprint breaches p3 overlaps p2 at D3.",
+      "source": "table",
+      "at": {
+        "attempt": 4,
+        "step": 0
+      }
+    },
+    {
+      "id": "l23",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "A correction will be issued.",
+      "source": "table",
+      "at": {
+        "attempt": 4,
+        "step": 0
+      }
+    },
+    {
+      "id": "l24",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "The overlapping components have been rectified by removing p3 and introducing p11.",
+      "source": "model",
+      "at": {
+        "attempt": 5,
+        "step": 0
+      }
+    },
+    {
+      "id": "l25",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "Correction 4: removed ramp at C2, added conveyor at D3.",
+      "source": "table",
+      "at": {
+        "attempt": 5,
+        "step": 0
+      }
+    },
+    {
+      "id": "l26",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "A repair has been submitted. Optimism remains strictly provisional.",
+      "source": "table",
+      "at": {
+        "attempt": 5,
+        "step": 0
+      }
+    },
+    {
+      "id": "l27",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "Finding: the blueprint breaches p10 overlaps p1 at B2.",
+      "source": "table",
+      "at": {
+        "attempt": 5,
+        "step": 0
+      }
+    },
+    {
+      "id": "l28",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "A correction will be issued.",
+      "source": "table",
+      "at": {
+        "attempt": 5,
+        "step": 0
+      }
+    },
+    {
+      "id": "l29",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "The overlapping components have been removed and a replacement conveyor has been introduced.",
+      "source": "model",
+      "at": {
+        "attempt": 6,
+        "step": 0
+      }
+    },
+    {
+      "id": "l30",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "Correction 5: removed conveyor at B2 and conveyor at D3, added conveyor at B2.",
+      "source": "table",
+      "at": {
+        "attempt": 6,
+        "step": 0
+      }
+    },
+    {
+      "id": "l31",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "A repair has been submitted. Optimism remains strictly provisional.",
+      "source": "table",
+      "at": {
+        "attempt": 6,
+        "step": 0
+      }
+    },
+    {
+      "id": "l32",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "Finding: the blueprint breaches p12 overlaps p1 at B2.",
+      "source": "table",
+      "at": {
+        "attempt": 6,
+        "step": 0
+      }
+    },
+    {
+      "id": "l33",
+      "beat": "exhausted",
+      "mood": "deadpan",
+      "text": "After 6 trials the button remains unpressed. The paperwork is immaculate. Your request is pending. Naturally.",
+      "source": "table",
+      "at": {
+        "attempt": 6,
+        "step": 0
+      }
+    }
+  ]
+}

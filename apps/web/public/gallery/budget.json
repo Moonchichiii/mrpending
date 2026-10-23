@@ -1,0 +1,456 @@
+{
+  "id": "D-2026-10-22-budget-1",
+  "contractVersion": "c1",
+  "rulesVersion": "r2",
+  "promptVersion": "v2",
+  "form": {
+    "nature": "Tiny budget. As few parts as the button will tolerate.",
+    "minParts": 2,
+    "maxParts": 4
+  },
+  "model": {
+    "mode": "local",
+    "id": "gemma4:e4b",
+    "host": "ollama",
+    "digest": "sha256:dc35e8d9c6061baa6f0fa870975ab6932e2542b579b13ea0f199fa4bb7300c9c",
+    "runtime": "ollama-0.40.7"
+  },
+  "title": "Button Press Mechanism Design",
+  "report": {
+    "attempts": 2,
+    "parts": 3,
+    "pressed": true,
+    "verdict": "One button. An extraordinary amount of paperwork."
+  },
+  "createdAt": "2026-10-22T23:28:54.871Z",
+  "attempts": [
+    {
+      "n": 1,
+      "blueprint": {
+        "title": "Button Press Mechanism Design",
+        "parts": [
+          {
+            "id": "p1",
+            "cell": "C3",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 6
+          },
+          {
+            "id": "p2",
+            "cell": "H7",
+            "dir": "east",
+            "kind": "dominoes",
+            "length": 4
+          }
+        ]
+      },
+      "violations": [],
+      "events": [
+        {
+          "type": "ball.released",
+          "step": 1,
+          "cell": "A2"
+        },
+        {
+          "type": "ball.moved",
+          "step": 2,
+          "from": "A2",
+          "to": "A3",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 3,
+          "from": "A3",
+          "to": "A4",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 4,
+          "from": "A4",
+          "to": "A5",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 5,
+          "from": "A5",
+          "to": "A6",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 6,
+          "from": "A6",
+          "to": "A7",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.stopped",
+          "step": 7,
+          "cell": "A7"
+        }
+      ],
+      "outcome": "stalled",
+      "failedAt": "A7"
+    },
+    {
+      "n": 2,
+      "blueprint": {
+        "title": "Button Press Mechanism Design",
+        "parts": [
+          {
+            "id": "p1",
+            "cell": "C3",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 6
+          },
+          {
+            "id": "p2",
+            "cell": "H7",
+            "dir": "east",
+            "kind": "dominoes",
+            "length": 4
+          },
+          {
+            "id": "p3",
+            "cell": "A2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          }
+        ]
+      },
+      "violations": [],
+      "events": [
+        {
+          "type": "ball.released",
+          "step": 1,
+          "cell": "A2"
+        },
+        {
+          "type": "ball.moved",
+          "step": 2,
+          "from": "A2",
+          "to": "B2",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 3,
+          "from": "B2",
+          "to": "C2",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 4,
+          "from": "C2",
+          "to": "C3",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 5,
+          "from": "C3",
+          "to": "D3",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 6,
+          "from": "D3",
+          "to": "E3",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 7,
+          "from": "E3",
+          "to": "F3",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 8,
+          "from": "F3",
+          "to": "G3",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 9,
+          "from": "G3",
+          "to": "H3",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 10,
+          "from": "H3",
+          "to": "I3",
+          "by": "conveyor"
+        },
+        {
+          "type": "ball.moved",
+          "step": 11,
+          "from": "I3",
+          "to": "I4",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 12,
+          "from": "I4",
+          "to": "I5",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 13,
+          "from": "I5",
+          "to": "I6",
+          "by": "gravity"
+        },
+        {
+          "type": "ball.moved",
+          "step": 14,
+          "from": "I6",
+          "to": "I7",
+          "by": "gravity"
+        },
+        {
+          "type": "domino.fell",
+          "step": 15,
+          "part": "p2",
+          "index": 1,
+          "cell": "I7"
+        },
+        {
+          "type": "domino.fell",
+          "step": 16,
+          "part": "p2",
+          "index": 2,
+          "cell": "J7"
+        },
+        {
+          "type": "domino.fell",
+          "step": 17,
+          "part": "p2",
+          "index": 3,
+          "cell": "K7"
+        },
+        {
+          "type": "button.pressed",
+          "step": 18,
+          "by": "domino"
+        }
+      ],
+      "outcome": "pressed",
+      "patch": [
+        {
+          "op": "add",
+          "part": {
+            "id": "p3",
+            "cell": "A2",
+            "dir": "east",
+            "kind": "conveyor",
+            "length": 2
+          }
+        }
+      ]
+    }
+  ],
+  "lines": [
+    {
+      "id": "l1",
+      "beat": "intake",
+      "mood": "slow",
+      "text": "Form 27B/6 received. Stamped, filed, placed on top of the other forms. This will take some time.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l2",
+      "beat": "designing",
+      "mood": "slow",
+      "text": "Drafting. Please do not rush the Department.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l3",
+      "beat": "designed",
+      "mood": "slow",
+      "text": "**Slow:** The required mechanism has been engineered to satisfy the parameters of the Form.",
+      "source": "model",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l4",
+      "beat": "designed",
+      "mood": "slow",
+      "text": "Blueprint 1: “Button Press Mechanism Design”. 2 components for one button. Proportionate.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l5",
+      "beat": "running",
+      "mood": "slow",
+      "text": "Commencing trial 1.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 0
+      }
+    },
+    {
+      "id": "l6",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "Finding: the ball came to rest at A7.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 7
+      }
+    },
+    {
+      "id": "l7",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "The Department regrets to inform you that gravity has once again failed to cooperate.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 7
+      }
+    },
+    {
+      "id": "l8",
+      "beat": "failed",
+      "mood": "deadpan",
+      "text": "A correction will be issued.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 7
+      }
+    },
+    {
+      "id": "l9",
+      "beat": "cameo",
+      "mood": "deadpan",
+      "text": "This is why we employ snails.",
+      "source": "table",
+      "at": {
+        "attempt": 1,
+        "step": 7
+      }
+    },
+    {
+      "id": "l10",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "**Deadpan**: The initial configuration resulted in premature cessation at A7.",
+      "source": "model",
+      "at": {
+        "attempt": 2,
+        "step": 0
+      }
+    },
+    {
+      "id": "l11",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "Correction 1: added conveyor at A2.",
+      "source": "table",
+      "at": {
+        "attempt": 2,
+        "step": 0
+      }
+    },
+    {
+      "id": "l12",
+      "beat": "repaired",
+      "mood": "slow",
+      "text": "A repair has been submitted. Optimism remains strictly provisional.",
+      "source": "table",
+      "at": {
+        "attempt": 2,
+        "step": 0
+      }
+    },
+    {
+      "id": "l13",
+      "beat": "running",
+      "mood": "slow",
+      "text": "Commencing trial 2.",
+      "source": "table",
+      "at": {
+        "attempt": 2,
+        "step": 0
+      }
+    },
+    {
+      "id": "l14",
+      "beat": "handoff",
+      "mood": "excited",
+      "text": "A handover! The parts are cooperating!",
+      "source": "table",
+      "at": {
+        "attempt": 2,
+        "step": 4
+      }
+    },
+    {
+      "id": "l15",
+      "beat": "pressed",
+      "mood": "excited",
+      "text": "WE DID IT! Please inform the entire Department.",
+      "source": "table",
+      "at": {
+        "attempt": 2,
+        "step": 18
+      }
+    },
+    {
+      "id": "l16",
+      "beat": "pressed",
+      "mood": "deadpan",
+      "text": "The Department acknowledges this development.",
+      "source": "table",
+      "at": {
+        "attempt": 2,
+        "step": 18
+      }
+    },
+    {
+      "id": "l17",
+      "beat": "pressed",
+      "mood": "deadpan",
+      "text": "One button. An extraordinary amount of paperwork.",
+      "source": "table",
+      "at": {
+        "attempt": 2,
+        "step": 18
+      }
+    }
+  ]
+}
