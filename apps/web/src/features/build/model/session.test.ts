@@ -1,7 +1,8 @@
+import { Line } from '@pending/contract';
 import type { Attempt } from '@pending/contract';
 import { describe, expect, test } from 'vitest';
 import { appError } from './errors';
-import { IDLE, reduce } from './session';
+import { IDLE, reduce, said } from './session';
 import type { Motion, Session, SessionEvent, Speed } from './session';
 import { form, header, lost, pressed } from './testBuild';
 
@@ -153,4 +154,64 @@ describe('server completion is not playback completion', () => {
     for (let i = 0; i <= lastStep(pressed(1)) + 3; i += 1) state = reduce(state, tick());
     expect(state).toMatchObject({ status: 'running', step: lastStep(pressed(1)) });
   });
+});
+
+describe('playback controls', () => {
+  test('a paused board ignores ticks until it is resumed', () => {
+    const playing = reduce(filed, { type: 'ATTEMPT', requestId: ID, attempt: pressed(1) });
+    const paused = reduce(reduce(playing, tick()), { type: 'PAUSE', requestId: ID, paused: true });
+    expect(paused).toMatchObject({ status: 'running', step: 1, paused: true });
+    expect(reduce(paused, tick())).toBe(paused);
+    const resumed = reduce(paused, { type: 'PAUSE', requestId: ID, paused: false });
+    expect(reduce(resumed, tick())).toMatchObject({ step: 2, paused: false });
+  });
+
+  test('replay restarts playback at the first step, also while repairing', () => {
+    const playing = reduce(filed, { type: 'ATTEMPT', requestId: ID, attempt: lost(1) });
+    const midway = run([tick(), tick(), tick()], playing);
+    expect(reduce(midway, { type: 'REPLAY', requestId: ID })).toMatchObject({ status: 'running', step: 0 });
+    const repairing = playUntilChange(playing, 'full').state;
+    expect(reduce(repairing, { type: 'REPLAY', requestId: ID })).toMatchObject({
+      status: 'running',
+      step: 0,
+      attempts: [lost(1)],
+    });
+  });
+
+  test('replay after the ending plays the same build to the same ending again', () => {
+    const attempt = pressed(1);
+    const done = run(
+      [
+        { type: 'ATTEMPT', requestId: ID, attempt },
+        { type: 'DONE', requestId: ID, header: header([attempt]) },
+      ],
+      filed,
+    );
+    const ended = playUntilChange(done, 'reduced').state;
+    expect(ended.status).toBe('pressed');
+    const again = reduce(ended, { type: 'REPLAY', requestId: ID });
+    expect(again).toMatchObject({
+      status: 'running',
+      step: 0,
+      attempts: [attempt],
+      final: header([attempt]),
+    });
+    const replayed = playUntilChange(again, 'full');
+    expect(replayed.ticks).toBe(lastStep(attempt));
+    expect(replayed.state).toEqual(ended);
+  });
+
+  test('pause and replay do nothing where there is no playback', () => {
+    expect(reduce(filed, { type: 'PAUSE', requestId: ID, paused: true })).toBe(filed);
+    expect(reduce(filed, { type: 'REPLAY', requestId: ID })).toBe(filed);
+  });
+});
+
+test('lines are said only once the playhead reaches their place', () => {
+  const line = (id: string, attempt: number, step: number) =>
+    Line.parse({ id, beat: 'running', mood: 'slow', text: id, source: 'table', at: { attempt, step } });
+  const lines = [line('a', 1, 0), line('b', 1, 5), line('c', 2, 0), line('d', 2, 3)];
+  expect(said(lines, 1, 4).map((l) => l.id)).toEqual(['a']);
+  expect(said(lines, 1, 5).map((l) => l.id)).toEqual(['a', 'b']);
+  expect(said(lines, 2, 2).map((l) => l.id)).toEqual(['a', 'b', 'c']);
 });

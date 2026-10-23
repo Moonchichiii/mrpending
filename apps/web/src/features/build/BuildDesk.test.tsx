@@ -1,11 +1,12 @@
+import { Attempt } from '@pending/contract';
 import type { StreamEvent } from '@pending/contract';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, expect, test, vi } from 'vitest';
 import { BuildDesk } from './BuildDesk';
-import { header, pressed } from './model/testBuild';
+import { header, lost, pressed } from './model/testBuild';
 
 const server = setupServer();
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
@@ -50,4 +51,114 @@ test('filing moves focus to the status region, which announces progress and then
   expect(screen.getByLabelText<HTMLTextAreaElement>('1. Nature of the request').value).toBe(
     header([pressed(1)]).form.nature,
   );
+});
+
+// Answers a filing with the given stream events, each stamped with the request's id.
+const stream = (events: ((requestId: string) => StreamEvent)[]) =>
+  server.use(
+    http.post('*/api/build', ({ request }) => {
+      const requestId = request.headers.get('x-request-id') ?? '';
+      return new HttpResponse(events.map((e) => `${JSON.stringify(e(requestId))}\n`).join(''));
+    }),
+  );
+
+test('every playback control is a button operated from the keyboard, and speed sets the step duration', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: false }));
+  // A pressed attempt on a stream held open waits at its last step for done, so the controls stay.
+  server.use(
+    http.post('*/api/build', ({ request }) => {
+      const requestId = request.headers.get('x-request-id') ?? '';
+      const event: StreamEvent = { type: 'attempt', requestId, attempt: pressed(1) };
+      const body = new ReadableStream({
+        start: (controller) => controller.enqueue(new TextEncoder().encode(`${JSON.stringify(event)}\n`)),
+      });
+      return new HttpResponse(body);
+    }),
+  );
+  const user = userEvent.setup();
+  render(<BuildDesk canFile />);
+  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  const playback = await screen.findByRole('group', { name: 'Playback' });
+  const control = (name: string) => within(playback).getByRole('button', { name });
+  const pace = () => screen.getByRole('img', { name: 'Pressed' }).getAttribute('data-pace');
+  expect(pace()).toBe('120');
+
+  control('Pause').focus();
+  await user.keyboard(' ');
+  expect(control('Pause').getAttribute('aria-pressed')).toBe('true');
+  const minutes = () =>
+    screen.getByRole('region', { name: 'Minutes of trial 1' }).querySelectorAll('li').length;
+  const held = minutes();
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  expect(minutes()).toBe(held);
+
+  const speeds: [string, string][] = [
+    ['0.5×', '240'],
+    ['1×', '120'],
+    ['Impatient', '40'],
+  ];
+  for (const [name, ms] of speeds) {
+    control(name).focus();
+    await user.keyboard('{Enter}');
+    expect(control(name).getAttribute('aria-pressed')).toBe('true');
+    expect(pace()).toBe(ms);
+  }
+
+  control('Pause').focus();
+  await user.keyboard('{Enter}');
+  await vi.waitFor(() => expect(minutes()).toBe(pressed(1).events.length), { timeout: 3000 });
+  control('Replay').focus();
+  await user.keyboard('{Enter}');
+  expect(minutes()).toBeLessThan(pressed(1).events.length);
+  expect(control('Skip voice')).toBeTruthy();
+});
+
+test('reduced motion: final frames, the full minutes, the correction diff and the lines, without movement', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: true }));
+  const repaired = Attempt.parse({ ...pressed(2), patch: [{ op: 'remove', id: 'p4' }] });
+  stream([
+    (requestId) => ({ type: 'attempt', requestId, attempt: lost(1) }),
+    (requestId) => ({
+      type: 'line',
+      requestId,
+      line: {
+        id: 'm2',
+        beat: 'repaired',
+        mood: 'slow',
+        text: 'Less catapult.',
+        source: 'model',
+        at: { attempt: 2, step: 0 },
+      },
+    }),
+    (requestId) => ({ type: 'attempt', requestId, attempt: repaired }),
+    (requestId) => ({ type: 'done', requestId, header: header([lost(1), repaired]) }),
+  ]);
+  const user = userEvent.setup();
+  render(<BuildDesk canFile />);
+  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  await vi.waitFor(() =>
+    expect(screen.getByRole('status').textContent).toBe('One button. An extraordinary amount of paperwork.'),
+  );
+
+  // The diff for trial 2 is drawn from its patch over trial 1's board, in symbols and in words.
+  const correction = screen.getByRole('img', { name: 'Correction for trial 2' });
+  expect(correction.querySelector('[data-change="removed"] [data-part="p4"]')).not.toBeNull();
+  const figure = correction.closest('figure');
+  if (!figure) throw new Error('the correction is not a figure');
+  expect(within(figure).getByRole('listitem').textContent).toBe('Removed catapult p4 at I5.');
+  // The trial's board is at its final frame and its minutes hold every event.
+  const board = screen.getByRole('img', { name: 'Pressed' });
+  expect(board.querySelector('[data-button]')?.getAttribute('data-pressed')).toBe('true');
+  const minutes = screen.getByRole('region', { name: 'Minutes of trial 2' });
+  expect(minutes.querySelectorAll('li')).toHaveLength(repaired.events.length);
+  // Mr. Pending's lines are a polite live region; a memo is labelled as one.
+  const lines = screen.getByRole('list', { name: 'Mr. Pending' });
+  expect(lines.getAttribute('aria-live')).toBe('polite');
+  expect(lines.textContent).toBe('Memo: Less catapult.');
+
+  // Replaying from the keyboard moves focus to the status, never onto the control that takes the button's place.
+  screen.getByRole('button', { name: 'Replay from the start' }).focus();
+  await user.keyboard('{Enter}');
+  expect(document.activeElement).toBe(screen.getByRole('status'));
+  expect(screen.getByRole('status').textContent).toBe('Trial 1 in progress.');
 });

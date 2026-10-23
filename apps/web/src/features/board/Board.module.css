@@ -54,6 +54,45 @@
   fill: #fff8e6;
 }
 
+/* Each step's change moves by transition at the board's pace (ARCHITECTURE section 3); reduced motion zeroes it globally. */
+.board[data-pace='240'] {
+  --step: 240ms;
+}
+
+.board[data-pace='120'] {
+  --step: 120ms;
+}
+
+.board[data-pace='40'] {
+  --step: 40ms;
+}
+
+.moving,
+.domino {
+  transition: transform var(--step, 0s) linear;
+}
+
+.domino {
+  transform-box: fill-box;
+  transform-origin: 100% 100%;
+}
+
+.domino[data-fallen='true'] {
+  transform: rotate(90deg);
+}
+
+.arrow,
+.end {
+  fill: none;
+  stroke: #1f1b2e;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.end {
+  fill: #fff8e6;
+}
+
 .fan {
   fill: #1fb5a3;
 }
@@ -63,9 +102,11 @@
 }
 
 .wind {
+  fill: none;
   stroke: #fff8e6;
-  stroke-width: 2;
-  stroke-dasharray: 6 8;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .dome {
@@ -90,4 +131,120 @@
 
 .ball {
   fill: #ff5a4e;
+}
+
+.partLabels,
+.moveLabel {
+  fill: #fff8e6;
+  font-family: Fredoka, sans-serif;
+  font-size: 13px;
+  text-anchor: middle;
+}
+
+/* The failure cell: a coral ring on a paper halo and a paper chip naming the terminal event in ink. */
+.ringHalo,
+.ring {
+  fill: none;
+}
+
+.ringHalo {
+  stroke: #fff8e6;
+  stroke-width: 10;
+}
+
+.ring {
+  stroke: #ff5a4e;
+  stroke-width: 4;
+}
+
+.chipBox {
+  transform-box: fill-box;
+}
+
+.chip {
+  fill: #fff8e6;
+  stroke: #1f1b2e;
+  stroke-width: 3;
+}
+
+.chipText,
+.badge text {
+  fill: #1f1b2e;
+  font-family: Fredoka, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+/* Diff symbols carry the meaning; colour only repeats it (ARCHITECTURE section 3). */
+.badge circle {
+  fill: #fff8e6;
+  stroke: #1f1b2e;
+  stroke-width: 3;
+}
+
+.badge text {
+  font-size: 18px;
+}
+
+.removed {
+  stroke-dasharray: 6 5;
+  opacity: 0.8;
+}
+
+.cross,
+.moveArrow {
+  fill: none;
+  stroke: #fff8e6;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.unchanged {
+  opacity: 0.45;
+}
+
+.added {
+  fill: none;
+  stroke: #1fb5a3;
+  stroke-width: 6;
+}
+
+.correction,
+.minutes {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.changes,
+.minutes ol {
+  margin: 0;
+  padding-inline-start: var(--space-4);
+}
+
+.minutes h3 {
+  font-family: var(--font-display);
+  font-size: var(--text-body);
+}
+
+/* Phones: the board fills the width, grid letters go, only the active part keeps its (larger) label, and the chip grows. */
+@media (max-width: 40rem) {
+  .labels {
+    display: none;
+  }
+
+  .partLabels text {
+    display: none;
+    font-size: 26px;
+  }
+
+  .partLabels [data-active='true'] {
+    display: inline;
+  }
+
+  .chipBox {
+    transform: scale(1.8);
+  }
 }

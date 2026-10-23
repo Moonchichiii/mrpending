@@ -1,11 +1,8 @@
 import type { Form } from '@pending/contract';
 import { useEffect, useReducer, useRef } from 'react';
 import { streamBuild } from './model/client';
-import { IDLE, reduce } from './model/session';
+import { IDLE, STEP_MS, reduce } from './model/session';
 import type { Session, Speed } from './model/session';
-
-// ARCHITECTURE section 3: 240 / 120 / 40 ms per step.
-const STEP_MS: Record<Speed, number> = { 0.5: 240, 1: 120, 3: 40 };
 
 // The build client's owner: one AbortController per build, aborted on a new build, on cancel and on unmount.
 export function useBuild(): {
@@ -13,13 +10,16 @@ export function useBuild(): {
   file: (form: Form) => void;
   cancel: () => void;
   reset: () => void;
+  pause: (paused: boolean) => void;
+  replay: () => void;
+  setSpeed: (speed: Speed) => void;
 } {
   const [session, dispatch] = useReducer(reduce, IDLE);
   const current = useRef<{ requestId: string; controller: AbortController }>(undefined);
 
   useEffect(() => () => current.current?.controller.abort(), []);
 
-  const ticking = session.status === 'running' ? session.requestId : undefined;
+  const ticking = session.status === 'running' && !session.paused ? session.requestId : undefined;
   const speed = session.status === 'running' ? session.speed : 1;
   useEffect(() => {
     if (ticking === undefined) return;
@@ -50,5 +50,16 @@ export function useBuild(): {
     if (current.current) dispatch({ type: 'RESET', requestId: current.current.requestId });
   };
 
-  return { session, file, cancel, reset };
+  // Playback controls address the build on the board; the reducer ignores them where they do not apply.
+  const pause = (paused: boolean) => {
+    if (current.current) dispatch({ type: 'PAUSE', requestId: current.current.requestId, paused });
+  };
+  const replay = () => {
+    if (current.current) dispatch({ type: 'REPLAY', requestId: current.current.requestId });
+  };
+  const setSpeed = (speed: Speed) => {
+    if (current.current) dispatch({ type: 'SPEED', requestId: current.current.requestId, speed });
+  };
+
+  return { session, file, cancel, reset, pause, replay, setSpeed };
 }
