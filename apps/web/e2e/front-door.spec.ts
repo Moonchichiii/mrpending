@@ -1,5 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { VIEWPORTS, expectAxeClean, expectNoOverflow } from './layout';
+import {
+  PHONE,
+  VIEWPORTS,
+  expectAxeClean,
+  expectFocusVisible,
+  expectNoOverflow,
+  expectTargets,
+} from './layout';
 
 test('the static front door makes no API call', async ({ page }) => {
   const api: string[] = [];
@@ -10,6 +17,7 @@ test('the static front door makes no API call', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Watch Mr. Pending at work' })).toBeVisible();
   expect(api).toEqual([]);
   await expectAxeClean(page, 'static front door');
+  await expectFocusVisible(page, 'static front door');
 });
 
 for (const viewport of VIEWPORTS) {
@@ -18,5 +26,6 @@ for (const viewport of VIEWPORTS) {
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expectNoOverflow(page);
+    if (viewport.width <= PHONE) await expectTargets(page);
   });
 }

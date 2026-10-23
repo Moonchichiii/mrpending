@@ -1,74 +1,11 @@
 import { readFileSync } from 'node:fs';
-import { Attempt, BuildHeader, Form, Line } from '@pending/contract';
+import { Line } from '@pending/contract';
 import type { StreamEvent } from '@pending/contract';
-import { report } from '@pending/machine';
-import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
-import { VIEWPORTS, expectAxeClean, expectNoOverflow } from './layout';
+import { ATTEMPTS, FORM, ndjson, open, recorded } from './build';
+import { PHONE, VIEWPORTS, expectAxeClean, expectNoOverflow, expectTargets } from './layout';
 
 const ID = '00000000-0000-4000-8000-000000000001';
-
-// A recorded build in two trials: lost, then repaired by removing p4 and pressed (MACHINE-RULES section 7 fixtures).
-const fixture = (name: string, file: string): unknown =>
-  JSON.parse(
-    readFileSync(new URL(`../../../packages/machine/fixtures/${name}/${file}.json`, import.meta.url), 'utf8'),
-  );
-const FORM = Form.parse(fixture('lost', 'form'));
-const ATTEMPTS = [
-  Attempt.parse({
-    n: 1,
-    blueprint: fixture('lost', 'blueprint'),
-    violations: [],
-    events: fixture('lost', 'events'),
-    outcome: 'lost',
-    failedAt: 'L3',
-  }),
-  Attempt.parse({
-    n: 2,
-    blueprint: fixture('repaired', 'blueprint'),
-    violations: [],
-    events: fixture('repaired', 'events'),
-    outcome: 'pressed',
-    patch: fixture('repaired', 'patch'),
-  }),
-];
-const recorded = (requestId: string): StreamEvent[] => [
-  ...ATTEMPTS.map((attempt): StreamEvent => ({ type: 'attempt', requestId, attempt })),
-  {
-    type: 'done',
-    requestId,
-    header: BuildHeader.parse({
-      id: 'b1',
-      contractVersion: 'c1',
-      rulesVersion: 'r2',
-      promptVersion: 'p1',
-      form: FORM,
-      model: { mode: 'local', id: 'gemma4:e2b', host: 'ollama' },
-      title: 'The Scenic Route',
-      report: report(ATTEMPTS),
-      createdAt: '2026-10-22T10:00:00.000Z',
-    }),
-  },
-];
-
-// The local front door with the agent mocked at the network boundary.
-async function open(page: Page) {
-  await page.route('**/api/config', (route) =>
-    route.fulfill({
-      json: {
-        inference: 'this-machine',
-        model: { mode: 'local', id: 'gemma4:e2b', host: 'ollama' },
-        voice: { elevenlabs: false },
-        telemetry: false,
-        repairs: 2,
-        contractVersion: 'c1',
-        rulesVersion: 'r2',
-      },
-    }),
-  );
-  await page.goto('/');
-  await expect(page.getByText('Gemma runs on this machine. Your prompts stay here.')).toBeVisible();
-}
 
 test('Form 27B/6 is completed and filed with the keyboard alone', async ({ page }) => {
   await open(page);
@@ -138,11 +75,7 @@ test('the board is axe clean while a trial runs and beside the correction', asyn
   await open(page);
   await page.route('**/api/build', (route) => {
     const requestId = route.request().headers()['x-request-id'] ?? '';
-    return route.fulfill({
-      body: recorded(requestId)
-        .map((e) => `${JSON.stringify(e)}\n`)
-        .join(''),
-    });
+    return route.fulfill({ body: ndjson(recorded(requestId)) });
   });
   await page.getByLabel('1. Nature of the request').fill(FORM.nature);
   await page.getByRole('button', { name: 'File Form 27B/6' }).click();
@@ -171,11 +104,7 @@ test('a pressed build ends on the Engineering Report, saved as a 1200 x 630 PNG,
   await open(page);
   await page.route('**/api/build', (route) => {
     const requestId = route.request().headers()['x-request-id'] ?? '';
-    return route.fulfill({
-      body: recorded(requestId)
-        .map((e) => `${JSON.stringify(e)}\n`)
-        .join(''),
-    });
+    return route.fulfill({ body: ndjson(recorded(requestId)) });
   });
   await page.getByLabel('1. Nature of the request').fill(FORM.nature);
   await page.getByRole('button', { name: 'File Form 27B/6' }).click();
@@ -224,9 +153,7 @@ test('Mr. Pending takes the mood of each line, beside the voice, and the desk is
   await open(page);
   await page.route('**/api/build', (route) => {
     const requestId = route.request().headers()['x-request-id'] ?? '';
-    return route.fulfill({
-      body: [...said(requestId), ...recorded(requestId)].map((e) => `${JSON.stringify(e)}\n`).join(''),
-    });
+    return route.fulfill({ body: ndjson([...said(requestId), ...recorded(requestId)]) });
   });
   await page.getByLabel('1. Nature of the request').fill(FORM.nature);
   // Time stands still from here, so only runFor moves the playhead and each mood holds for its picture.
@@ -273,5 +200,6 @@ for (const viewport of VIEWPORTS) {
     await page.getByRole('button', { name: 'File Form 27B/6' }).click();
     await expect(page.getByRole('alert')).toBeVisible();
     await expectNoOverflow(page);
+    if (viewport.width <= PHONE) await expectTargets(page);
   });
 }

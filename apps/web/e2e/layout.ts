@@ -11,17 +11,64 @@ export const VIEWPORTS = WIDTHS.flatMap((width) => [
 
 // No horizontal page overflow, and no element wider than the viewport.
 export async function expectNoOverflow(page: Page) {
-  const { viewport, scrollWidth, widest } = await page.evaluate(() => {
+  const { viewport, scrollWidth, widest, furthest } = await page.evaluate(() => {
     const elements = [...document.body.querySelectorAll('*')];
-    const widths = elements.map((el) => ({ tag: el.tagName, width: el.getBoundingClientRect().width }));
+    const boxes = elements.map((el) => {
+      const box = el.getBoundingClientRect();
+      return { tag: `${el.tagName}.${el.getAttribute('class') ?? ''}`, width: box.width, right: box.right };
+    });
+    const none = { tag: 'none', width: 0, right: 0 };
     return {
       viewport: window.innerWidth,
       scrollWidth: document.documentElement.scrollWidth,
-      widest: widths.reduce((a, b) => (b.width > a.width ? b : a), { tag: 'none', width: 0 }),
+      widest: boxes.reduce((a, b) => (b.width > a.width ? b : a), none),
+      furthest: boxes.reduce((a, b) => (b.right > a.right ? b : a), none),
     };
   });
-  expect(scrollWidth).toBeLessThanOrEqual(viewport);
+  expect(scrollWidth, `${furthest.tag} ends at ${furthest.right}`).toBeLessThanOrEqual(viewport);
   expect(widest.width, `${widest.tag} is wider than the viewport`).toBeLessThanOrEqual(viewport);
+}
+
+// On a phone every visible control is at least 52 px each way (character sheet section 8), links in running text too.
+export const PHONE = 390;
+const CONTROLS = 'a[href], button, input, select, textarea';
+
+export async function expectTargets(page: Page) {
+  const small = await page.evaluate((selector) => {
+    const visible = (el: Element) => el.checkVisibility({ visibilityProperty: true, opacityProperty: false });
+    return [...document.querySelectorAll(selector)]
+      .filter(visible)
+      .map((el) => ({ el, box: el.getBoundingClientRect() }))
+      .filter(({ box }) => box.width < 52 || box.height < 52)
+      .map(({ el, box }) => `${el.tagName} "${el.textContent?.slice(0, 30)}" ${box.width}x${box.height}`);
+  }, CONTROLS);
+  expect(small).toEqual([]);
+}
+
+// Tab walks every focusable element of the page once, and each shows a focus indicator of at least 2 px.
+export async function expectFocusVisible(page: Page, label: string) {
+  await page.evaluate(() => {
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+  });
+  const seen: string[] = [];
+  for (let i = 0; i < 200; i += 1) {
+    await page.keyboard.press('Tab');
+    const focused = await page.evaluate(() => {
+      const el = document.activeElement;
+      if (el === null || el === document.body) return undefined;
+      const style = getComputedStyle(el);
+      return {
+        key: `${el.tagName}#${[...document.querySelectorAll('*')].indexOf(el)}`,
+        name: `${el.tagName} "${el.textContent?.slice(0, 30) ?? ''}"`,
+        outline: style.outlineStyle === 'none' ? 0 : Number.parseFloat(style.outlineWidth),
+      };
+    });
+    if (focused === undefined || seen.includes(focused.key)) break;
+    seen.push(focused.key);
+    expect(focused.outline, `${focused.name} has no visible focus`).toBeGreaterThanOrEqual(2);
+  }
+  process.stdout.write(`focus ${label}: ${seen.length} tab stops, each with a visible indicator\n`);
+  expect(seen.length).toBeGreaterThan(0);
 }
 
 // WCAG 2.2 A and AA plus the AAA rules axe implements (enhanced contrast among them), on the page or on the part of it

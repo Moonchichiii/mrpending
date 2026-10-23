@@ -48,6 +48,13 @@
   font-size: var(--text-heading);
 }
 
+/* The record's title is its link, so it is a 52 px target (character sheet section 8). */
+.title a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target);
+}
+
 .approved,
 .pending {
   justify-self: start;
