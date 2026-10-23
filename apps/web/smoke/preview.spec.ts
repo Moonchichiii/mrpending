@@ -41,6 +41,29 @@ test('the host answers every kind of path with the contract headers and noindex'
   }
 });
 
+// The console check of section 7: the browser itself refuses what the policy forbids and reports each refusal.
+test('the browser enforces the policy: another origin and an inline script are refused in the console', async ({
+  page,
+}) => {
+  const refusals: string[] = [];
+  page.on('console', (message) => {
+    if (/Content Security Policy/i.test(message.text())) refusals.push(message.text());
+  });
+  await page.goto('/');
+  const outcome = await page.evaluate(async () => {
+    const fetched = await fetch('https://example.com/').then(
+      () => 'sent',
+      () => 'refused',
+    );
+    const script = document.createElement('script');
+    script.textContent = 'document.body.dataset["inline"] = "ran";';
+    document.body.append(script);
+    return { fetched, inline: document.body.dataset['inline'] ?? 'refused' };
+  });
+  expect(outcome).toEqual({ fetched: 'refused', inline: 'refused' });
+  await expect.poll(() => refusals.length).toBeGreaterThanOrEqual(2);
+});
+
 test('the static deployment has no agent behind it', async ({ request }) => {
   for (const path of ['/api/config', '/api/build'])
     expect((await request.get(path)).status(), path).toBe(404);
