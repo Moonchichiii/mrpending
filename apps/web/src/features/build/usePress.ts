@@ -8,7 +8,8 @@ const REDUCED = '(prefers-reduced-motion: reduce)';
 // `at` is the performance.now() the clock started at, taken before the press is painted, so the board's beats and the
 // rig's share one clock. With reduced motion there is no sequence: the press shows its final beat at once, as the
 // playback clock does, and reduced motion switched on during the press cuts to that beat and cancels the rest; the
-// press never runs back.
+// press never runs back. From the cut `at` is undefined, so the board draws the press at rest and allowing motion
+// again cannot replay its beats.
 export function usePress(playback: string | undefined): { beat: PressBeat; at: number | undefined } {
   const [reached, setReached] = useState<{ playback: string; at: number; beat: PressBeat }>();
   useLayoutEffect(() => {
@@ -40,6 +41,6 @@ export function usePress(playback: string | undefined): { beat: PressBeat; at: n
   const beat = current?.beat ?? 'before';
   // The first render of a press comes before its effect, so it reads the preference itself.
   if (playback !== undefined && beat !== 'cut' && window.matchMedia(REDUCED).matches)
-    return { beat: 'cut', at: current?.at };
-  return { beat, at: current?.at };
+    return { beat: 'cut', at: undefined };
+  return { beat, at: beat === 'cut' ? undefined : current?.at };
 }

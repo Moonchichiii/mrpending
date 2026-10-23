@@ -258,6 +258,8 @@ test('a press keeps the rig, goes excited at 0.90 s and cuts to deadpan at 1.60 
   expect(report()).toBeNull();
   await vi.waitFor(() => expect(mood()).toBe('deadpan'), { timeout: 1500 });
   expect(report()).not.toBeNull();
+  // Its beats are over by the cut, so the board is left at rest.
+  expect(document.querySelector('[data-button]')?.closest('svg')?.getAttribute('data-press')).toBe('still');
 });
 
 test('with reduced motion a press shows its final deadpan at once, with no timed pose before it', async () => {
@@ -296,13 +298,18 @@ test('reduced motion switched on during a press cuts to the final deadpan at onc
     { timeout: 3000 },
   );
   expect(mood()).toBe('slow');
+  const press = () => document.querySelector('[data-button]')?.closest('svg')?.getAttribute('data-press');
+  expect(press()).toBe('sequence');
   motion.matches = true;
   act(() => motion.onchange?.());
   expect(mood()).toBe('deadpan');
+  // The board is left at rest, so the media rule is not what holds its beats still.
+  expect(press()).toBe('still');
   // The timers are cancelled, so the excited pose never comes, and allowing motion again does not run the press back.
   motion.matches = false;
   await new Promise((resolve) => setTimeout(resolve, 1800));
   expect(mood()).toBe('deadpan');
+  expect(press()).toBe('still');
 });
 
 test('the voice speaks "WE DID IT!" at the excited cue, not on the press tick, and the verdict after it', async () => {
