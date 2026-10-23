@@ -1,11 +1,15 @@
 import type { Build } from '@pending/contract';
 import { useReducer, useRef, useState } from 'react';
 import { assertNever } from '../../shared/assertNever';
+import { Engineer } from '../engineer';
+import { Voice } from '../voice';
 import { Controls } from './Controls';
+import { pressLine, pressVoiced, pressing } from './model/press';
 import { STEP_MS, playhead, reduce, said } from './model/session';
 import type { Session } from './model/session';
 import { Lines } from './Lines';
-import { Trial, skipVoice } from './Trial';
+import { Trial } from './Trial';
+import { usePress } from './usePress';
 import { useTicks } from './useTicks';
 import styles from './BuildDesk.module.css';
 
@@ -28,11 +32,26 @@ export function Playback({ build }: { build: Build }) {
     dispatch({ type: 'REPLAY', requestId: build.id });
     status.current?.focus();
   };
+  const head = session.status === 'running' ? playhead(session.attempts, session.step) : undefined;
+  const lines =
+    session.status === 'running'
+      ? said(session.lines, head?.attempt.n ?? 1, head?.step ?? 0)
+      : session.status === 'pressed' || session.status === 'exhausted'
+        ? session.build.lines
+        : [];
+  // As on the desk, the voice holds "WE DID IT!" for the press clock's excited beat.
+  const pressed = pressing(session);
+  const press = usePress(pressed === undefined ? undefined : `${pressed}:${take}`);
+  // As on the desk, the rig reacts to the last line said, or on a press to the line its clock has reached.
+  const engineer = (
+    <Engineer status={session.status} line={pressed === undefined ? lines.at(-1) : pressLine(lines, press)}>
+      <Lines lines={lines} />
+    </Engineer>
+  );
 
   const body = () => {
     switch (session.status) {
-      case 'running': {
-        const head = playhead(session.attempts, session.step);
+      case 'running':
         return (
           <>
             <Controls
@@ -40,7 +59,6 @@ export function Playback({ build }: { build: Build }) {
               paused={session.paused}
               onPause={(paused) => dispatch({ type: 'PAUSE', requestId: build.id, paused })}
               onReplay={replay}
-              onSkipVoice={skipVoice}
               onSpeed={(speed) => dispatch({ type: 'SPEED', requestId: build.id, speed })}
             />
             <Trial
@@ -50,16 +68,15 @@ export function Playback({ build }: { build: Build }) {
               step={head?.step}
               stepMs={STEP_MS[session.speed]}
             />
-            <Lines lines={said(session.lines, head?.attempt.n ?? 1, head?.step ?? 0)} />
+            {engineer}
           </>
         );
-      }
       case 'pressed':
       case 'exhausted':
         return (
           <>
             <Trial take={take} attempts={session.build.attempts} attempt={session.build.attempts.at(-1)} />
-            <Lines lines={session.build.lines} />
+            {engineer}
             <button type="button" className={styles.action} onClick={replay}>
               Replay from the start
             </button>
@@ -76,7 +93,6 @@ export function Playback({ build }: { build: Build }) {
     }
   };
 
-  const head = session.status === 'running' ? playhead(session.attempts, session.step) : undefined;
   return (
     <div className={styles.desk}>
       <output ref={status} tabIndex={-1} className={styles.status}>
@@ -86,6 +102,8 @@ export function Playback({ build }: { build: Build }) {
             ? session.build.report.verdict
             : ''}
       </output>
+      {/* Outside the phases, so the voice keeps its queue from playback to the ending; a replay restarts it. */}
+      <Voice lines={pressVoiced(lines, press)} playback={`${build.id}:${take}`} />
       {body()}
     </div>
   );

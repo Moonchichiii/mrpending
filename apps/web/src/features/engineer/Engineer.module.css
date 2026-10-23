@@ -1,0 +1,539 @@
+/* Mr. Pending's line card and rig (character sheet sections 4 and 8). */
+.card {
+  --overshoot: cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3);
+  align-items: start;
+  max-width: var(--measure);
+  padding: var(--space-3);
+  background: var(--paper);
+  border: var(--border-paper);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+  transform: rotate(var(--tilt-c));
+}
+
+.text {
+  min-width: 0;
+}
+
+.rig {
+  display: block;
+  width: 180px;
+  height: auto;
+  overflow: visible;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.phone {
+  display: none;
+}
+
+.rig.phone {
+  width: 72px;
+}
+/* Flat fills from the tokens; the rig inherits its 4 px ink outline. */
+.amber {
+  fill: var(--amber);
+}
+
+.copper {
+  fill: var(--copper);
+}
+
+.mint {
+  fill: var(--mint);
+}
+
+.paper {
+  fill: var(--paper);
+}
+
+.coral {
+  fill: var(--coral);
+}
+
+.teal {
+  fill: var(--teal);
+}
+
+.navy {
+  fill: var(--blueprint);
+}
+
+.ink {
+  fill: var(--ink);
+}
+
+.shadow {
+  fill: var(--copper);
+  stroke: none;
+}
+
+.spiral {
+  stroke: var(--copper);
+  stroke-width: 6;
+}
+
+.grid {
+  stroke: var(--blueprint-line);
+  stroke-width: 1.5;
+}
+
+.dot {
+  fill: var(--button);
+  stroke: none;
+}
+
+.gear {
+  fill: var(--copper);
+  stroke-dasharray: 5 4;
+  stroke-width: 6;
+}
+
+.lines {
+  stroke-width: 3;
+}
+
+.armOutline {
+  stroke-width: 16;
+}
+
+.arm {
+  stroke: var(--mint);
+  stroke-width: 8;
+}
+
+.stalkOutline {
+  stroke-width: 10;
+}
+
+.stalk {
+  stroke: var(--mint);
+  stroke-width: 3;
+}
+
+.pupil {
+  fill: var(--ink);
+  stroke: none;
+}
+
+.lid {
+  fill: var(--mint);
+  stroke: none;
+}
+
+.lidLine {
+  stroke-width: 3;
+}
+
+.lens {
+  fill: var(--teal);
+  fill-opacity: 0.16;
+}
+
+.mouthOpen {
+  fill: var(--ink);
+}
+
+/* Only the transforms move, with the overshoot curve over 180 ms; reduced motion zeroes the duration globally. */
+.head,
+.stalkL,
+.stalkR,
+.eyeL,
+.eyeR,
+.pupil,
+.lidL,
+.lidR,
+.hatch {
+  transform-box: view-box;
+  transition: transform 180ms var(--overshoot);
+}
+
+.head {
+  transform-origin: 195px 128px;
+}
+
+.stalkL {
+  transform-origin: 186px 80px;
+  transform: rotate(-25.94deg);
+}
+
+.stalkR {
+  transform-origin: 204px 80px;
+}
+
+.pupil {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.hatch {
+  transform-origin: 292px 160px;
+}
+
+/* slow: lids half-mast and uneven (left to y 35, right to y 31), pupils centred, stalks up, a small curve of a mouth. */
+.slow .lidL {
+  transform: translateY(18px);
+}
+
+.slow .lidR {
+  transform: translateY(14px);
+}
+
+/* excited: no lids, eyes sprung out to (162, 16) and (212, 14) on stretched stalks, wide pupils, the hatch open. */
+.excited .eyeL {
+  transform: translate(-6px, -14px);
+}
+
+.excited .eyeR {
+  transform: translate(8px, -16px);
+}
+
+.excited .stalkL {
+  transform: rotate(-24.78deg) scaleY(1.392);
+}
+
+.excited .stalkR {
+  transform: rotate(8.43deg) scaleY(1.475);
+}
+
+.excited .pupil {
+  transform: scale(1.4);
+}
+
+.excited .hatch {
+  transform: rotate(-80deg);
+}
+
+/* deadpan: lids nearly closed (y 32 and 30), pupils shifted right, a mild tilt of the head. */
+.deadpan .lidL {
+  transform: translateY(15px);
+}
+
+.deadpan .lidR {
+  transform: translateY(13px);
+}
+
+.deadpan .pupil {
+  transform: translateX(5px);
+}
+
+.deadpan .head {
+  transform: rotate(-4deg);
+}
+
+.burst,
+.mouthOpen,
+.mouthFlat,
+.excited .mouthSlow,
+.deadpan .mouthSlow {
+  display: none;
+}
+
+.excited .burst,
+.excited .mouthOpen,
+.deadpan .mouthFlat {
+  display: inline;
+}
+
+/* The cameo's five looks, 180 ms each with the overshoot: sloth, board, audience, line, then the paperwork (slow). */
+.cameo .head {
+  animation: cameo-head 900ms var(--overshoot) forwards;
+}
+
+.cameo .pupil {
+  animation: cameo-pupil 900ms var(--overshoot) forwards;
+}
+
+.cameo .lidL {
+  animation: cameo-lid-left 900ms var(--overshoot) forwards;
+}
+
+.cameo .lidR {
+  animation: cameo-lid-right 900ms var(--overshoot) forwards;
+}
+
+/* The mood class stays deadpan on the cameo line, so the final beat swaps the flat mouth for the slow curve. */
+.cameo .mouthSlow {
+  display: inline;
+  animation: cameo-mouth-in 900ms step-end forwards;
+}
+
+.cameo .mouthFlat {
+  animation: cameo-mouth-out 900ms step-end forwards;
+}
+
+/* Phones (section 8): the stalks turn, carrying the eyes, instead of the head and pupils looking. */
+.cameo.phone .eyeL {
+  transform-origin: 186px 80px;
+}
+
+.cameo.phone .eyeR {
+  transform-origin: 204px 80px;
+}
+
+.cameo.phone .stalkL {
+  animation: cameo-phone-stalk-left 900ms var(--overshoot) forwards;
+}
+
+.cameo.phone .stalkR,
+.cameo.phone .eyeL,
+.cameo.phone .eyeR {
+  animation: cameo-phone-stalk 900ms var(--overshoot) forwards;
+}
+
+.cameo.phone .head {
+  animation: cameo-phone-head 900ms var(--overshoot) forwards;
+}
+
+.cameo.phone .pupil {
+  animation: cameo-phone-pupil 900ms var(--overshoot) forwards;
+}
+
+@keyframes cameo-mouth-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes cameo-mouth-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Sloth up and to the left, board, audience, line to the left, paperwork; the left stalk keeps its rest angle. */
+@keyframes cameo-phone-stalk-left {
+  0% {
+    transform: rotate(-25.94deg);
+  }
+  20% {
+    transform: rotate(-41.94deg);
+  }
+  40% {
+    transform: rotate(-15.94deg);
+  }
+  60% {
+    transform: rotate(-25.94deg);
+  }
+  80% {
+    transform: rotate(-33.94deg);
+  }
+  100% {
+    transform: rotate(-25.94deg);
+  }
+}
+
+@keyframes cameo-phone-stalk {
+  0% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(-16deg);
+  }
+  40% {
+    transform: rotate(10deg);
+  }
+  60% {
+    transform: rotate(0deg);
+  }
+  80% {
+    transform: rotate(-8deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+/* The head and pupils only settle from deadpan into the slow default: the tilt goes at the last beat, the pupils centre at once. */
+@keyframes cameo-phone-head {
+  0%,
+  80% {
+    transform: rotate(-4deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes cameo-phone-pupil {
+  0% {
+    transform: translate(5px, 0);
+  }
+  20%,
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes cameo-head {
+  0% {
+    transform: rotate(-4deg);
+  }
+  20% {
+    transform: rotate(6deg);
+  }
+  40% {
+    transform: rotate(-2deg);
+  }
+  60% {
+    transform: rotate(0deg);
+  }
+  80% {
+    transform: rotate(3deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes cameo-pupil {
+  0% {
+    transform: translate(5px, 0);
+  }
+  20% {
+    transform: translate(4px, -4px);
+  }
+  40% {
+    transform: translate(0, -5px);
+  }
+  60% {
+    transform: translate(0, 0);
+  }
+  80% {
+    transform: translate(5px, 1px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes cameo-lid-left {
+  0%,
+  20%,
+  40%,
+  80% {
+    transform: translateY(15px);
+  }
+  60%,
+  100% {
+    transform: translateY(18px);
+  }
+}
+
+@keyframes cameo-lid-right {
+  0%,
+  20%,
+  40%,
+  80% {
+    transform: translateY(13px);
+  }
+  60%,
+  100% {
+    transform: translateY(14px);
+  }
+}
+
+/* The sloth hangs by both arms from the card's top edge, about a third of Mr. Pending's size. */
+.sloth {
+  position: absolute;
+  top: -6px;
+  right: var(--space-4);
+}
+
+/* The caption keeps clear of the sloth, which reaches about 70 px down into the card. */
+.withSloth .text {
+  padding-inline-end: calc(60px + var(--space-4));
+}
+
+.slothFigure {
+  display: block;
+  width: 60px;
+  height: auto;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 4;
+  stroke-linejoin: round;
+}
+
+.slothFigure.phone {
+  display: none;
+  width: 32px;
+}
+
+.slothLid {
+  fill: var(--copper);
+  stroke: none;
+  transform-box: fill-box;
+  transform-origin: top;
+  transform: scaleY(0);
+}
+
+.blink {
+  animation: blink 1200ms ease-in-out 600ms 1;
+}
+
+@keyframes blink {
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.slothMouth {
+  stroke-width: 2;
+}
+
+/* Phones (section 8): the 72 px head in the card's corner, and only the sloth's head peeking in at the edge. */
+@media (max-width: 40rem) {
+  .desk,
+  .slothFigure.desk {
+    display: none;
+  }
+
+  .rig.phone,
+  .slothFigure.phone {
+    display: block;
+  }
+
+  /* The fallback rig is the head alone, so a phone shows it at the phone rig's size. */
+  .rig.still {
+    width: 72px;
+  }
+
+  .card {
+    grid-template-columns: 1fr auto;
+  }
+
+  .portrait {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .text {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  /* Only the head peeks in, and it stays within the card's padding. */
+  .withSloth .text {
+    padding-inline-end: 0;
+  }
+
+  .sloth {
+    top: -16px;
+    right: calc(72px + var(--space-4));
+  }
+}

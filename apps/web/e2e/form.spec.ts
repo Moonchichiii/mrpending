@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { Attempt, BuildHeader, Form } from '@pending/contract';
+import { Attempt, BuildHeader, Form, Line } from '@pending/contract';
 import type { StreamEvent } from '@pending/contract';
 import { report } from '@pending/machine';
 import type { Page } from '@playwright/test';
@@ -163,6 +163,64 @@ test('the board is axe clean while a trial runs and beside the correction', asyn
   await pause.click();
   await expect(page.locator('[data-change="removed"]')).toHaveCount(1);
   await expectAxeClean(page, 'board running, trial 2 with the correction diff');
+});
+
+// One line per mood in trial 1, so the playhead walks Mr. Pending through all three.
+const MOODS = [
+  { mood: 'slow', step: 0, text: 'The Department will now observe the apparatus.' },
+  { mood: 'excited', step: 2, text: 'It moved! Please inform the entire Department.' },
+  { mood: 'deadpan', step: 4, text: 'It has stopped moving.' },
+] as const;
+const said = (requestId: string): StreamEvent[] =>
+  MOODS.map(({ mood, step, text }) => ({
+    type: 'line',
+    requestId,
+    line: Line.parse({ id: mood, beat: 'running', mood, text, source: 'table', at: { attempt: 1, step } }),
+  }));
+
+test('Mr. Pending takes the mood of each line, beside the voice, and the desk is axe clean', async ({
+  page,
+}, testInfo) => {
+  await page.clock.install();
+  await open(page);
+  await page.route('**/api/build', (route) => {
+    const requestId = route.request().headers()['x-request-id'] ?? '';
+    return route.fulfill({
+      body: [...said(requestId), ...recorded(requestId)].map((e) => `${JSON.stringify(e)}\n`).join(''),
+    });
+  });
+  await page.getByLabel('1. Nature of the request').fill(FORM.nature);
+  // Time stands still from here, so only runFor moves the playhead and each mood holds for its picture.
+  await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
+  await page.getByRole('button', { name: 'File Form 27B/6' }).click();
+  await expect(page.getByRole('status')).toHaveText('Trial 1 in progress.');
+  const lines = page.getByRole('list', { name: 'Mr. Pending' });
+  // The card holds the portrait and the lines; the desk figure is the rig itself.
+  const card = lines.locator('xpath=../..');
+  const rig = card.locator('svg[data-variant="desk"]');
+
+  let at = 0;
+  for (const { mood, step, text } of MOODS) {
+    await page.clock.runFor(120 * (step - at));
+    at = step;
+    await expect(lines.locator('li').last()).toHaveText(text);
+    await expect(lines.locator('li').last()).toHaveAttribute('data-mood', mood);
+    await expect(rig).toHaveClass(new RegExp(mood));
+    // The issue's evidence, kept as a report attachment in the ignored test output, never compared or committed.
+    const path = testInfo.outputPath(`rig-${mood}.png`);
+    await card.screenshot({ path, animations: 'disabled' });
+    await testInfo.attach(`rig-${mood}`, { path, contentType: 'image/png' });
+  }
+
+  // Playback holds on the deadpan line while axe, which needs running timers, reads the desk.
+  await page.getByRole('button', { name: 'Pause' }).click();
+  await page.clock.resume();
+  const voice = page.getByRole('region', { name: 'Voice' });
+  await expect(voice.getByRole('button', { name: 'Skip voice' })).toBeVisible();
+  await expect(
+    page.getByRole('group', { name: 'Playback' }).getByRole('button', { name: 'Skip voice' }),
+  ).toHaveCount(0);
+  await expectAxeClean(page, 'desk with the rig and the voice');
 });
 
 for (const viewport of VIEWPORTS) {
