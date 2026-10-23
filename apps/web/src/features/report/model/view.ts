@@ -25,20 +25,23 @@ export function reportView({ title, report, model, attempts }: Build): ReportVie
 }
 
 // Greedy word wrap for SVG text, which never wraps itself: a word longer than the line is cut, and lines past `max`
-// join the last one, which the card then condenses to fit.
+// join the last one, which the card then condenses to fit. Lengths and cuts count code points, so a character outside
+// the BMP is never split into lone surrogates.
 export function wrap(text: string, width: number, max: number): string[] {
   const words = text
     .split(/\s+/)
     .filter(Boolean)
-    .flatMap((word) =>
-      Array.from({ length: Math.ceil(word.length / width) }, (_, i) =>
-        word.slice(i * width, (i + 1) * width),
-      ),
-    );
+    .flatMap((word) => {
+      const chars = Array.from(word);
+      return Array.from({ length: Math.ceil(chars.length / width) }, (_, i) =>
+        chars.slice(i * width, (i + 1) * width).join(''),
+      );
+    });
+  const length = (s: string) => Array.from(s).length;
   const lines: string[] = [];
   for (const word of words) {
     const last = lines.at(-1);
-    if (last !== undefined && last.length + 1 + word.length <= width)
+    if (last !== undefined && length(last) + 1 + length(word) <= width)
       lines[lines.length - 1] = `${last} ${word}`;
     else lines.push(word);
   }

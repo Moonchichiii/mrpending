@@ -151,3 +151,9 @@ test('svg text wraps on words, cuts a word longer than the line and caps the lin
   expect(wrap('Supercalifragilistic', 8, 4)).toEqual(['Supercal', 'ifragili', 'stic']);
   expect(wrap('a b c d', 1, 2)).toEqual(['a', 'b c d']);
 });
+
+test('svg text wrap never splits a character outside the BMP', () => {
+  const title = `${'a'.repeat(21)}🚀b`;
+  expect(wrap(title, 22, 2)).toEqual([`${'a'.repeat(21)}🚀`, 'b']);
+  expect(wrap('ab 🚀', 4, 2)).toEqual(['ab 🚀']);
+});
