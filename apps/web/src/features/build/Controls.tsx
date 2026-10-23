@@ -17,32 +17,26 @@ export function Controls({
   paused,
   onPause,
   onReplay,
-  onSkipVoice,
   onSpeed,
 }: {
   speed: Speed;
   paused: boolean | undefined;
   onPause: (paused: boolean) => void;
   onReplay: () => void;
-  onSkipVoice: () => void;
   onSpeed: (speed: Speed) => void;
 }) {
-  // ARCHITECTURE: Space pauses the machine and Esc skips voice from anywhere on the page.
+  // ARCHITECTURE: Space pauses the machine from anywhere on the page; Esc and Skip voice belong to the voice control.
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.defaultPrevented) return;
-      if (event.key === 'Escape') {
-        onSkipVoice();
-      } else if (event.key === ' ' && paused !== undefined) {
-        if (event.target instanceof Element && event.target.closest(INTERACTIVE)) return;
-        event.preventDefault();
-        // A held key auto-repeats; only the first press toggles, so holding Space cannot flicker playback.
-        if (!event.repeat) onPause(!paused);
-      }
+      if (event.defaultPrevented || event.key !== ' ' || paused === undefined) return;
+      if (event.target instanceof Element && event.target.closest(INTERACTIVE)) return;
+      event.preventDefault();
+      // A held key auto-repeats; only the first press toggles, so holding Space cannot flicker playback.
+      if (!event.repeat) onPause(!paused);
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [paused, onPause, onSkipVoice]);
+  }, [paused, onPause]);
 
   return (
     <fieldset className={styles.controls}>
@@ -58,9 +52,6 @@ export function Controls({
       </button>
       <button type="button" className={styles.control} onClick={onReplay}>
         Replay
-      </button>
-      <button type="button" className={styles.control} onClick={onSkipVoice}>
-        Skip voice
       </button>
       {SPEEDS.map((option) => (
         <button

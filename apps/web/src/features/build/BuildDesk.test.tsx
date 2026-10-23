@@ -1,10 +1,11 @@
 import { Attempt } from '@pending/contract';
-import type { Build, StreamEvent } from '@pending/contract';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import type { Build, Line, StreamEvent } from '@pending/contract';
+import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, expect, test, vi } from 'vitest';
+import engineer from '../engineer/Engineer.module.css';
 import { BuildDesk } from './BuildDesk';
 import { header, lost, pressed } from './model/testBuild';
 
@@ -147,7 +148,10 @@ test('every playback control is a button operated from the keyboard, and speed s
   control('Replay').focus();
   await user.keyboard('{Enter}');
   expect(minutes()).toBeLessThan(pressed(1).events.length);
-  expect(control('Skip voice')).toBeTruthy();
+  // Skip voice belongs to the voice control, not to playback.
+  expect(within(playback).queryByRole('button', { name: 'Skip voice' })).toBeNull();
+  const voice = screen.getByRole('region', { name: 'Voice' });
+  expect(within(voice).getByRole('button', { name: 'Skip voice' })).toBeTruthy();
 });
 
 test('reduced motion: final frames, the full minutes, the correction diff and the lines, without movement', async () => {
@@ -198,6 +202,133 @@ test('reduced motion: final frames, the full minutes, the correction diff and th
   await user.keyboard('{Enter}');
   expect(document.activeElement).toBe(screen.getByRole('status'));
   expect(screen.getByRole('status').textContent).toBe('Trial 1 in progress.');
+});
+
+const said = (id: string, beat: Line['beat'], mood: Line['mood'], text: string) => (requestId: string) =>
+  ({
+    type: 'line',
+    requestId,
+    line: { id, beat, mood, text, source: 'table', at: { attempt: 1, step: 0 } },
+  }) as const;
+const mood = () => {
+  const svg = document.querySelector('svg[data-variant="desk"]');
+  return (['slow', 'excited', 'deadpan'] as const).find((m) => svg?.classList.contains(engineer[m] ?? ''));
+};
+
+const pressedBuild = () =>
+  stream([
+    said('l1', 'running', 'slow', 'Commencing trial 1.'),
+    (requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }),
+    said('l2', 'pressed', 'excited', 'WE DID IT! Please inform the entire Department.'),
+    said('l3', 'pressed', 'deadpan', 'The Department acknowledges this development.'),
+    said('l4', 'pressed', 'deadpan', 'One button. An extraordinary amount of paperwork.'),
+    (requestId) => ({ type: 'done', requestId, header: header([pressed(1)]) }),
+  ]);
+
+test('a press keeps the rig, goes excited at 0.90 s and cuts to deadpan at 1.60 s, though every line is said', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+  pressedBuild();
+  const user = userEvent.setup();
+  render(<BuildDesk canFile />);
+  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+
+  await vi.waitFor(
+    () =>
+      expect(screen.getByRole('status').textContent).toBe(
+        'One button. An extraordinary amount of paperwork.',
+      ),
+    { timeout: 3000 },
+  );
+  // The pressed lines are all said, but the rig waits for the press clock.
+  expect(screen.getByRole('list', { name: 'Mr. Pending' }).textContent).toContain('WE DID IT!');
+  expect(mood()).toBe('slow');
+  await vi.waitFor(() => expect(mood()).toBe('excited'), { timeout: 1500 });
+  await vi.waitFor(() => expect(mood()).toBe('deadpan'), { timeout: 1500 });
+});
+
+test('with reduced motion a press shows its final deadpan at once, with no timed pose before it', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
+  pressedBuild();
+  const user = userEvent.setup();
+  render(<BuildDesk canFile />);
+  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+
+  await vi.waitFor(() =>
+    expect(screen.getByRole('status').textContent).toBe('One button. An extraordinary amount of paperwork.'),
+  );
+  expect(mood()).toBe('deadpan');
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  expect(mood()).toBe('deadpan');
+});
+
+test('reduced motion switched on during a press cuts to the final deadpan at once and cancels the timed poses', async () => {
+  const motion = {
+    matches: false,
+    onchange: null as (() => void) | null,
+    addEventListener() {},
+    removeEventListener() {},
+  };
+  vi.stubGlobal('matchMedia', () => motion);
+  pressedBuild();
+  const user = userEvent.setup();
+  render(<BuildDesk canFile />);
+  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+
+  await vi.waitFor(
+    () =>
+      expect(screen.getByRole('status').textContent).toBe(
+        'One button. An extraordinary amount of paperwork.',
+      ),
+    { timeout: 3000 },
+  );
+  expect(mood()).toBe('slow');
+  motion.matches = true;
+  act(() => motion.onchange?.());
+  expect(mood()).toBe('deadpan');
+  // The timers are cancelled, so the excited pose never comes, and allowing motion again does not run the press back.
+  motion.matches = false;
+  await new Promise((resolve) => setTimeout(resolve, 1800));
+  expect(mood()).toBe('deadpan');
+});
+
+test('the voice speaks "WE DID IT!" at the excited cue, not on the press tick, and the verdict after it', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+  const { spoken } = withSynth();
+  pressedBuild();
+  const user = userEvent.setup();
+  render(<BuildDesk canFile />);
+  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  const texts = () => spoken.map((u) => u.text);
+  // The first line ends before the press, so the queue is idle when the press tick arrives.
+  await vi.waitFor(() => expect(texts()).toEqual(['Commencing trial 1.']));
+  spoken[0]?.onend?.();
+
+  await vi.waitFor(
+    () =>
+      expect(screen.getByRole('status').textContent).toBe(
+        'One button. An extraordinary amount of paperwork.',
+      ),
+    { timeout: 3000 },
+  );
+  const voice = screen.getByRole('region', { name: 'Voice' });
+  expect(mood()).toBe('slow');
+  expect(texts()).toEqual(['Commencing trial 1.']);
+  expect(voice.textContent).not.toContain('WE DID IT!');
+  await vi.waitFor(() => expect(mood()).toBe('excited'), { timeout: 1500 });
+  await vi.waitFor(() => expect(texts().at(-1)).toBe('WE DID IT! Please inform the entire Department.'));
+  expect(voice.textContent).toContain('WE DID IT!');
+  // The queue plays the rest in order as each line ends, whatever the clock says.
+  spoken.at(-1)?.onend?.();
+  await vi.waitFor(() => expect(texts().at(-1)).toBe('The Department acknowledges this development.'));
+  spoken.at(-1)?.onend?.();
+  await vi.waitFor(() =>
+    expect(texts()).toEqual([
+      'Commencing trial 1.',
+      'WE DID IT! Please inform the entire Department.',
+      'The Department acknowledges this development.',
+      'One button. An extraordinary amount of paperwork.',
+    ]),
+  );
 });
 
 // Answers a filing with a stream the test writes to and never closes.
@@ -255,15 +386,59 @@ test('markup in a model title or memo is shown as text, while streaming and once
   expect(injected()).toBeNull();
 });
 
-test('Space pauses from anywhere but a control, which keeps its own Space, and Escape skips voice', async () => {
-  vi.stubGlobal('matchMedia', () => ({ matches: false }));
-  const cancel = vi.fn<() => void>();
-  vi.stubGlobal('speechSynthesis', { cancel });
+// Just the surface of the Web Speech API the voice uses: one on-device voice, and speech starts when queued.
+class FakeUtterance {
+  text: string;
+  voice: SpeechSynthesisVoice | null = null;
+  lang = '';
+  rate = 1;
+  onstart: (() => void) | null = null;
+  onend: (() => void) | null = null;
+  onerror: ((event: { error: string }) => void) | null = null;
+  constructor(text: string) {
+    this.text = text;
+  }
+}
+const withSynth = () => {
+  const spoken: FakeUtterance[] = [];
+  const local = { name: 'en-GB', lang: 'en-GB', localService: true, default: false, voiceURI: 'en-GB' };
+  const synth = Object.assign(new EventTarget(), {
+    getVoices: () => [local],
+    speak: (utterance: FakeUtterance) => {
+      spoken.push(utterance);
+      utterance.onstart?.();
+    },
+    cancel: vi.fn<() => void>(() => spoken.at(-1)?.onerror?.({ error: 'interrupted' })),
+  });
+  vi.stubGlobal('speechSynthesis', synth);
+  vi.stubGlobal('SpeechSynthesisUtterance', FakeUtterance);
+  return { spoken, cancel: synth.cancel };
+};
+
+test('Space pauses from anywhere but a control, which keeps its own Space, and Escape skips voice once', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+  const { spoken, cancel } = withSynth();
   const send = held();
   const user = userEvent.setup();
   render(<BuildDesk canFile />);
   await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  send((requestId) => ({
+    type: 'line',
+    requestId,
+    line: {
+      id: 'l1',
+      beat: 'designing',
+      mood: 'slow',
+      text: 'The Department is drafting.',
+      source: 'table',
+      at: { attempt: 1, step: 0 },
+    },
+  }));
   send((requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }));
+  // The rig is drawn in the card that holds the lines, and the line said is being spoken.
+  const lines = await screen.findByRole('list', { name: 'Mr. Pending' });
+  expect(lines.parentElement?.parentElement?.querySelector('svg[data-variant="desk"]')).not.toBeNull();
+  await vi.waitFor(() => expect(spoken.map((u) => u.text)).toEqual(['The Department is drafting.']));
   const playback = await screen.findByRole('group', { name: 'Playback' });
   const pause = within(playback).getByRole('button', { name: 'Pause' });
 
@@ -283,8 +458,38 @@ test('Space pauses from anywhere but a control, which keeps its own Space, and E
   await user.keyboard(' ');
   expect(pause.getAttribute('aria-pressed')).toBe('true');
 
+  // Esc is handled by the voice alone, so the line is skipped once, not once per listener.
   await user.keyboard('{Escape}');
   expect(cancel).toHaveBeenCalledTimes(1);
+});
+
+test('the press clock starts on the tick that reaches button.pressed and runs once, however late done arrives', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+  const send = held();
+  const user = userEvent.setup();
+  render(<BuildDesk canFile />);
+  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  send(said('l1', 'running', 'slow', 'Commencing trial 1.'));
+  send((requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }));
+  await vi.waitFor(
+    () => expect(document.querySelector('[data-button][data-pressed="true"]')).not.toBeNull(),
+    {
+      timeout: 3000,
+    },
+  );
+  send(said('l2', 'pressed', 'excited', 'WE DID IT! Please inform the entire Department.'));
+  send(said('l3', 'pressed', 'deadpan', 'One button. An extraordinary amount of paperwork.'));
+
+  // The header has not come, so playback waits at the press while the rig runs its sequence.
+  await vi.waitFor(() => expect(mood()).toBe('excited'), { timeout: 1500 });
+  await vi.waitFor(() => expect(mood()).toBe('deadpan'), { timeout: 1500 });
+  expect(screen.getByRole('status').textContent).toBe('Trial 1 in progress.');
+
+  send((requestId) => ({ type: 'done', requestId, header: header([pressed(1)]) }));
+  await vi.waitFor(() =>
+    expect(screen.getByRole('status').textContent).toBe('One button. An extraordinary amount of paperwork.'),
+  );
+  expect(mood()).toBe('deadpan');
 });
 
 test('each trial starts on a fresh board, never animating out of the previous one', async () => {
