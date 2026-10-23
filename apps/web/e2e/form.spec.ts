@@ -1,5 +1,4 @@
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { Attempt, BuildHeader, Form, Line } from '@pending/contract';
 import type { StreamEvent } from '@pending/contract';
 import { report } from '@pending/machine';
@@ -181,7 +180,7 @@ const said = (requestId: string): StreamEvent[] =>
 
 test('Mr. Pending takes the mood of each line, beside the voice, and the desk is axe clean', async ({
   page,
-}) => {
+}, testInfo) => {
   await page.clock.install();
   await open(page);
   await page.route('**/api/build', (route) => {
@@ -207,10 +206,10 @@ test('Mr. Pending takes the mood of each line, beside the voice, and the desk is
     await expect(lines.locator('li').last()).toHaveText(text);
     await expect(lines.locator('li').last()).toHaveAttribute('data-mood', mood);
     await expect(rig).toHaveClass(new RegExp(mood));
-    await card.screenshot({
-      path: fileURLToPath(new URL(`./screenshots/rig-${mood}.png`, import.meta.url)),
-      animations: 'disabled',
-    });
+    // The issue's evidence, kept as a report attachment in the ignored test output, never compared or committed.
+    const path = testInfo.outputPath(`rig-${mood}.png`);
+    await card.screenshot({ path, animations: 'disabled' });
+    await testInfo.attach(`rig-${mood}`, { path, contentType: 'image/png' });
   }
 
   // Playback holds on the deadpan line while axe, which needs running timers, reads the desk.

@@ -1,9 +1,10 @@
 import type { Build } from '@pending/contract';
 import { useReducer, useRef, useState } from 'react';
 import { assertNever } from '../../shared/assertNever';
+import { Engineer } from '../engineer';
 import { Voice } from '../voice';
 import { Controls } from './Controls';
-import { pressVoiced, pressing } from './model/press';
+import { pressLine, pressVoiced, pressing } from './model/press';
 import { STEP_MS, playhead, reduce, said } from './model/session';
 import type { Session } from './model/session';
 import { Lines } from './Lines';
@@ -41,6 +42,12 @@ export function Playback({ build }: { build: Build }) {
   // As on the desk, the voice holds "WE DID IT!" for the press clock's excited beat.
   const pressed = pressing(session);
   const press = usePress(pressed === undefined ? undefined : `${pressed}:${take}`);
+  // As on the desk, the rig reacts to the last line said, or on a press to the line its clock has reached.
+  const engineer = (
+    <Engineer status={session.status} line={pressed === undefined ? lines.at(-1) : pressLine(lines, press)}>
+      <Lines lines={lines} />
+    </Engineer>
+  );
 
   const body = () => {
     switch (session.status) {
@@ -61,7 +68,7 @@ export function Playback({ build }: { build: Build }) {
               step={head?.step}
               stepMs={STEP_MS[session.speed]}
             />
-            <Lines lines={lines} />
+            {engineer}
           </>
         );
       case 'pressed':
@@ -69,7 +76,7 @@ export function Playback({ build }: { build: Build }) {
         return (
           <>
             <Trial take={take} attempts={session.build.attempts} attempt={session.build.attempts.at(-1)} />
-            <Lines lines={lines} />
+            {engineer}
             <button type="button" className={styles.action} onClick={replay}>
               Replay from the start
             </button>

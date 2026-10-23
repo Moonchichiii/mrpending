@@ -2,6 +2,7 @@ import { Build } from '@pending/contract';
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, expect, test, vi } from 'vitest';
+import engineer from '../engineer/Engineer.module.css';
 import { header, pressed } from './model/testBuild';
 import { Playback } from './Playback';
 
@@ -64,4 +65,32 @@ test('a recorded build is spoken by the voice control, with Skip voice and Escap
   // Esc skips the line being spoken from anywhere on the record page.
   await user.keyboard('{Escape}');
   expect(cancel).toHaveBeenCalledTimes(1);
+});
+
+// The pressed lines sit on the press's terminal step, as the agent places them.
+const end = pressed(1).events.at(-1)?.step ?? 0;
+const at = (step: number) => ({ attempt: 1, step });
+const pressedRecord = Build.parse({
+  ...header([pressed(1)]),
+  attempts: [pressed(1)],
+  lines: [
+    { id: 'l1', beat: 'running', mood: 'slow', text: 'Commencing trial 1.', source: 'table', at: at(0) },
+    { id: 'l2', beat: 'pressed', mood: 'excited', text: 'WE DID IT!', source: 'table', at: at(end) },
+    { id: 'l3', beat: 'pressed', mood: 'deadpan', text: 'Noted.', source: 'table', at: at(end) },
+  ],
+});
+const mood = () => {
+  const svg = document.querySelector('svg[data-variant="desk"]');
+  return (['slow', 'excited', 'deadpan'] as const).find((m) => svg?.classList.contains(engineer[m] ?? ''));
+};
+
+test('a recorded press plays on the rig beside its lines: slow in the trial, excited on the press, then deadpan', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+  render(<Playback build={pressedRecord} />);
+
+  const lines = screen.getByRole('list', { name: 'Mr. Pending' });
+  expect(lines.parentElement?.parentElement?.querySelector('svg[data-variant="desk"]')).not.toBeNull();
+  expect(mood()).toBe('slow');
+  await vi.waitFor(() => expect(mood()).toBe('excited'), { timeout: 5000 });
+  await vi.waitFor(() => expect(mood()).toBe('deadpan'), { timeout: 1500 });
 });
