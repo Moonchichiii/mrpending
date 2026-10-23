@@ -6,6 +6,12 @@
   padding-block: var(--space-5);
 }
 
+.footer {
+  width: min(100% - 2 * var(--space-3), 72rem);
+  margin-inline: auto;
+  padding-block-end: var(--space-5);
+}
+
 .intro,
 .section {
   display: grid;
