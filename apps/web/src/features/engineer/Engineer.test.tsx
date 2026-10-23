@@ -3,14 +3,15 @@ import type { Beat } from '@pending/contract';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { Engineer } from './Engineer';
+import type * as BodyDrawing from './Body';
 import type * as Drawing from './Figure';
 import { mood } from './model/mood';
 import type { Phase } from './model/mood';
 import { Sloth } from './Sloth';
 import styles from './Engineer.module.css';
 
-// The drawing itself can be made to throw, to show the fallback never re-enters it.
-const drawing = vi.hoisted(() => ({ broken: false }));
+// The drawing and the body under it can each be made to throw, to show the fallback never re-enters either.
+const drawing = vi.hoisted(() => ({ broken: false, bodyBroken: false }));
 vi.mock('./Figure', async (importOriginal) => {
   const actual = await importOriginal<typeof Drawing>();
   return {
@@ -18,6 +19,16 @@ vi.mock('./Figure', async (importOriginal) => {
     Figure: (props: Parameters<typeof Drawing.Figure>[0]) => {
       if (drawing.broken) throw new Error('the drawing broke');
       return <actual.Figure {...props} />;
+    },
+  };
+});
+vi.mock('./Body', async (importOriginal) => {
+  const actual = await importOriginal<typeof BodyDrawing>();
+  return {
+    ...actual,
+    Body: () => {
+      if (drawing.bodyBroken) throw new Error('the body broke');
+      return <actual.Body />;
     },
   };
 });
@@ -33,14 +44,16 @@ const prefersReduced = (matches: boolean) =>
 beforeEach(() => prefersReduced(false));
 afterEach(() => {
   drawing.broken = false;
+  drawing.bodyBroken = false;
   cleanup();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
 
-const card = (status: Phase, current: Line | undefined) =>
+// By default the line's attempt is one the simulator failed, as the cameo line's always is in a real build.
+const card = (status: Phase, current: Line | undefined, failed = true) =>
   render(
-    <Engineer status={status} line={current}>
+    <Engineer status={status} line={current} failed={failed}>
       <p>{current?.text}</p>
     </Engineer>,
   ).container;
@@ -77,6 +90,15 @@ describe('mood', () => {
     for (const svg of drawn) expect(moods(svg)).toEqual([expected]);
   });
 
+  test('the press cuts to deadpan without a transition, while every other mood change keeps one', () => {
+    const cut = (container: Element) => rigs(container).map((svg) => has(svg, styles.cut));
+    expect(cut(card('pressed', line('pressed', 'deadpan')))).toEqual([true, true]);
+    cleanup();
+    expect(cut(card('pressed', line('pressed', 'excited')))).toEqual([false, false]);
+    cleanup();
+    expect(cut(card('running', line('failed', 'deadpan')))).toEqual([false, false]);
+  });
+
   test('the phone rig draws only the head, stalks and spectacles', () => {
     const [desk, phone] = rigs(card('idle', undefined));
     expect(desk?.querySelector(`.${styles.shell}`)).not.toBeNull();
@@ -87,12 +109,20 @@ describe('mood', () => {
 });
 
 describe('error boundary', () => {
+  // The full rig in the desk's 360 × 320 box and the head alone in the phone's, both static and slow.
   const stillRig = (container: Element) => {
-    const fallback = container.querySelector('[data-fallback]');
-    expect(fallback?.tagName.toLowerCase()).toBe('svg');
+    const fallbacks = [...container.querySelectorAll('svg[data-fallback]')];
     expect(rigs(container)).toEqual([]);
-    expect(fallback && moods(fallback)).toEqual(['slow']);
-    expect(fallback && has(fallback, styles.cameo)).toBe(false);
+    expect(fallbacks.map((svg) => svg.getAttribute('viewBox'))).toEqual(['0 0 360 320', '125 -5 140 140']);
+    const [desk, phone] = fallbacks;
+    expect(desk && has(desk, styles.desk)).toBe(true);
+    expect(phone && has(phone, styles.phone)).toBe(true);
+    expect(desk?.querySelector(`.${styles.shell}`)).not.toBeNull();
+    expect(phone?.querySelector(`.${styles.shell}`)).toBeNull();
+    for (const fallback of fallbacks) {
+      expect(moods(fallback)).toEqual(['slow']);
+      expect(has(fallback, styles.cameo)).toBe(false);
+    }
   };
 
   test('a throw inside the rig leaves a static slow rig and the rest of the card', () => {
@@ -108,6 +138,14 @@ describe('error boundary', () => {
   test('a throw inside the drawing itself does not reach the fallback', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     drawing.broken = true;
+    const container = card('running', line('handoff', 'excited', 'A successful descent!'));
+    stillRig(container);
+    expect(screen.getByText('A successful descent!')).toBeDefined();
+  });
+
+  test('a throw inside the body does not reach the fallback', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    drawing.bodyBroken = true;
     const container = card('running', line('handoff', 'excited', 'A successful descent!'));
     stillRig(container);
     expect(screen.getByText('A successful descent!')).toBeDefined();
@@ -131,7 +169,7 @@ describe('the Sloth Incident', () => {
 
   test('the look sequence and the sloth appear only on the cameo line', () => {
     const { container, rerender } = render(
-      <Engineer status="running" line={line('failed', 'deadpan')}>
+      <Engineer status="running" line={line('failed', 'deadpan')} failed>
         <p />
       </Engineer>,
     );
@@ -139,7 +177,7 @@ describe('the Sloth Incident', () => {
     expect(cameo(container)).toBe(false);
 
     rerender(
-      <Engineer status="repairing" line={line('cameo', 'deadpan')}>
+      <Engineer status="repairing" line={line('cameo', 'deadpan')} failed>
         <p />
       </Engineer>,
     );
@@ -148,12 +186,21 @@ describe('the Sloth Incident', () => {
     expect(rigs(container).map(moods)).toEqual([['deadpan'], ['deadpan']]);
 
     rerender(
-      <Engineer status="running" line={line('repaired', 'slow')}>
+      <Engineer status="running" line={line('repaired', 'slow')} failed={false}>
         <p />
       </Engineer>,
     );
     expect(sloth(container)).toBeNull();
     expect(cameo(container)).toBe(false);
+  });
+
+  test('a cameo line on an attempt the simulator did not fail brings neither the sloth nor the looks', () => {
+    // A forged record can carry the cameo line on a pressed trial; the line still shows, nothing else does.
+    const container = card('running', line('cameo', 'deadpan'), false);
+    expect(sloth(container)).toBeNull();
+    expect(cameo(container)).toBe(false);
+    expect(container.querySelector(`.${styles.withSloth}`)).toBeNull();
+    expect(screen.getByText('This is why we employ snails.')).toBeDefined();
   });
 
   test('with reduced motion the sloth and the line show and nothing moves', () => {

@@ -9,10 +9,13 @@ export type PressBeat = 'before' | 'excited' | 'cut';
 
 // The line the rig reacts to on the press clock. The pressed lines all sit on the terminal step, so the last line said
 // would skip the excited beat: before 0.90 s the rig keeps the line before them, then "WE DID IT!", then the last line.
+// The handoff's excited burst ends when the terminal beat arrives, so until a pressed line is due the rig skips back
+// past it, also while the pressed lines have not yet arrived.
 export function pressLine(lines: Line[], beat: PressBeat): Line | undefined {
   const first = lines.findIndex((line) => line.beat === 'pressed');
-  if (first === -1 || beat === 'cut') return lines.at(-1);
-  return beat === 'excited' ? lines[first] : lines[first - 1];
+  if (first !== -1 && beat === 'cut') return lines.at(-1);
+  if (first !== -1 && beat === 'excited') return lines[first];
+  return (first === -1 ? lines : lines.slice(0, first)).filter((line) => line.beat !== 'handoff').at(-1);
 }
 
 // The lines the voice queue may speak on the press clock: the pressed lines wait for the excited beat at 0.90 s (no

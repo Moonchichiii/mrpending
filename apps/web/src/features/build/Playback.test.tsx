@@ -94,3 +94,42 @@ test('a recorded press plays on the rig beside its lines: slow in the trial, exc
   await vi.waitFor(() => expect(mood()).toBe('excited'), { timeout: 5000 });
   await vi.waitFor(() => expect(mood()).toBe('deadpan'), { timeout: 1500 });
 });
+
+test('the excited handoff ends when the trial reaches its terminal beat, before the press goes excited', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+  const handed = Build.parse({
+    ...pressedRecord,
+    lines: [
+      ...pressedRecord.lines.slice(0, 1),
+      { id: 'h1', beat: 'handoff', mood: 'excited', text: 'Contact!', source: 'table', at: at(1) },
+      ...pressedRecord.lines.slice(1),
+    ],
+  });
+  render(<Playback build={handed} />);
+  const button = () => document.querySelector('[data-button]')?.getAttribute('data-pressed');
+
+  await vi.waitFor(() => expect(mood()).toBe('excited'), { timeout: 1000 });
+  expect(button()).not.toBe('true');
+  await vi.waitFor(() => expect(button()).toBe('true'), { timeout: 5000 });
+  expect(mood()).toBe('slow');
+  await vi.waitFor(() => expect(mood()).toBe('excited'), { timeout: 1500 });
+  await vi.waitFor(() => expect(mood()).toBe('deadpan'), { timeout: 1500 });
+});
+
+test('a recorded cameo line brings the sloth only on the failure the simulator recorded', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
+  const cameo = {
+    id: 'c1',
+    beat: 'cameo',
+    mood: 'deadpan',
+    text: 'This is why we employ snails.',
+    source: 'table',
+    at: at(end),
+  } as const;
+  // The record claims the Sloth Incident on its pressed trial; the line is shown, the sloth is not.
+  render(<Playback build={Build.parse({ ...recorded, lines: [...recorded.lines, cameo] })} />);
+  await vi.waitFor(() =>
+    expect(screen.getByRole('list', { name: 'Mr. Pending' }).textContent).toContain('employ snails'),
+  );
+  expect(document.querySelector('[data-sloth]')).toBeNull();
+});

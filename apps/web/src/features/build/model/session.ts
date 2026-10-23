@@ -70,6 +70,18 @@ export function playhead(attempts: Attempt[], step: number): { attempt: Attempt;
   return last && { attempt: last, step: span(last) - 1 };
 }
 
+// Whether a line sits on the build's first failure, at or after its terminal step: the cameo needs that failure in the
+// simulator's attempts, never a line claiming it, which a record can place on a pressed, later or unfinished trial.
+export function failedOn(attempts: Attempt[], line: Line | undefined): boolean {
+  const first = attempts.find((attempt) => attempt.outcome !== 'pressed');
+  return (
+    line !== undefined &&
+    first !== undefined &&
+    line.at.attempt === first.n &&
+    line.at.step >= lastStep(first.events)
+  );
+}
+
 // The lines placed at or before the playhead: earlier attempts in full, the current one up to its step.
 export const said = (lines: Line[], attempt: number, step: number): Line[] =>
   lines.filter((line) => line.at.attempt < attempt || (line.at.attempt === attempt && line.at.step <= step));

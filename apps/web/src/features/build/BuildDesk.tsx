@@ -1,4 +1,4 @@
-import type { Build, Form, Line } from '@pending/contract';
+import type { Attempt, Build, Form, Line } from '@pending/contract';
 import { useEffect, useRef, useState } from 'react';
 import { assertNever } from '../../shared/assertNever';
 import { Engineer } from '../engineer';
@@ -6,7 +6,7 @@ import { Voice } from '../voice';
 import { Controls } from './Controls';
 import { errorCopy } from './model/errors';
 import { pressLine, pressVoiced, pressing } from './model/press';
-import { STEP_MS, playhead, said } from './model/session';
+import { STEP_MS, failedOn, playhead, said } from './model/session';
 import type { Session } from './model/session';
 import { Form27B6 } from './Form27B6';
 import { Lines } from './Lines';
@@ -58,6 +58,24 @@ function spoken(session: Session): Line[] | undefined {
   }
 }
 
+// The attempts the simulator has run so far, which say whether the line on the card sits on a real failure.
+function held(session: Session): Attempt[] {
+  switch (session.status) {
+    case 'idle':
+    case 'designing':
+      return [];
+    case 'running':
+    case 'repairing':
+    case 'error':
+      return session.attempts;
+    case 'pressed':
+    case 'exhausted':
+      return session.build.attempts;
+    default:
+      return assertNever(session);
+  }
+}
+
 // Form 27B/6 when nothing is in progress; the build's progress, ending or failure otherwise.
 // A build that ends is reported once, however often it is replayed afterwards; onFinished says whether it was kept.
 export function BuildDesk({
@@ -96,8 +114,10 @@ export function BuildDesk({
   // The same take keeps its clock from the press tick through done, so the sequence runs once per playback.
   const press = usePress(pressed === undefined ? undefined : `${pressed}:${take}`);
   // The rig reacts to the last line said, or on a press to the line its clock has reached; its card holds the lines list.
+  const line = lines && (pressed === undefined ? lines.at(-1) : pressLine(lines, press));
+  // One key in every phase, so the card is not remounted between phases and the cameo's looks play once.
   const engineer = lines && (
-    <Engineer status={session.status} line={pressed === undefined ? lines.at(-1) : pressLine(lines, press)}>
+    <Engineer key="engineer" status={session.status} line={line} failed={failedOn(held(session), line)}>
       <Lines lines={lines} />
     </Engineer>
   );

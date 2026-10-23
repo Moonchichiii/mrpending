@@ -178,6 +178,19 @@
   transform-origin: 292px 160px;
 }
 
+/* Character sheet section 6: the press ends in one hard cut to deadpan, so that change takes no transition. */
+.cut .head,
+.cut .stalkL,
+.cut .stalkR,
+.cut .eyeL,
+.cut .eyeR,
+.cut .pupil,
+.cut .lidL,
+.cut .lidR,
+.cut .hatch {
+  transition: none;
+}
+
 /* slow: lids half-mast and uneven (left to y 35, right to y 31), pupils centred, stalks up, a small curve of a mouth. */
 .slow .lidL {
   transform: translateY(18px);
@@ -506,11 +519,6 @@
   .rig.phone,
   .slothFigure.phone {
     display: block;
-  }
-
-  /* The fallback rig is the head alone, so a phone shows it at the phone rig's size. */
-  .rig.still {
-    width: 72px;
   }
 
   .card {

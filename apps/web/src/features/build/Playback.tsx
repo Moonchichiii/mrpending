@@ -5,7 +5,7 @@ import { Engineer } from '../engineer';
 import { Voice } from '../voice';
 import { Controls } from './Controls';
 import { pressLine, pressVoiced, pressing } from './model/press';
-import { STEP_MS, playhead, reduce, said } from './model/session';
+import { STEP_MS, failedOn, playhead, reduce, said } from './model/session';
 import type { Session } from './model/session';
 import { Lines } from './Lines';
 import { Trial } from './Trial';
@@ -42,9 +42,11 @@ export function Playback({ build }: { build: Build }) {
   // As on the desk, the voice holds "WE DID IT!" for the press clock's excited beat.
   const pressed = pressing(session);
   const press = usePress(pressed === undefined ? undefined : `${pressed}:${take}`);
-  // As on the desk, the rig reacts to the last line said, or on a press to the line its clock has reached.
+  // As on the desk, the rig reacts to the last line said, or on a press to the line its clock has reached, and the
+  // card keeps one key in every phase; the sloth needs the recorded attempts to show the line's trial failed.
+  const line = pressed === undefined ? lines.at(-1) : pressLine(lines, press);
   const engineer = (
-    <Engineer status={session.status} line={pressed === undefined ? lines.at(-1) : pressLine(lines, press)}>
+    <Engineer key="engineer" status={session.status} line={line} failed={failedOn(build.attempts, line)}>
       <Lines lines={lines} />
     </Engineer>
   );

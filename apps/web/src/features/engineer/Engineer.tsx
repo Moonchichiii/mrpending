@@ -10,14 +10,16 @@ import { useReducedMotion } from './useReducedMotion';
 import styles from './Engineer.module.css';
 
 // Both variants are drawn and the stylesheet shows one, so a phone needs no script to pick it.
-function Rig({ status, line }: { status: Phase; line: Line | undefined }) {
+function Rig({ status, line, cameo }: { status: Phase; line: Line | undefined; cameo: boolean }) {
   const reduced = useReducedMotion();
   const current = mood(status, line);
-  const cameo = line?.beat === 'cameo' && !reduced;
+  const looks = cameo && !reduced;
+  // The press clock shows a pressed deadpan line only at its 1.60 s beat, which is one hard cut, never a transition.
+  const cut = line?.beat === 'pressed' && current === 'deadpan';
   return (
     <>
-      <Figure variant="desk" mood={current} cameo={cameo} />
-      <Figure variant="phone" mood={current} cameo={cameo} />
+      <Figure variant="desk" mood={current} cameo={looks} cut={cut} />
+      <Figure variant="phone" mood={current} cameo={looks} cut={cut} />
     </>
   );
 }
@@ -37,16 +39,19 @@ class Boundary extends Component<{ fallback: ReactNode; children: ReactNode }, {
 }
 
 // Mr. Pending's line card: the rig in the corner, the line beside it, and on the cameo line the sloth on its top edge.
+// failed is the simulator's word that the line's attempt failed; a forged cameo line alone never brings the sloth.
 export function Engineer({
   status,
   line,
+  failed,
   children,
 }: {
   status: Phase;
   line: Line | undefined;
+  failed: boolean;
   children: ReactNode;
 }) {
-  const cameo = line?.beat === 'cameo';
+  const cameo = line?.beat === 'cameo' && failed;
   return (
     <div className={cameo ? `${styles.card} ${styles.withSloth}` : styles.card}>
       {cameo && (
@@ -56,7 +61,7 @@ export function Engineer({
       )}
       <div className={styles.portrait}>
         <Boundary fallback={<Still />}>
-          <Rig status={status} line={line} />
+          <Rig status={status} line={line} cameo={cameo} />
         </Boundary>
       </div>
       <div className={styles.text}>{children}</div>
