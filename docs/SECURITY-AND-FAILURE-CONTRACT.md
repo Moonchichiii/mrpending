@@ -26,16 +26,11 @@ One code, one meaning, one recovery. User-facing wording lives only in `features
 
 A build that ends `exhausted` is not an error: it is a complete `Build` with `pressed: false` and a report.
 
-```ts
-export const ApiError = z.object({
-  code: z.enum(['INPUT_INVALID', 'RATE_LIMITED', 'MODEL_UNAVAILABLE', 'TIMEOUT', 'MODEL_INVALID', 'VOICE_UNAVAILABLE', 'UNKNOWN']),
-  message: z.string().max(300), requestId: z.string().uuid(), retryable: z.boolean(), retryAfterSeconds: z.number().int().min(1).max(3600).optional(), // message is plain, no internals
-});
-```
+`ApiError` is defined in [`packages/contract/src/api.ts`](../packages/contract/src/api.ts); the source is authoritative. Fields: `code` (one of the seven codes above), `message` ≤ 300 chars (plain, no internals), `requestId` (UUID), `retryable`, optional `retryAfterSeconds` (1–3600).
 
 ## 3. Streaming (`POST /api/build`)
 
-- NDJSON events, schemas in `contract/api.ts`: `partial`, `line`, `attempt`, `patch`, `done`, `error`, `ping` (every 10 s while waiting, once the stream has started). Each carries `requestId`.
+- NDJSON events, schemas in [`packages/contract/src/api.ts`](../packages/contract/src/api.ts): `partial`, `line`, `attempt`, `patch`, `done`, `error`, `ping` (every 10 s while waiting, once the stream has started). Each carries `requestId`.
 - Three endings, kept distinct. **Completed:** the server writes exactly one terminal event (`done` or `error`) and closes; after headers are sent, any server failure is an `error` event. **Cancelled:** the client aborts, the socket closes, the server sees it and cancels the model call; no event is written and the client records `CANCEL`. **Interrupted:** the socket closes for any other reason before a terminal event; the client records `INTERRUPTED`. No partial is ever simulated; no attempt is ever shown before it passes `Attempt`.
 - `done` carries the `BuildHeader`; the client assembles the `Build` from the `attempt` and `line` events it received and recomputes `report` with `machine/report.ts`. A mismatch with the header's report is `UNKNOWN` with the `requestId`.
 - `requestId` is a client UUID, echoed on every event and in `X-Request-Id`. Events for another `requestId` are ignored, so an old slow build cannot overwrite a new one.
@@ -50,7 +45,7 @@ export const ApiError = z.object({
 | Form | `nature` 180 chars, body 4 KB; every other size is a `.max()` in the contract | server zod → 400 / 413, client counter |
 | Model calls per build | 1 design + ≤ 2 repairs, each re-asked at most once | `loop.ts` |
 | Model output | 1,024 tokens per call; every text field has a `.max()` | agent call, contract |
-| First token / one call | 15 s / 45 s hosted; local: set from the laptop measurement in the eval (placeholder 90 s until then) | route → 504 |
+| First token / one call | 15 s / 45 s hosted; 90 s / 90 s local (the spike's measured design p95 was 31.3 s on E2B and 53.8 s on E4B; [spike decision](../eval/results/2026-10-22-spike-decision.md)) | route → 504 |
 | Whole build | 3 min hosted, 6 min local | route → 504 |
 | Concurrent builds | 1 per identity; `MAX_CONCURRENT_BUILDS` globally, default 1 in `local` (one model, CPU-bound on a laptop), 10 in `hosted` | semaphore; a build over the cap is not queued: 429 + `Retry-After: 30` |
 | Builds | 10 per 10 min per identity | sliding window |

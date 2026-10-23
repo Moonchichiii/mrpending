@@ -33,19 +33,16 @@ Arcs are instant: one `ball.launched` event from the start cell to the landing c
 
 ## 4. Events and outcomes
 
-```ts
-const step = z.number().int().min(0).max(200);
-export const SimEvent = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('ball.released'), step, cell: Cell }),
-  z.object({ type: z.literal('ball.moved'),    step, from: Cell, to: Cell, by: z.enum(['gravity', 'conveyor', 'ramp', 'fan']) }),
-  z.object({ type: z.literal('ball.launched'), step, from: Cell, to: Cell, by: z.enum(['seesaw', 'catapult']), part: PartId }),
-  z.object({ type: z.literal('domino.fell'),   step, part: PartId, index: z.number().int().min(0).max(4), cell: Cell }),
-  z.object({ type: z.literal('impulse.lost'),  step, cell: Cell }),
-  z.object({ type: z.literal('ball.lost'),     step, cell: Cell, edge: z.enum(['top', 'bottom', 'west', 'east']) }),
-  z.object({ type: z.literal('ball.stopped'),  step, cell: Cell }),
-  z.object({ type: z.literal('button.pressed'), step, by: z.enum(['ball', 'domino']) }),
-]);
-```
+`SimEvent` is defined in [`packages/contract/src/events.ts`](../packages/contract/src/events.ts); the source is authoritative. Every event carries `step` (0–200) and is one of:
+
+- `ball.released { cell }`
+- `ball.moved { from, to, by: gravity | conveyor | ramp | fan }`
+- `ball.launched { from, to, by: seesaw | catapult, part }`
+- `domino.fell { part, index 0–4, cell }`
+- `impulse.lost { cell }`
+- `ball.lost { cell, edge: top | bottom | west | east }`
+- `ball.stopped { cell }`
+- `button.pressed { by: ball | domino }`
 
 | Outcome | When | `failedAt` |
 |---|---|---|

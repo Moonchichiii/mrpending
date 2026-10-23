@@ -17,7 +17,7 @@ Chief Engineer, extremely slow, extremely thorough, and quietly thrilled by mach
 
 ## 3. Beats (`Line.beat`)
 
-`Beat` is the enum of exactly these eleven names. The server emits every line; the client only displays and speaks them. Slots are filled from `Attempt`, `Patch` and `Report`, never from model text. A model memo is its own `Line` (`source: 'model'`), shown under a "memo" label; it is validated text, never a fact, and it is spoken by browser voices only, never by ElevenLabs (ARCHITECTURE §3, voice). `at` places the line on the animation; `rejected` travels as the `INPUT_INVALID` message instead, since no stream starts.
+`Beat` is the enum of exactly these eleven names, defined in [`packages/contract/src/build.ts`](../packages/contract/src/build.ts) with `Line`. The server emits every line; the client only displays and speaks them. Slots are filled from `Attempt`, `Patch` and `Report`, never from model text. A model memo is its own `Line` (`source: 'model'`), shown under a "memo" label; it is validated text, never a fact, and it is spoken by browser voices only, never by ElevenLabs (ARCHITECTURE §3, voice). `at` places the line on the animation; `rejected` travels as the `INPUT_INVALID` message instead, since no stream starts.
 
 | Beat | When | Mood | Line |
 |---|---|---|---|

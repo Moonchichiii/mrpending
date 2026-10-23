@@ -27,56 +27,24 @@ Dependency direction, lint-enforced: `web → machine → contract ← agent`, `
 
 ## 2. Contract (`packages/contract`)
 
-The model answers in exactly this shape. The server validates it; the web app parses it again at the boundary. Types are only `z.infer`'d, never retyped. This block is the provisional contract until `packages/contract/src` exists; from then on the source is authoritative and this section shrinks to a field list.
+The model answers in exactly this shape. The server validates it; the web app parses it again at the boundary. Types are only `z.infer`'d, never retyped. The source is authoritative: [`packages/contract/src/blueprint.ts`](../packages/contract/src/blueprint.ts) (cells, parts, blueprint, patch, form, replies, partial), [`events.ts`](../packages/contract/src/events.ts) (`SimEvent`), [`build.ts`](../packages/contract/src/build.ts) (`Beat`, `Line`, `Attempt`, `Report`, `Model`, `BuildHeader`, `Build`) and [`api.ts`](../packages/contract/src/api.ts) (stream events, `ApiError`, `Config`). This section is the field list.
 
-```ts
-export const Cell = z.string().regex(/^[A-L][1-7]$/);                 // 12 × 7; A1 is the hopper, L7 the button
-export const PartKind = z.enum(['ramp', 'dominoes', 'seesaw', 'catapult', 'conveyor', 'fan']);
-export const PartId = z.string().regex(/^p\d{1,2}$/);                 // shared by Part, Patch and SimEvent
-const base = { id: PartId, cell: Cell, dir: z.enum(['east', 'west']) };
-export const Part = z.discriminatedUnion('kind', [                   // each kind requires exactly its own parameter (MACHINE-RULES section 2);
-  z.object({ ...base, kind: z.literal('conveyor'), length: z.number().int().min(2).max(6) }),   // a generic optional field let the
-  z.object({ ...base, kind: z.literal('ramp'),     length: z.number().int().min(2).max(4) }),   // model omit lengths (measured 21 Oct)
-  z.object({ ...base, kind: z.literal('dominoes'), length: z.number().int().min(2).max(5) }),
-  z.object({ ...base, kind: z.literal('seesaw') }),
-  z.object({ ...base, kind: z.literal('catapult'), power: z.number().int().min(2).max(5) }),
-  z.object({ ...base, kind: z.literal('fan'),      power: z.number().int().min(1).max(4) }),
-]);
-export const Blueprint = z.object({ title: z.string().max(40), parts: z.array(Part).max(14) }); // title first: it streams first
-export const Patch = z.array(z.discriminatedUnion('op', [
-  z.object({ op: z.literal('add'), part: Part }),                     // the id must be new to the whole build, so diffs stay unambiguous
-  z.object({ op: z.literal('move'), id: PartId, cell: Cell }),
-  z.object({ op: z.literal('remove'), id: PartId }),
-])).min(1).max(4);
-export const Form = z.object({                                        // Form 27B/6; the user's text is data, never instructions
-  nature: z.string().max(180), minParts: z.number().int().min(2).max(8), maxParts: z.number().int().min(4).max(14),
-  required: PartKind.optional(), forbidden: PartKind.optional(),
-}).refine(f => f.minParts <= f.maxParts && (f.required === undefined || f.required !== f.forbidden));
-export const DesignReply = z.object({ blueprint: Blueprint, memo: z.string().max(160) });
-export const RepairReply = z.object({ patch: Patch, memo: z.string().max(160) });
-// Explicit, not deepPartial: a half-streamed part must still parse so the board can draw it. Bounded like the final
-// blueprint and stripped of unknown keys; the server forwards a partial only after it passes, and drops the rest.
-export const BlueprintPartial = z.object({ title: z.string().max(40).optional(),
-  parts: z.array(z.object({ kind: PartKind.optional(), cell: Cell.optional() })).max(14).optional() });
+- **`Cell`**: `A1` to `L7`, 12 × 7; A1 is the hopper, L7 the button. **`PartKind`**: `ramp`, `dominoes`, `seesaw`, `catapult`, `conveyor`, `fan`. **`PartId`**: `p` and one or two digits, shared by `Part`, `Patch` and `SimEvent`.
+- **`Part`**, discriminated on `kind`: `id`, `cell`, `dir` (`east` | `west`) and exactly its own parameter (MACHINE-RULES section 2): conveyor `length` 2–6, ramp `length` 2–4, dominoes `length` 2–5, seesaw none, catapult `power` 2–5, fan `power` 1–4. A generic optional field let the model omit lengths (measured 21 Oct).
+- **`Blueprint`**: `title` ≤ 40 chars (first, so it streams first), `parts` ≤ 14.
+- **`Patch`**: 1–4 ops: `add { part }` (the id must be new to the whole build, so diffs stay unambiguous), `move { id, cell }`, `remove { id }`.
+- **`Form`** (Form 27B/6; the user's text is data, never instructions): `nature` ≤ 180 chars, `minParts` 2–8, `maxParts` 4–14, optional `required` and `forbidden` kinds; `minParts ≤ maxParts`, and no kind is both required and forbidden.
+- **`DesignReply`**: `blueprint`, `memo` ≤ 160. **`RepairReply`**: `patch`, `memo` ≤ 160.
+- **`BlueprintPartial`**: optional `title` ≤ 40, optional `parts` ≤ 14, each with optional `kind` and `cell`. Explicit, not deepPartial: a half-streamed part must still parse so the board can draw it. Bounded like the final blueprint and stripped of unknown keys; the server forwards a partial only after it passes, and drops the rest.
+- **`Line`**: `id`, `beat` (`Beat`), `mood` (`slow` | `excited` | `deadpan`), `text` ≤ 160, `source` (`table` | `model`), `at { attempt 1–6, step 0–200 }`. A model memo is a `Line` with source `model`: shown under a memo label, spoken like any line.
+- **`Attempt`**: `n` 1–6, `blueprint`, `violations` (≤ 8, each ≤ 120), `events` (≤ 400 `SimEvent`), `outcome` (`pressed` | `lost` | `stalled` | `invalid`), optional `failedAt`, optional `patch`: the patch that produced this blueprint from the previous attempt's, absent on attempt 1.
+- **`Report`**: `attempts` 1–6 (= `attempts.length`), `parts` 0–14 (the last attempt's part count, never a sum over repairs), `pressed` (= the last outcome), optional `failedAt`, `verdict` ≤ 120.
+- **`BuildHeader`**: `id` (bounded ASCII), `contractVersion`, `rulesVersion`, `promptVersion` (bounded ASCII versions), `form`, `model { mode (local | hosted), id, host (ollama | openrouter), optional digest, optional runtime }`, `title` ≤ 40, `report`, `createdAt` (ISO datetime with millisecond precision).
+- **`Build`**: `BuildHeader` plus `attempts` (1–6) and `lines` (≤ 60; six attempts with asides reach 51, 40 was already at the edge).
 
-const n = (lo: number, hi: number) => z.number().int().min(lo).max(hi);
-const short = (max: number) => z.string().regex(/^[\w.:+-]+$/).max(max);                        // ids and versions: ASCII, bounded
-export const Line = z.object({ id: short(16), beat: Beat, mood: z.enum(['slow', 'excited', 'deadpan']),   // a model memo is a Line with source 'model':
-  text: z.string().max(160), source: z.enum(['table', 'model']), at: z.object({ attempt: n(1, 6), step: n(0, 200) }) }); // shown under a memo label, spoken like any line
-export const Attempt = z.object({ n: n(1, 6), blueprint: Blueprint, violations: z.array(z.string().max(120)).max(8),
-  events: z.array(SimEvent).max(400), outcome: z.enum(['pressed', 'lost', 'stalled', 'invalid']), failedAt: Cell.optional(),
-  patch: Patch.optional() });                                        // the patch that produced THIS blueprint from the previous attempt's; absent on attempt 1
-export const Report = z.object({ attempts: n(1, 6), parts: n(0, 14), pressed: z.boolean(), failedAt: Cell.optional(), verdict: z.string().max(120) });
-// attempts = attempts.length; parts = the LAST attempt's blueprint part count, never a sum over repairs; pressed = last outcome
-export const BuildHeader = z.object({ id: short(32), contractVersion: short(16), rulesVersion: short(16), promptVersion: short(16), form: Form,
-  model: z.object({ mode: z.enum(['local', 'hosted']), id: z.string().regex(/^[\w.:+/-]+$/).max(64), host: z.enum(['ollama', 'openrouter']), digest: short(80).optional(), runtime: short(32).optional() }),
-  title: z.string().max(40), report: Report, createdAt: z.iso.datetime() });
-export const Build = BuildHeader.extend({ attempts: z.array(Attempt).min(1).max(6), lines: z.array(Line).max(60) }); // six attempts with asides reach 51; 40 was already at the edge
-```
+Every string has a `.max()`, every integer a range; nothing in a record is unbounded. The JSON Schema the model is constrained with is derived from these zod schemas with `z.toJSONSchema()` (`designReplyJsonSchema`, `repairReplyJsonSchema`) and tested against the fixtures; there is no hand-maintained second copy of the catalogue. Invariant, checked on replay: `applyPatch(attempts[k-1].blueprint, attempts[k].patch)` deep-equals `attempts[k].blueprint`, and the repair diff screen for attempt *k* is drawn from exactly that patch over the previous board.
 
-Every string has a `.max()`, every integer a range; nothing in a record is unbounded. The JSON Schema the model is constrained with is derived from these zod schemas with `z.toJSONSchema()` and tested against the fixtures; there is no hand-maintained second copy of the catalogue. Invariant, checked on replay: `applyPatch(attempts[k-1].blueprint, attempts[k].patch)` deep-equals `attempts[k].blueprint`, and the repair diff screen for attempt *k* is drawn from exactly that patch over the previous board.
-
-`SimEvent` and `Beat` are defined in `MACHINE-RULES.md` and the character sheet. `api.ts` defines the stream events (`partial | line | attempt | patch | done | error | ping`, each with `requestId`), `ApiError` and `Config`.
+`SimEvent` and `Beat` are described in `MACHINE-RULES.md` and the character sheet and defined in `events.ts` and `build.ts`. `api.ts` defines the stream events (`partial | line | attempt | patch | done | error | ping`, each with `requestId`), `ApiError` and `Config`.
 
 **Build is the unit of record.** It is what the gallery stores, what "My department" keeps in the browser, what the eval writes and what a gallery link opens. `Report` is computed by `machine/report.ts` from `attempts` alone; `Line.text` is never an input to it. Replay rule: `simulate(attempt.blueprint)` must equal `attempt.events` byte for byte; CI checks every gallery record. One rules version at a time: a record whose `rulesVersion` is not the current `RULES_VERSION` is refused with a plain message, there is no versioned simulator, and the gallery is regenerated whenever the rules change. `model.digest` and `model.runtime` (the Ollama model digest and version) document provenance; they do not prove it, so the README also states the procedure that produced the gallery.
 
