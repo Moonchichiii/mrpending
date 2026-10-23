@@ -31,7 +31,14 @@ function Trial({
         <Correction n={attempt.n} previous={previous.blueprint} current={attempt.blueprint} />
       )}
       <figure className={styles.trial}>
-        <Board blueprint={attempt.blueprint} events={attempt.events} step={step} stepMs={stepMs} />
+        {/* Keyed by trial, so a new attempt starts on a fresh board instead of animating out of the last one. */}
+        <Board
+          key={attempt.n}
+          blueprint={attempt.blueprint}
+          events={attempt.events}
+          step={step}
+          stepMs={stepMs}
+        />
         <figcaption>Trial {attempt.n}</figcaption>
       </figure>
       <Minutes n={attempt.n} events={attempt.events} step={step} />

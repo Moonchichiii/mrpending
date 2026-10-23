@@ -1,5 +1,9 @@
+import { useEffect } from 'react';
 import type { Speed } from './model/session';
 import styles from './BuildDesk.module.css';
+
+// Elements that act on Space themselves, so the page-wide shortcut leaves them alone.
+const INTERACTIVE = 'button, a[href], input, select, textarea, summary, [contenteditable]';
 
 const SPEEDS: { speed: Speed; label: string }[] = [
   { speed: 0.5, label: '0.5×' },
@@ -23,6 +27,23 @@ export function Controls({
   onSkipVoice: () => void;
   onSpeed: (speed: Speed) => void;
 }) {
+  // ARCHITECTURE: Space pauses the machine and Esc skips voice from anywhere on the page.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return;
+      if (event.key === 'Escape') {
+        onSkipVoice();
+      } else if (event.key === ' ' && paused !== undefined) {
+        if (event.target instanceof Element && event.target.closest(INTERACTIVE)) return;
+        event.preventDefault();
+        // A held key auto-repeats; only the first press toggles, so holding Space cannot flicker playback.
+        if (!event.repeat) onPause(!paused);
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [paused, onPause, onSkipVoice]);
+
   return (
     <fieldset className={styles.controls}>
       <legend className={styles.legend}>Playback</legend>

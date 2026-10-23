@@ -162,3 +162,71 @@ test('reduced motion: final frames, the full minutes, the correction diff and th
   expect(document.activeElement).toBe(screen.getByRole('status'));
   expect(screen.getByRole('status').textContent).toBe('Trial 1 in progress.');
 });
+
+// Answers a filing with a stream the test writes to and never closes.
+const held = () => {
+  const encoder = new TextEncoder();
+  let write: (event: (requestId: string) => StreamEvent) => void = () => {};
+  server.use(
+    http.post('*/api/build', ({ request }) => {
+      const requestId = request.headers.get('x-request-id') ?? '';
+      const body = new ReadableStream<Uint8Array>({
+        start: (controller) => {
+          write = (event) => controller.enqueue(encoder.encode(`${JSON.stringify(event(requestId))}\n`));
+        },
+      });
+      return new HttpResponse(body);
+    }),
+  );
+  return (event: (requestId: string) => StreamEvent) => write(event);
+};
+
+test('Space pauses from anywhere but a control, which keeps its own Space, and Escape skips voice', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: false }));
+  const cancel = vi.fn<() => void>();
+  vi.stubGlobal('speechSynthesis', { cancel });
+  const send = held();
+  const user = userEvent.setup();
+  render(<BuildDesk canFile />);
+  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  send((requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }));
+  const playback = await screen.findByRole('group', { name: 'Playback' });
+  const pause = within(playback).getByRole('button', { name: 'Pause' });
+
+  // Focus sits on the status region after filing, which is not a control.
+  expect(document.activeElement).toBe(screen.getByRole('status'));
+  await user.keyboard(' ');
+  expect(pause.getAttribute('aria-pressed')).toBe('true');
+  await user.keyboard(' ');
+  expect(pause.getAttribute('aria-pressed')).toBe('false');
+  // Holding Space toggles once, however often the key repeats.
+  await user.keyboard('[Space>4/]');
+  expect(pause.getAttribute('aria-pressed')).toBe('true');
+  await user.keyboard(' ');
+
+  // On the Pause button, Space activates it exactly once.
+  pause.focus();
+  await user.keyboard(' ');
+  expect(pause.getAttribute('aria-pressed')).toBe('true');
+
+  await user.keyboard('{Escape}');
+  expect(cancel).toHaveBeenCalledTimes(1);
+});
+
+test('each trial starts on a fresh board, never animating out of the previous one', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: true }));
+  const send = held();
+  const user = userEvent.setup();
+  render(<BuildDesk canFile />);
+  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  send((requestId) => ({ type: 'attempt', requestId, attempt: lost(1) }));
+  const board = (n: number) => screen.getByText(`Trial ${n}`).closest('figure')?.querySelector('svg');
+  await screen.findByText('Trial 1');
+  const first = board(1);
+  expect(first).toBeTruthy();
+
+  send((requestId) => ({ type: 'attempt', requestId, attempt: pressed(2) }));
+  await screen.findByText('Trial 2');
+  expect(board(2)).toBeTruthy();
+  expect(first?.isConnected).toBe(false);
+});
