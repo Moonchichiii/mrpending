@@ -1,8 +1,9 @@
 import type { Form } from '@pending/contract';
 import { useEffect, useReducer, useRef } from 'react';
 import { streamBuild } from './model/client';
-import { IDLE, STEP_MS, reduce } from './model/session';
+import { IDLE, reduce } from './model/session';
 import type { Session, Speed } from './model/session';
+import { useTicks } from './useTicks';
 
 // The build client's owner: one AbortController per build, aborted on a new build, on cancel and on unmount.
 export function useBuild(): {
@@ -18,17 +19,7 @@ export function useBuild(): {
   const current = useRef<{ requestId: string; controller: AbortController }>(undefined);
 
   useEffect(() => () => current.current?.controller.abort(), []);
-
-  const ticking = session.status === 'running' && !session.paused ? session.requestId : undefined;
-  const speed = session.status === 'running' ? session.speed : 1;
-  useEffect(() => {
-    if (ticking === undefined) return;
-    const timer = setInterval(() => {
-      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      dispatch({ type: 'TICK', requestId: ticking, motion: reduced ? 'reduced' : 'full' });
-    }, STEP_MS[speed]);
-    return () => clearInterval(timer);
-  }, [ticking, speed]);
+  useTicks(session, dispatch);
 
   const file = (form: Form) => {
     current.current?.controller.abort();

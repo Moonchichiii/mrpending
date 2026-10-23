@@ -25,6 +25,8 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run check # oxfmt + oxlint + type check (tsgolint), the whole workspace
       - run: bun run test
+      # Every gallery record: schema, current rulesVersion, byte-identical replay, patches reproduce blueprints, Ollama host.
+      - run: bun run test eval/src/committed.test.ts apps/web/src/features/gallery/model/replay.test.ts
       - run: bun run build
       - run: bun run audit # fails on any advisory except GHSA-hp3w-g68c-fv3c (transitive sprintf-js under @mastra/core, reviewed 22 Oct)
       - run: bun run secret-scan

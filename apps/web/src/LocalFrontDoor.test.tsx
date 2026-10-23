@@ -1,17 +1,22 @@
-import { act, cleanup, render, screen } from '@testing-library/react';
+import type { StreamEvent } from '@pending/contract';
+import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { delay, http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll, expect, test, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, expect, test, vi } from 'vitest';
 import { CONFIG_TIMEOUT_MS } from './features/build/InferenceBadge';
+import { header, pressed } from './features/build/model/testBuild';
 import { LocalFrontDoor } from './LocalFrontDoor';
 
-const server = setupServer();
+// The static archive is always served; each test adds the agent it needs.
+const server = setupServer(http.get('*/gallery/:file', () => new HttpResponse(null, { status: 404 })));
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
+beforeEach(() => localStorage.clear());
 afterEach(() => {
   server.resetHandlers();
   cleanup();
   vi.useRealTimers();
+  vi.unstubAllGlobals();
 });
 afterAll(() => server.close());
 
@@ -56,7 +61,7 @@ test('filing stays disabled while /api/config has not answered, and opens with t
   );
   const builds = countBuilds();
   const user = userEvent.setup();
-  render(<LocalFrontDoor records={[]} />);
+  render(<LocalFrontDoor />);
 
   await user.type(nature(), 'A scenic route, please.');
   expect(nature().value).toBe('A scenic route, please.');
@@ -82,7 +87,7 @@ test('a failed /api/config says so in character, keeps the form usable and can b
   );
   const builds = countBuilds();
   const user = userEvent.setup();
-  render(<LocalFrontDoor records={[]} />);
+  render(<LocalFrontDoor />);
 
   expect(await screen.findByText(UNCONFIRMED)).toBeDefined();
   await user.type(nature(), 'Still typing.');
@@ -107,11 +112,44 @@ test(`a /api/config that has not answered within ${CONFIG_TIMEOUT_MS} ms counts 
       return HttpResponse.json(CONFIG);
     }),
   );
-  render(<LocalFrontDoor records={[]} />);
+  render(<LocalFrontDoor />);
   await act(() => vi.advanceTimersByTimeAsync(CONFIG_TIMEOUT_MS - 100));
   expect(screen.queryByText(UNCONFIRMED)).toBeNull();
   await act(() => vi.advanceTimersByTimeAsync(200));
   expect(await screen.findByText(UNCONFIRMED)).toBeDefined();
   expect(screen.getByRole('button', { name: 'Ask the Department again' })).toBeDefined();
   expect(fileButton().disabled).toBe(true);
+});
+
+test('a build that ends is kept once in My department, with a DUE number and no link, however often it is replayed', async () => {
+  // Reduced motion: one tick jumps to the final frame, so playback ends quickly.
+  vi.stubGlobal('matchMedia', () => ({ matches: true }));
+  server.use(
+    http.get('*/api/config', () => HttpResponse.json(CONFIG)),
+    http.post('*/api/build', ({ request }) => {
+      const requestId = request.headers.get('x-request-id') ?? '';
+      const events: StreamEvent[] = [
+        { type: 'attempt', requestId, attempt: pressed(1) },
+        { type: 'done', requestId, header: header([pressed(1)]) },
+      ];
+      return new HttpResponse(events.map((e) => `${JSON.stringify(e)}\n`).join(''));
+    }),
+  );
+  const user = userEvent.setup();
+  render(<LocalFrontDoor />);
+  const department = () => screen.getByRole('region', { name: 'My department' });
+  expect(within(department()).getByText('No builds filed in this browser yet.')).toBeDefined();
+
+  await screen.findByText(BADGE);
+  await user.click(fileButton());
+  const verdict = 'One button. An extraordinary amount of paperwork.';
+  await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(verdict));
+  const card = await within(department()).findByRole('listitem');
+  expect(within(card).getByText('DUE-0001')).toBeDefined();
+  expect(within(card).getByText('The Scenic Route')).toBeDefined();
+  expect(within(department()).queryAllByRole('link')).toEqual([]);
+
+  await user.click(screen.getByRole('button', { name: 'Replay from the start' }));
+  await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(verdict));
+  expect(within(department()).getAllByRole('listitem')).toHaveLength(1);
 });

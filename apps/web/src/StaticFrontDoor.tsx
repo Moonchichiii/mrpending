@@ -1,11 +1,12 @@
 import type { BuildHeader } from '@pending/contract';
-import { GalleryShelf } from './features/gallery';
+import { Gallery, GalleryShelf } from './features/gallery';
 import styles from './FrontDoor.module.css';
 
 const GUIDE = 'https://github.com/Moonchichiii/mrpending#readme';
 
-// The public site: no form, no build client, no API; it opens on the gallery.
-export function StaticFrontDoor({ records }: { records: BuildHeader[] }) {
+// The public site: no form, no build client, no API; it opens on the gallery replayed from the static archive.
+// Headers handed in are shelved as they are, so the layout harness can show records at every schema maximum.
+export function StaticFrontDoor({ records }: { records?: BuildHeader[] | undefined }) {
   return (
     <main className={styles.page}>
       <header className={styles.intro}>
@@ -25,7 +26,7 @@ export function StaticFrontDoor({ records }: { records: BuildHeader[] }) {
       </header>
       <section id="gallery" className={styles.section} aria-labelledby="gallery-title">
         <h2 id="gallery-title">The gallery</h2>
-        <GalleryShelf records={records} />
+        {records === undefined ? <Gallery /> : <GalleryShelf records={records} />}
       </section>
     </main>
   );

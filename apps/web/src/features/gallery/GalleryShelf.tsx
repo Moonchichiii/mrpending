@@ -3,8 +3,15 @@ import styles from './GalleryShelf.module.css';
 
 const HOST = { ollama: 'Ollama', openrouter: 'OpenRouter' } as const;
 
-// Recorded builds by their headers: every number from the report, the title as text, provenance in the footer.
-export function GalleryShelf({ records }: { records: BuildHeader[] }) {
+// Recorded builds by their headers: every number from the report, the title as text (a link when the record has an
+// address), provenance in the footer.
+export function GalleryShelf({
+  records,
+  hrefOf,
+}: {
+  records: BuildHeader[];
+  hrefOf?: ((record: BuildHeader) => string) | undefined;
+}) {
   if (records.length === 0)
     return <p className={styles.empty}>The archive is being filed. Recorded machines will appear here.</p>;
   return (
@@ -12,7 +19,9 @@ export function GalleryShelf({ records }: { records: BuildHeader[] }) {
       {records.map((record) => (
         <li key={record.id} className={styles.card}>
           <div className={styles.head}>
-            <h3 className={styles.title}>{record.title}</h3>
+            <h3 className={styles.title}>
+              {hrefOf === undefined ? record.title : <a href={hrefOf(record)}>{record.title}</a>}
+            </h3>
             <p className={record.report.pressed ? styles.approved : styles.pending}>
               {record.report.pressed ? 'APPROVED' : 'PENDING'}
             </p>

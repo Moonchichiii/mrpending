@@ -1,0 +1,43 @@
+.note,
+.refused {
+  max-width: var(--measure);
+}
+
+.record,
+.department {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* Provenance names the recording; it wraps rather than overflowing on a long model id. */
+.provenance,
+.due {
+  font-size: var(--text-small);
+  color: var(--copper-text);
+  overflow-wrap: anywhere;
+}
+
+.import {
+  font-weight: 700;
+}
+
+/* A native file input is as wide as its button and filename; on a phone it shrinks to the column instead. */
+.file {
+  max-width: 100%;
+  min-width: 0;
+  font: inherit;
+}
+
+.action {
+  justify-self: start;
+  min-height: var(--target);
+  padding: var(--space-2) var(--space-4);
+  font: inherit;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--paper);
+  border: var(--border-paper);
+  border-radius: 10px 4px 12px 6px;
+  cursor: pointer;
+}
