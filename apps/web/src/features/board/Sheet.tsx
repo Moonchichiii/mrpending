@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useId } from 'react';
+import { useId, useLayoutEffect, useRef } from 'react';
 import { BOARD, BUTTON, HOPPER, centre } from './model/frame';
 import { Button, Hopper } from './Sprites';
 import styles from './Board.module.css';
@@ -14,21 +14,31 @@ export function Sheet({
   title,
   description,
   pressed,
+  pressedAt,
   stepMs,
   children,
 }: {
   title: string;
   description: string;
   pressed: boolean;
+  pressedAt?: number | undefined;
   stepMs?: number | undefined;
   children: ReactNode;
 }) {
   const id = useId();
+  const svg = useRef<SVGSVGElement>(null);
+  // The beats run on the press clock, so a board mounted mid-press joins the sequence instead of starting it again.
+  useLayoutEffect(() => {
+    if (pressed && pressedAt !== undefined)
+      svg.current?.style.setProperty('--press-elapsed', `${Math.max(0, performance.now() - pressedAt)}ms`);
+  }, [pressed, pressedAt]);
   return (
     <svg
+      ref={svg}
       className={styles.board}
       viewBox={`0 0 ${BOARD.width} ${BOARD.height}`}
       data-pace={stepMs}
+      data-press={pressed ? (pressedAt === undefined ? 'still' : 'sequence') : undefined}
       // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- an inline SVG cannot be an <img>; role img names it
       role="img"
       aria-labelledby={`${id}-title`}

@@ -2,6 +2,7 @@ import type { Attempt, Build, Form, Line } from '@pending/contract';
 import { useEffect, useRef, useState } from 'react';
 import { assertNever } from '../../shared/assertNever';
 import { Engineer } from '../engineer';
+import { EngineeringReport } from '../report';
 import { Voice } from '../voice';
 import { Controls } from './Controls';
 import { errorCopy } from './model/errors';
@@ -114,7 +115,7 @@ export function BuildDesk({
   // The same take keeps its clock from the press tick through done, so the sequence runs once per playback.
   const press = usePress(pressed === undefined ? undefined : `${pressed}:${take}`);
   // The rig reacts to the last line said, or on a press to the line its clock has reached; its card holds the lines list.
-  const line = lines && (pressed === undefined ? lines.at(-1) : pressLine(lines, press));
+  const line = lines && (pressed === undefined ? lines.at(-1) : pressLine(lines, press.beat));
   // One key in every phase, so the card is not remounted between phases and the cameo's looks play once.
   const engineer = lines && (
     <Engineer key="engineer" status={session.status} line={line} failed={failedOn(held(session), line)}>
@@ -151,11 +152,13 @@ export function BuildDesk({
               onSpeed={setSpeed}
             />
             <Trial
+              key="trial"
               take={take}
               attempts={session.attempts}
               attempt={head?.attempt}
               step={head?.step}
               stepMs={STEP_MS[session.speed]}
+              pressedAt={press.at}
             />
             {engineer}
             {withdraw}
@@ -172,7 +175,7 @@ export function BuildDesk({
               onReplay={replay}
               onSpeed={setSpeed}
             />
-            <Trial take={take} attempts={session.attempts} attempt={session.attempts.at(-1)} />
+            <Trial key="trial" take={take} attempts={session.attempts} attempt={session.attempts.at(-1)} />
             {engineer}
             {withdraw}
           </>
@@ -188,8 +191,18 @@ export function BuildDesk({
                 department.
               </p>
             )}
-            <Trial take={take} attempts={session.build.attempts} attempt={session.build.attempts.at(-1)} />
+            <Trial
+              key="trial"
+              take={take}
+              attempts={session.build.attempts}
+              attempt={session.build.attempts.at(-1)}
+              pressedAt={press.at}
+            />
             {engineer}
+            {/* Character sheet section 6: the report slides up at the press's hard cut, at once on an exhausted build. */}
+            {(session.status === 'exhausted' || press.beat === 'cut') && (
+              <EngineeringReport build={session.build} />
+            )}
             <button type="button" className={styles.action} onClick={then(replay)}>
               Replay from the start
             </button>
@@ -205,7 +218,7 @@ export function BuildDesk({
             <p role="alert" className={styles.error}>
               {message}
             </p>
-            <Trial take={take} attempts={session.attempts} attempt={session.attempts.at(-1)} />
+            <Trial key="trial" take={take} attempts={session.attempts} attempt={session.attempts.at(-1)} />
             {action === 'retry' ? (
               <button type="button" className={styles.action} onClick={() => fileForm(session.form)}>
                 Build again
@@ -230,7 +243,7 @@ export function BuildDesk({
       </output>
       {/* Outside the phases, so the voice keeps its queue from drafting to the ending; a replay or a new build restarts it. */}
       {session.status !== 'idle' && lines && (
-        <Voice lines={pressVoiced(lines, press)} playback={`${session.requestId}:${take}`} />
+        <Voice lines={pressVoiced(lines, press.beat)} playback={`${session.requestId}:${take}`} />
       )}
       {body()}
     </div>

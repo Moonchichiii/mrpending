@@ -2,7 +2,7 @@ import type { Blueprint, SimEvent } from '@pending/contract';
 import type { Segment } from './model/frame';
 import { BOARD, frame, lastStep } from './model/frame';
 import { Sheet } from './Sheet';
-import { Ball, FailureRing, PartLabel, PartSprite } from './Sprites';
+import { Ball, FailureRing, PartLabel, PartSprite, Press } from './Sprites';
 import styles from './Board.module.css';
 
 // A launch is an instant arc (MACHINE-RULES section 2), drawn as a curve rising above both ends.
@@ -12,16 +12,20 @@ const path = ({ from, to, arc }: Segment) =>
     : `M ${from.x} ${from.y} L ${to.x} ${to.y}`;
 
 // The board at `step` (the final frame by default); the ball and the dominoes move by CSS transitions of `stepMs`.
+// Only the step that reaches button.pressed draws the press (character sheet section 6); `pressedAt`, the
+// performance.now() of that tick, plays it as the 2.2 s sequence, and without it the press is drawn at rest.
 export function Board({
   blueprint,
   events,
   step = lastStep(events),
   stepMs,
+  pressedAt,
 }: {
   blueprint: Blueprint;
   events: SimEvent[];
   step?: number | undefined;
   stepMs?: number | undefined;
+  pressedAt?: number | undefined;
 }) {
   const { parts, ball, trail, pressed, failure } = frame(blueprint, events, step);
   const description = [
@@ -32,7 +36,13 @@ export function Board({
     .filter(Boolean)
     .join(' ');
   return (
-    <Sheet title={blueprint.title} description={description} pressed={pressed} stepMs={stepMs}>
+    <Sheet
+      title={blueprint.title}
+      description={description}
+      pressed={pressed}
+      pressedAt={pressedAt}
+      stepMs={stepMs}
+    >
       {parts.map((view) => (
         <PartSprite key={view.part.id} view={view} />
       ))}
@@ -48,6 +58,7 @@ export function Board({
       </g>
       {failure && <FailureRing failure={failure} />}
       <Ball at={ball} />
+      {pressed && <Press />}
     </Sheet>
   );
 }

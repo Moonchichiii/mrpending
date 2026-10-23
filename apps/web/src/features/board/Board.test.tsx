@@ -274,6 +274,43 @@ test('no effect without an event: an empty log draws the parts only', () => {
   }
 });
 
+describe('the press (character sheet section 6)', () => {
+  const { blueprint, events } = fixture('pressed');
+  const press = events.find((e) => e.type === 'button.pressed')?.step ?? -1;
+  const board = (container: Element) => container.querySelector('svg');
+
+  test('starts only on the step that reaches button.pressed, whatever the press clock says', () => {
+    const now = performance.now();
+    const { container, rerender } = render(
+      <Board blueprint={blueprint} events={events} step={press - 1} pressedAt={now} />,
+    );
+    expect(board(container)?.hasAttribute('data-press')).toBe(false);
+    expect(container.querySelector('[data-press-layer]')).toBeNull();
+    rerender(<Board blueprint={blueprint} events={events} step={press} pressedAt={now} />);
+    expect(board(container)?.getAttribute('data-press')).toBe('sequence');
+    expect(container.querySelector('[data-stamp]')?.textContent).toBe('APPROVED');
+    expect(container.querySelector('[data-press-layer]')?.textContent).toContain('PRESSED');
+  });
+
+  test('a board drawn mid-press joins the sequence at the time the clock has reached', () => {
+    const now = performance.now();
+    const { container } = render(<Board blueprint={blueprint} events={events} pressedAt={now - 1000} />);
+    const elapsed = Number.parseFloat(board(container)?.style.getPropertyValue('--press-elapsed') ?? '');
+    expect(elapsed).toBeGreaterThanOrEqual(1000);
+    expect(elapsed).toBeLessThan(2200);
+  });
+
+  test('without a press clock the press is drawn at rest, and a failed run draws none', () => {
+    const { container } = render(<Board blueprint={blueprint} events={events} />);
+    expect(board(container)?.getAttribute('data-press')).toBe('still');
+    expect(container.querySelector('[data-stamp]')).not.toBeNull();
+    const lost = fixture('lost');
+    const failed = render(<Board blueprint={lost.blueprint} events={lost.events} pressedAt={0} />).container;
+    expect(board(failed)?.hasAttribute('data-press')).toBe(false);
+    expect(failed.querySelector('[data-press-layer]')).toBeNull();
+  });
+});
+
 test.each([240, 120, 40])(
   'the board carries its step duration of %i ms for the CSS transitions',
   (stepMs) => {

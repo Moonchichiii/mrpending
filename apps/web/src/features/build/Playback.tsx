@@ -2,6 +2,7 @@ import type { Build } from '@pending/contract';
 import { useReducer, useRef, useState } from 'react';
 import { assertNever } from '../../shared/assertNever';
 import { Engineer } from '../engineer';
+import { EngineeringReport } from '../report';
 import { Voice } from '../voice';
 import { Controls } from './Controls';
 import { pressLine, pressVoiced, pressing } from './model/press';
@@ -44,7 +45,7 @@ export function Playback({ build }: { build: Build }) {
   const press = usePress(pressed === undefined ? undefined : `${pressed}:${take}`);
   // As on the desk, the rig reacts to the last line said, or on a press to the line its clock has reached, and the
   // card keeps one key in every phase; the sloth needs the recorded attempts to show the line's trial failed.
-  const line = pressed === undefined ? lines.at(-1) : pressLine(lines, press);
+  const line = pressed === undefined ? lines.at(-1) : pressLine(lines, press.beat);
   const engineer = (
     <Engineer key="engineer" status={session.status} line={line} failed={failedOn(build.attempts, line)}>
       <Lines lines={lines} />
@@ -64,11 +65,13 @@ export function Playback({ build }: { build: Build }) {
               onSpeed={(speed) => dispatch({ type: 'SPEED', requestId: build.id, speed })}
             />
             <Trial
+              key="trial"
               take={take}
               attempts={session.attempts}
               attempt={head?.attempt}
               step={head?.step}
               stepMs={STEP_MS[session.speed]}
+              pressedAt={press.at}
             />
             {engineer}
           </>
@@ -77,8 +80,18 @@ export function Playback({ build }: { build: Build }) {
       case 'exhausted':
         return (
           <>
-            <Trial take={take} attempts={session.build.attempts} attempt={session.build.attempts.at(-1)} />
+            <Trial
+              key="trial"
+              take={take}
+              attempts={session.build.attempts}
+              attempt={session.build.attempts.at(-1)}
+              pressedAt={press.at}
+            />
             {engineer}
+            {/* Character sheet section 6: the report slides up at the press's hard cut, at once on an exhausted build. */}
+            {(session.status === 'exhausted' || press.beat === 'cut') && (
+              <EngineeringReport build={session.build} />
+            )}
             <button type="button" className={styles.action} onClick={replay}>
               Replay from the start
             </button>
@@ -105,7 +118,7 @@ export function Playback({ build }: { build: Build }) {
             : ''}
       </output>
       {/* Outside the phases, so the voice keeps its queue from playback to the ending; a replay restarts it. */}
-      <Voice lines={pressVoiced(lines, press)} playback={`${build.id}:${take}`} />
+      <Voice lines={pressVoiced(lines, press.beat)} playback={`${build.id}:${take}`} />
       {body()}
     </div>
   );

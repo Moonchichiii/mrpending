@@ -3,17 +3,20 @@ import { Board, Correction, Minutes, lastStep } from '../board';
 import styles from './BuildDesk.module.css';
 
 // The attempt on the board at `step` (its final frame by default), its minutes, and the correction that produced it.
+// `pressedAt` is the press clock's start, which the board plays its press sequence on.
 export function Trial({
   attempts,
   attempt,
   step = attempt ? lastStep(attempt.events) : 0,
   stepMs,
+  pressedAt,
   take,
 }: {
   attempts: Attempt[];
   attempt: Attempt | undefined;
   step?: number | undefined;
   stepMs?: number | undefined;
+  pressedAt?: number | undefined;
   take: number;
 }) {
   if (!attempt) return null;
@@ -31,6 +34,7 @@ export function Trial({
           events={attempt.events}
           step={step}
           stepMs={stepMs}
+          pressedAt={pressedAt}
         />
         <figcaption>Trial {attempt.n}</figcaption>
       </figure>

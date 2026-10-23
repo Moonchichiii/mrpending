@@ -3,7 +3,7 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, expect, test, vi } from 'vitest';
 import engineer from '../engineer/Engineer.module.css';
-import { header, pressed } from './model/testBuild';
+import { header, lost, pressed } from './model/testBuild';
 import { Playback } from './Playback';
 
 afterEach(() => {
@@ -132,4 +132,35 @@ test('a recorded cameo line brings the sloth only on the failure the simulator r
     expect(screen.getByRole('list', { name: 'Mr. Pending' }).textContent).toContain('employ snails'),
   );
   expect(document.querySelector('[data-sloth]')).toBeNull();
+});
+
+const report = () => screen.queryByRole('region', { name: 'Engineering Report' });
+
+test('the report slides up at the hard cut to deadpan, beside the board that drew the press from the start', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+  render(<Playback build={pressedRecord} />);
+  const board = () => document.querySelector('[data-button]')?.closest('svg');
+  const first = board();
+
+  await vi.waitFor(() => expect(board()?.getAttribute('data-press')).toBe('sequence'), { timeout: 5000 });
+  // The trial keeps its place from playback to the ending, so the press plays on the board that ran the trial.
+  expect(board()).toBe(first);
+  expect(report()).toBeNull();
+  await vi.waitFor(() => expect(mood()).toBe('excited'), { timeout: 1500 });
+  expect(report()).toBeNull();
+  await vi.waitFor(() => expect(report()).not.toBeNull(), { timeout: 1500 });
+  expect(mood()).toBe('deadpan');
+  expect(report()?.querySelector('[data-stamp]')?.getAttribute('data-stamp')).toBe('APPROVED');
+});
+
+test('an exhausted record has no press, so its report shows at its ending, stamped PENDING', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
+  render(
+    <Playback
+      build={Build.parse({ ...header([lost(1), lost(2)]), attempts: [lost(1), lost(2)], lines: [] })}
+    />,
+  );
+  await vi.waitFor(() => expect(report()).not.toBeNull(), { timeout: 3000 });
+  expect(document.querySelector('[data-press]')).toBeNull();
+  expect(report()?.querySelector('[data-stamp]')?.getAttribute('data-stamp')).toBe('PENDING');
 });
