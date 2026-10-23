@@ -4,7 +4,7 @@ services:
   - type: web
     runtime: static
     name: mrpending-preview
-    branch: release
+    branch: main
     autoDeployTrigger: 'off'
     pullRequestPreviewsEnabled: false
     buildCommand: bun install --frozen-lockfile && VITE_COMMIT="$RENDER_GIT_COMMIT" bun run build
