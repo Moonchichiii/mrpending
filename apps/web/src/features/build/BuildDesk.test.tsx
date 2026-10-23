@@ -215,8 +215,7 @@ const mood = () => {
   return (['slow', 'excited', 'deadpan'] as const).find((m) => svg?.classList.contains(engineer[m] ?? ''));
 };
 
-test('a press keeps the rig, goes excited at 0.90 s and cuts to deadpan at 1.60 s, though every line is said', async () => {
-  vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
+const pressedBuild = () =>
   stream([
     said('l1', 'running', 'slow', 'Commencing trial 1.'),
     (requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }),
@@ -225,6 +224,31 @@ test('a press keeps the rig, goes excited at 0.90 s and cuts to deadpan at 1.60 
     said('l4', 'pressed', 'deadpan', 'One button. An extraordinary amount of paperwork.'),
     (requestId) => ({ type: 'done', requestId, header: header([pressed(1)]) }),
   ]);
+
+test('a press keeps the rig, goes excited at 0.90 s and cuts to deadpan at 1.60 s, though every line is said', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+  pressedBuild();
+  const user = userEvent.setup();
+  render(<BuildDesk canFile />);
+  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+
+  await vi.waitFor(
+    () =>
+      expect(screen.getByRole('status').textContent).toBe(
+        'One button. An extraordinary amount of paperwork.',
+      ),
+    { timeout: 3000 },
+  );
+  // The pressed lines are all said, but the rig waits for the press clock.
+  expect(screen.getByRole('list', { name: 'Mr. Pending' }).textContent).toContain('WE DID IT!');
+  expect(mood()).toBe('slow');
+  await vi.waitFor(() => expect(mood()).toBe('excited'), { timeout: 1500 });
+  await vi.waitFor(() => expect(mood()).toBe('deadpan'), { timeout: 1500 });
+});
+
+test('with reduced motion a press shows its final deadpan at once, with no timed pose before it', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
+  pressedBuild();
   const user = userEvent.setup();
   render(<BuildDesk canFile />);
   await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
@@ -232,11 +256,49 @@ test('a press keeps the rig, goes excited at 0.90 s and cuts to deadpan at 1.60 
   await vi.waitFor(() =>
     expect(screen.getByRole('status').textContent).toBe('One button. An extraordinary amount of paperwork.'),
   );
-  // The pressed lines are all said, but the rig waits for the press clock.
-  expect(screen.getByRole('list', { name: 'Mr. Pending' }).textContent).toContain('WE DID IT!');
+  expect(mood()).toBe('deadpan');
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  expect(mood()).toBe('deadpan');
+});
+
+test('the voice speaks "WE DID IT!" at the excited cue, not on the press tick, and the verdict after it', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+  const { spoken } = withSynth();
+  pressedBuild();
+  const user = userEvent.setup();
+  render(<BuildDesk canFile />);
+  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  const texts = () => spoken.map((u) => u.text);
+  // The first line ends before the press, so the queue is idle when the press tick arrives.
+  await vi.waitFor(() => expect(texts()).toEqual(['Commencing trial 1.']));
+  spoken[0]?.onend?.();
+
+  await vi.waitFor(
+    () =>
+      expect(screen.getByRole('status').textContent).toBe(
+        'One button. An extraordinary amount of paperwork.',
+      ),
+    { timeout: 3000 },
+  );
+  const voice = screen.getByRole('region', { name: 'Voice' });
   expect(mood()).toBe('slow');
+  expect(texts()).toEqual(['Commencing trial 1.']);
+  expect(voice.textContent).not.toContain('WE DID IT!');
   await vi.waitFor(() => expect(mood()).toBe('excited'), { timeout: 1500 });
-  await vi.waitFor(() => expect(mood()).toBe('deadpan'), { timeout: 1500 });
+  await vi.waitFor(() => expect(texts().at(-1)).toBe('WE DID IT! Please inform the entire Department.'));
+  expect(voice.textContent).toContain('WE DID IT!');
+  // The queue plays the rest in order as each line ends, whatever the clock says.
+  spoken.at(-1)?.onend?.();
+  await vi.waitFor(() => expect(texts().at(-1)).toBe('The Department acknowledges this development.'));
+  spoken.at(-1)?.onend?.();
+  await vi.waitFor(() =>
+    expect(texts()).toEqual([
+      'Commencing trial 1.',
+      'WE DID IT! Please inform the entire Department.',
+      'The Department acknowledges this development.',
+      'One button. An extraordinary amount of paperwork.',
+    ]),
+  );
 });
 
 // Answers a filing with a stream the test writes to and never closes.
@@ -335,14 +397,19 @@ test('Space pauses from anywhere but a control, which keeps its own Space, and E
 });
 
 test('the press clock starts on the tick that reaches button.pressed and runs once, however late done arrives', async () => {
-  vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
+  vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
   const send = held();
   const user = userEvent.setup();
   render(<BuildDesk canFile />);
   await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
   send(said('l1', 'running', 'slow', 'Commencing trial 1.'));
   send((requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }));
-  await vi.waitFor(() => expect(document.querySelector('[data-button][data-pressed="true"]')).not.toBeNull());
+  await vi.waitFor(
+    () => expect(document.querySelector('[data-button][data-pressed="true"]')).not.toBeNull(),
+    {
+      timeout: 3000,
+    },
+  );
   send(said('l2', 'pressed', 'excited', 'WE DID IT! Please inform the entire Department.'));
   send(said('l3', 'pressed', 'deadpan', 'One button. An extraordinary amount of paperwork.'));
 

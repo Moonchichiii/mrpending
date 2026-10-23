@@ -5,7 +5,7 @@ import { Engineer } from '../engineer';
 import { Voice } from '../voice';
 import { Controls } from './Controls';
 import { errorCopy } from './model/errors';
-import { pressLine } from './model/press';
+import { pressLine, pressVoiced } from './model/press';
 import { STEP_MS, playhead, said } from './model/session';
 import type { Session } from './model/session';
 import { Form27B6 } from './Form27B6';
@@ -220,7 +220,7 @@ export function BuildDesk({
       </output>
       {/* Outside the phases, so the voice keeps its queue from drafting to the ending; a replay or a new build restarts it. */}
       {session.status !== 'idle' && lines && (
-        <Voice lines={lines} playback={`${session.requestId}:${take}`} />
+        <Voice lines={pressVoiced(lines, press)} playback={`${session.requestId}:${take}`} />
       )}
       {body()}
     </div>

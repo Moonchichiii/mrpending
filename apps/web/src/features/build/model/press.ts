@@ -12,3 +12,9 @@ export function pressLine(lines: Line[], beat: PressBeat): Line | undefined {
   if (first === -1 || beat === 'cut') return lines.at(-1);
   return beat === 'excited' ? lines[first] : lines[first - 1];
 }
+
+// The lines the voice queue may speak on the press clock: the pressed lines wait for the excited beat at 0.90 s (no
+// clock is still before it), so "WE DID IT!" is neither spoken nor captioned before its cue; then the queue keeps its pace.
+export function pressVoiced(lines: Line[], beat: PressBeat): Line[] {
+  return beat === 'before' ? lines.filter((line) => line.beat !== 'pressed') : lines;
+}
