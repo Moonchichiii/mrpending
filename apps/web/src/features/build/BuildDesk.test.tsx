@@ -62,6 +62,30 @@ const stream = (events: ((requestId: string) => StreamEvent)[]) =>
     }),
   );
 
+test('a build this browser will not keep says so at its ending instead of vanishing from My department', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: true }));
+  const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    throw new DOMException('full', 'QuotaExceededError');
+  });
+  try {
+    stream([
+      (requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }),
+      (requestId) => ({ type: 'done', requestId, header: header([pressed(1)]) }),
+    ]);
+    const onKept = vi.fn<() => void>();
+    const user = userEvent.setup();
+    render(<BuildDesk canFile onKept={onKept} />);
+    await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+
+    expect((await screen.findByRole('alert')).textContent).toMatch(/would not keep the build/);
+    expect(onKept).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'File another form' }));
+    expect(screen.queryByRole('alert')).toBeNull();
+  } finally {
+    setItem.mockRestore();
+  }
+});
+
 test('every playback control is a button operated from the keyboard, and speed sets the step duration', async () => {
   vi.stubGlobal('matchMedia', () => ({ matches: false }));
   // A pressed attempt on a stream held open waits at its last step for done, so the controls stay.

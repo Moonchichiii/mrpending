@@ -39,10 +39,14 @@ export function BuildDesk({ canFile, onKept }: { canFile: boolean; onKept?: (() 
   const { session, file, cancel, reset, pause, replay: restart, setSpeed } = useBuild();
   const ended = session.status === 'pressed' || session.status === 'exhausted' ? session : undefined;
   const keptFor = useRef<string>(undefined);
+  // The request whose build this browser refused to keep; its ending says so instead of failing silently.
+  const [unkept, setUnkept] = useState<string>();
   useEffect(() => {
     if (ended === undefined || keptFor.current === ended.requestId) return;
     keptFor.current = ended.requestId;
     if (keep(ended.build) !== undefined) onKept?.();
+    // oxlint-disable-next-line react/set-state-in-effect -- the state reports the outcome of writing to localStorage
+    else setUnkept(ended.requestId);
   }, [ended, onKept]);
   // Replay rewinds the playhead without changing the trial, so each replay is counted to give the board a new key.
   const [take, setTake] = useState(0);
@@ -120,6 +124,12 @@ export function BuildDesk({ canFile, onKept }: { canFile: boolean; onKept?: (() 
         return (
           <>
             <p className={styles.title}>{session.build.title}</p>
+            {unkept === session.requestId && (
+              <p role="alert" className={styles.error}>
+                This browser would not keep the build; its storage is full or switched off. It is not in My
+                department.
+              </p>
+            )}
             <Trial take={take} attempts={session.build.attempts} attempt={session.build.attempts.at(-1)} />
             <Lines lines={session.build.lines} />
             <button type="button" className={styles.action} onClick={then(replay)}>
