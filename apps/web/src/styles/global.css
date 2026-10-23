@@ -1,4 +1,28 @@
-/* Fonts are named in tokens.css with fallbacks; the self-hosted woff2 files are not in the repository yet. */
+/* Self-hosted OFL fonts (latin woff2, licences beside them); tokens.css names these families with system fallbacks. */
+@font-face {
+  font-family: Fredoka;
+  src: url('/fonts/Fredoka-400-600.woff2') format('woff2');
+  font-weight: 400 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Nunito;
+  src: url('/fonts/Nunito-400-700.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Patrick Hand';
+  src: url('/fonts/PatrickHand-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 *,
 *::before,
 *::after {
