@@ -226,6 +226,43 @@ const held = () => {
   return (event: (requestId: string) => StreamEvent) => write(event);
 };
 
+test('markup in a model title or memo is shown as text, while streaming and once the build is done', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: true }));
+  const title = '<img data-injected onerror=alert() src>';
+  const memo = '<script data-injected>alert(1)</script>';
+  const injected = () => document.querySelector('[data-injected], script, img');
+  const attempt = Attempt.parse({ ...pressed(1), blueprint: { ...pressed(1).blueprint, title } });
+  const send = held();
+  const user = userEvent.setup();
+  render(<BuildDesk canFile />);
+  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  send((requestId) => ({ type: 'partial', requestId, blueprint: { title } }));
+  send((requestId) => ({
+    type: 'line',
+    requestId,
+    line: {
+      id: 'm1',
+      beat: 'designed',
+      mood: 'slow',
+      text: memo,
+      source: 'model',
+      at: { attempt: 1, step: 0 },
+    },
+  }));
+  expect((await screen.findByText(title)).tagName).toBe('P');
+  expect(screen.getByRole('list', { name: 'Mr. Pending' }).textContent).toBe(`Memo: ${memo}`);
+  expect(injected()).toBeNull();
+
+  send((requestId) => ({ type: 'attempt', requestId, attempt }));
+  send((requestId) => ({ type: 'done', requestId, header: { ...header([attempt]), title } }));
+  await vi.waitFor(() =>
+    expect(screen.getByRole('status').textContent).toBe('One button. An extraordinary amount of paperwork.'),
+  );
+  expect(screen.getByRole('img', { name: title })).toBeTruthy();
+  expect(screen.getByRole('list', { name: 'Mr. Pending' }).textContent).toBe(`Memo: ${memo}`);
+  expect(injected()).toBeNull();
+});
+
 test('Space pauses from anywhere but a control, which keeps its own Space, and Escape skips voice', async () => {
   prefersReduced(false);
   const cancel = vi.fn<() => void>();
