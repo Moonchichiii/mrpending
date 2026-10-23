@@ -11,6 +11,7 @@ import type { Line } from '@pending/contract';
 import { RULES_VERSION } from '@pending/machine';
 import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
+import { inspect } from 'node:util';
 import { expect, onTestFinished, test, vi } from 'vitest';
 import lostBlueprint from '../../../../packages/machine/fixtures/lost/blueprint.json';
 import lostForm from '../../../../packages/machine/fixtures/lost/form.json';
@@ -31,7 +32,12 @@ const title = 'Scenic Route Deluxe';
 const designMemo = 'More catapult.';
 const repairMemo = 'Less catapult.';
 
-async function start(infer: Model, env: Record<string, string> = {}, limits: AgentDeps['limits'] = {}) {
+async function start(
+  infer: Model,
+  env: Record<string, string> = {},
+  limits: AgentDeps['limits'] = {},
+  now = () => new Date('2026-10-22T12:00:00.000Z'),
+) {
   const server = agentServer({
     env: parseEnv({ ...LOCAL, ...env }),
     model: { mode: 'local', id: 'gemma4:e2b', host: 'ollama' },
@@ -39,7 +45,7 @@ async function start(infer: Model, env: Record<string, string> = {}, limits: Age
     promptVersion: 'v2',
     infer,
     limits,
-    now: () => new Date('2026-10-22T12:00:00.000Z'),
+    now,
   });
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
@@ -145,6 +151,8 @@ test('golden stream: a lost design, one repair, pressed', async () => {
   expect(res.status).toBe(200);
   expect(res.headers.get('content-type')).toBe('application/x-ndjson');
   expect(res.headers.get('x-request-id')).toBe(id);
+  expect(res.headers.get('cache-control')).toBe('no-store');
+  expect(res.headers.get('x-content-type-options')).toBe('nosniff');
   const events = await read(res);
 
   expect(transcript(events)).toEqual([
@@ -210,6 +218,8 @@ test('limits before the stream: 413 for a large body, 400 in character for a par
   const url = await start(pressing);
   const large = await post(url, { ...lostForm, padding: 'x'.repeat(5000) });
   expect(large.status).toBe(413);
+  expect(large.headers.get('cache-control')).toBe('no-store');
+  expect(large.headers.get('x-content-type-options')).toBe('nosniff');
   expect(ApiError.parse(await large.json())).toMatchObject({ code: 'INPUT_INVALID', retryable: false });
   const paradox = await post(url, { ...lostForm, required: 'fan', forbidden: 'fan' });
   expect(paradox.status).toBe(400);
@@ -295,6 +305,64 @@ test('the eleventh build in ten minutes is 429 with Retry-After', async () => {
   expect(Number(limited.headers.get('retry-after'))).toBe(error.retryAfterSeconds);
   expect(error.retryAfterSeconds).toBeGreaterThan(0);
   expect(error.retryAfterSeconds).toBeLessThanOrEqual(600);
+});
+
+test('forged forwarding headers do not change identity: the eleventh build is still 429', async () => {
+  const url = await start(pressing);
+  for (let n = 0; n < 11; n += 1) {
+    const forged = `203.0.113.${n}`;
+    const res = await post(url, lostForm, {
+      headers: { 'x-forwarded-for': forged, 'true-client-ip': forged, 'cf-connecting-ip': forged },
+    });
+    expect(res.status).toBe(n < 10 ? 200 : 429);
+    await res.text();
+  }
+});
+
+// The ElevenLabs tier (#16) is not built, so there is no route that could send any text to a voice provider.
+test('there is no /api/tts: arbitrary text and a line id are both 404', async () => {
+  const url = await start(pressing);
+  for (const body of [{ text: 'Say anything.' }, { requestId: randomUUID(), lineId: 'l1' }]) {
+    const res = await fetch(`${url}/api/tts`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    expect(res.status).toBe(404);
+    expect(await res.text()).toBe('');
+  }
+});
+
+test('a canary in the form or a memo never reaches a log line, whatever way the build ends', async () => {
+  const canary = `PENDING-CANARY-${randomUUID()}`;
+  const form = { ...lostForm, nature: `${lostForm.nature} ${canary}` };
+  const logged = (['log', 'info', 'warn', 'error', 'debug'] as const).map((method) =>
+    vi.spyOn(console, method).mockImplementation(() => undefined),
+  );
+  onTestFinished(() => logged.forEach((spy) => spy.mockRestore()));
+  const echoing: Model = () => async () => ({
+    value: { blueprint: Blueprint.parse(pressedBlueprint), memo: canary },
+    timing: { wallMs: 1 },
+  });
+  // The prompt quotes the form, so this error carries the canary as an error from a model client might.
+  const failing: Model = () => async (call) => {
+    expect(call.prompt).toContain(canary);
+    throw new Error(`refused: ${call.prompt}`);
+  };
+  const { model: invalid } = scripted([`${canary} is not a blueprint`, `${canary} still is not`]);
+
+  const done = await post(await start(echoing), form);
+  expect(transcript(await read(done)).at(-1)).toBe('done pressed=true attempts=1');
+  expect((await post(await start(failing), form)).status).toBe(503);
+  expect(transcript(await read(await post(await start(invalid), form))).at(-1)).toBe('error MODEL_INVALID');
+  // An unexpected failure is the one ending that logs, so the check below has something to read.
+  const broken = await start(echoing, {}, {}, () => {
+    throw new Error(`no clock for ${canary}`);
+  });
+  expect(transcript(await read(await post(broken, form))).at(-1)).toBe('error UNKNOWN');
+  const lines = logged.flatMap((spy) => spy.mock.calls).flat();
+  expect(lines.some((arg) => inspect(arg).includes('UNKNOWN'))).toBe(true);
+  expect(lines.filter((arg) => inspect(arg).includes(canary))).toEqual([]);
 });
 
 test('one build per identity, and MAX_CONCURRENT_BUILDS in all; a busy rejection is 429 with Retry-After 30', async () => {
