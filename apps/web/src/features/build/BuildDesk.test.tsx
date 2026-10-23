@@ -1,6 +1,6 @@
 import { Attempt } from '@pending/contract';
 import type { Build, Line, StreamEvent } from '@pending/contract';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
@@ -258,6 +258,36 @@ test('with reduced motion a press shows its final deadpan at once, with no timed
   );
   expect(mood()).toBe('deadpan');
   await new Promise((resolve) => setTimeout(resolve, 1000));
+  expect(mood()).toBe('deadpan');
+});
+
+test('reduced motion switched on during a press cuts to the final deadpan at once and cancels the timed poses', async () => {
+  const motion = {
+    matches: false,
+    onchange: null as (() => void) | null,
+    addEventListener() {},
+    removeEventListener() {},
+  };
+  vi.stubGlobal('matchMedia', () => motion);
+  pressedBuild();
+  const user = userEvent.setup();
+  render(<BuildDesk canFile />);
+  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+
+  await vi.waitFor(
+    () =>
+      expect(screen.getByRole('status').textContent).toBe(
+        'One button. An extraordinary amount of paperwork.',
+      ),
+    { timeout: 3000 },
+  );
+  expect(mood()).toBe('slow');
+  motion.matches = true;
+  act(() => motion.onchange?.());
+  expect(mood()).toBe('deadpan');
+  // The timers are cancelled, so the excited pose never comes, and allowing motion again does not run the press back.
+  motion.matches = false;
+  await new Promise((resolve) => setTimeout(resolve, 1800));
   expect(mood()).toBe('deadpan');
 });
 

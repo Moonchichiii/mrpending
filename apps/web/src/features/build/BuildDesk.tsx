@@ -5,7 +5,7 @@ import { Engineer } from '../engineer';
 import { Voice } from '../voice';
 import { Controls } from './Controls';
 import { errorCopy } from './model/errors';
-import { pressLine, pressVoiced } from './model/press';
+import { pressLine, pressVoiced, pressing } from './model/press';
 import { STEP_MS, playhead, said } from './model/session';
 import type { Session } from './model/session';
 import { Form27B6 } from './Form27B6';
@@ -56,16 +56,6 @@ function spoken(session: Session): Line[] | undefined {
     default:
       return assertNever(session);
   }
-}
-
-// The success sequence starts on the tick that reaches button.pressed, never on done (ARCHITECTURE section 3), so a
-// playhead waiting at the press for the header is already on the press clock. Gives the request being pressed.
-function pressing(session: Session): string | undefined {
-  if (session.status === 'pressed') return session.requestId;
-  if (session.status !== 'running') return undefined;
-  const head = playhead(session.attempts, session.step);
-  const press = head?.attempt.events.find((event) => event.type === 'button.pressed');
-  return head !== undefined && press !== undefined && head.step >= press.step ? session.requestId : undefined;
 }
 
 // Form 27B/6 when nothing is in progress; the build's progress, ending or failure otherwise.

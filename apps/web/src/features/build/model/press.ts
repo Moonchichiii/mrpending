@@ -1,4 +1,6 @@
 import type { Line } from '@pending/contract';
+import { playhead } from './session';
+import type { Session } from './session';
 
 // Character sheet section 6: from the tick that reaches button.pressed, the rig goes excited at 0.90 s and makes its
 // one hard cut to deadpan at 1.60 s, at every speed.
@@ -17,4 +19,14 @@ export function pressLine(lines: Line[], beat: PressBeat): Line | undefined {
 // clock is still before it), so "WE DID IT!" is neither spoken nor captioned before its cue; then the queue keeps its pace.
 export function pressVoiced(lines: Line[], beat: PressBeat): Line[] {
   return beat === 'before' ? lines.filter((line) => line.beat !== 'pressed') : lines;
+}
+
+// The success sequence starts on the tick that reaches button.pressed, never on done (ARCHITECTURE section 3), so a
+// playhead waiting at the press for the header is already on the press clock. Gives the request being pressed.
+export function pressing(session: Session): string | undefined {
+  if (session.status === 'pressed') return session.requestId;
+  if (session.status !== 'running') return undefined;
+  const head = playhead(session.attempts, session.step);
+  const press = head?.attempt.events.find((event) => event.type === 'button.pressed');
+  return head !== undefined && press !== undefined && head.step >= press.step ? session.requestId : undefined;
 }
