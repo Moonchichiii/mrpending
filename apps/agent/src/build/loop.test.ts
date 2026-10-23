@@ -9,7 +9,7 @@ import lostForm from '../../../../packages/machine/fixtures/lost/form.json';
 import pressedBlueprint from '../../../../packages/machine/fixtures/pressed/blueprint.json';
 import repairedPatch from '../../../../packages/machine/fixtures/repaired/patch.json';
 import type { Call, Infer } from '../models/ollama';
-import { runBuild } from './loop';
+import { APP_REPAIRS, runBuild } from './loop';
 import type { BuildInput } from './loop';
 
 const memo = 'More catapult.';
@@ -137,20 +137,19 @@ test('a patch that would exceed the part limit is invalid, and the attempt holds
   expect(run.build.report).toMatchObject({ attempts: 2, parts: 14, pressed: false });
 });
 
-test('an invalid blueprint is an attempt that is not run, and repairs stop at the budget', async () => {
+test('an invalid blueprint is an attempt that is not run, and repairs stop at the app budget of five', async () => {
   const blueprint = Blueprint.parse(invalidBlueprint);
   const unknownMove = { patch: [{ op: 'move', id: 'p9', cell: 'B5' }], memo };
-  const { infer, calls } = scripted([{ blueprint, memo }, unknownMove, unknownMove]);
-  const run = await runBuild(input(invalidForm, infer, 2));
+  const { infer, calls } = scripted([{ blueprint, memo }, ...Array.from({ length: 5 }, () => unknownMove)]);
+  const run = await runBuild(input(invalidForm, infer, APP_REPAIRS));
   if (run.end !== 'done') throw new Error(`expected a build, got ${run.end}`);
-  expect(run.build.attempts.map((a) => [a.outcome, a.events.length])).toEqual([
-    ['invalid', 0],
-    ['invalid', 0],
-    ['invalid', 0],
-  ]);
+  expect(run.build.attempts.map((a) => [a.outcome, a.events.length])).toEqual(
+    Array.from({ length: 6 }, () => ['invalid', 0]),
+  );
   expect(run.build.attempts[1]?.violations[0]).toBe('the patch moves p9, which is not on the board');
   expect(calls[1]?.prompt).toContain('forbids fan parts');
-  expect(run.build.report).toMatchObject({ attempts: 3, pressed: false });
+  expect(calls).toHaveLength(6);
+  expect(run.build.report).toMatchObject({ attempts: 6, pressed: false });
 });
 
 test('the cameo appears once, right after the first failure, while the first repair is awaited', async () => {

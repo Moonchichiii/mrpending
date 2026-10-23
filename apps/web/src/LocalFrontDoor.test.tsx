@@ -25,7 +25,7 @@ const CONFIG = {
   model: { mode: 'local', id: 'gemma4:e2b', host: 'ollama' },
   voice: { elevenlabs: false },
   telemetry: false,
-  repairs: 2,
+  repairs: 5,
   contractVersion: 'c1',
   rulesVersion: 'r2',
 };

@@ -67,7 +67,7 @@ Any violation makes the attempt `invalid`: it counts as an attempt, it is not si
 
 ## 6. Repairs
 
-A `Patch` is one to four ops applied in order to the previous blueprint: `add` a part whose id has not been used by any attempt of this build, `move` a part to a new anchor (parameters kept), `remove` a part. An unknown or reused id is a violation. Changing a parameter is `remove` + `add` under a new id. The result is validated like a fresh blueprint and becomes attempt *k*+1, which carries the patch (`attempts[k+1].patch`); attempt 1 never has one. The app allows two repairs per build, the eval five. The failure brief the model receives contains the outcome, `failedAt`, the last five events, the violations, the current blueprint and the Form constraints, in words and JSON, nothing else.
+A `Patch` is one to four ops applied in order to the previous blueprint: `add` a part whose id has not been used by any attempt of this build, `move` a part to a new anchor (parameters kept), `remove` a part. An unknown or reused id is a violation. Changing a parameter is `remove` + `add` under a new id. The result is validated like a fresh blueprint and becomes attempt *k*+1, which carries the patch (`attempts[k+1].patch`); attempt 1 never has one. The app allows five repairs per build, the same as the eval, so a build has at most six attempts. The failure brief the model receives contains the outcome, `failedAt`, the last five events, the violations, the current blueprint and the Form constraints, in words and JSON, nothing else.
 
 ## 7. Fixtures (`packages/machine/fixtures/`)
 
