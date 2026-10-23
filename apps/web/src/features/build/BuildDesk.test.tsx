@@ -1,5 +1,5 @@
 import { Attempt } from '@pending/contract';
-import type { StreamEvent } from '@pending/contract';
+import type { Build, StreamEvent } from '@pending/contract';
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
@@ -61,6 +61,43 @@ const stream = (events: ((requestId: string) => StreamEvent)[]) =>
       return new HttpResponse(events.map((e) => `${JSON.stringify(e(requestId))}\n`).join(''));
     }),
   );
+
+test('a build that ends is reported once with its build, however often it is replayed', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: true }));
+  stream([
+    (requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }),
+    (requestId) => ({ type: 'done', requestId, header: header([pressed(1)]) }),
+  ]);
+  const onFinished = vi.fn<(build: Build) => boolean>(() => true);
+  const user = userEvent.setup();
+  render(<BuildDesk canFile onFinished={onFinished} />);
+  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+
+  const verdict = 'One button. An extraordinary amount of paperwork.';
+  await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(verdict));
+  await vi.waitFor(() => expect(onFinished).toHaveBeenCalledTimes(1));
+  expect(onFinished.mock.calls[0]?.[0].title).toBe('The Scenic Route');
+  expect(screen.queryByRole('alert')).toBeNull();
+
+  await user.click(screen.getByRole('button', { name: 'Replay from the start' }));
+  await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(verdict));
+  expect(onFinished).toHaveBeenCalledTimes(1);
+});
+
+test('a build the callback did not keep says so at its ending instead of vanishing from My department', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: true }));
+  stream([
+    (requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }),
+    (requestId) => ({ type: 'done', requestId, header: header([pressed(1)]) }),
+  ]);
+  const user = userEvent.setup();
+  render(<BuildDesk canFile onFinished={() => false} />);
+  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+
+  expect((await screen.findByRole('alert')).textContent).toMatch(/would not keep the build/);
+  await user.click(screen.getByRole('button', { name: 'File another form' }));
+  expect(screen.queryByRole('alert')).toBeNull();
+});
 
 test('every playback control is a button operated from the keyboard, and speed sets the step duration', async () => {
   vi.stubGlobal('matchMedia', () => ({ matches: false }));
