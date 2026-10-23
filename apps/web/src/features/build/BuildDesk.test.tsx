@@ -230,3 +230,20 @@ test('each trial starts on a fresh board, never animating out of the previous on
   expect(board(2)).toBeTruthy();
   expect(first?.isConnected).toBe(false);
 });
+
+test('replay starts on a fresh board, never animating the same trial backward', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: false }));
+  const send = held();
+  const user = userEvent.setup();
+  render(<BuildDesk canFile />);
+  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  send((requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }));
+  const playback = await screen.findByRole('group', { name: 'Playback' });
+  const board = () => screen.getByText('Trial 1').closest('figure')?.querySelector('svg');
+  const before = board();
+  expect(before).toBeTruthy();
+
+  await user.click(within(playback).getByRole('button', { name: 'Replay' }));
+  expect(board()).toBeTruthy();
+  expect(before?.isConnected).toBe(false);
+});

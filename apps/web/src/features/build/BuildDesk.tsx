@@ -1,5 +1,5 @@
 import type { Attempt, Form } from '@pending/contract';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { assertNever } from '../../shared/assertNever';
 import { Board, Correction, Minutes, lastStep } from '../board';
 import { Controls } from './Controls';
@@ -17,11 +17,13 @@ function Trial({
   attempt,
   step = attempt ? lastStep(attempt.events) : 0,
   stepMs,
+  take,
 }: {
   attempts: Attempt[];
   attempt: Attempt | undefined;
   step?: number | undefined;
   stepMs?: number | undefined;
+  take: number;
 }) {
   if (!attempt) return null;
   const previous = attempts.find((a) => a.n === attempt.n - 1);
@@ -31,9 +33,9 @@ function Trial({
         <Correction n={attempt.n} previous={previous.blueprint} current={attempt.blueprint} />
       )}
       <figure className={styles.trial}>
-        {/* Keyed by trial, so a new attempt starts on a fresh board instead of animating out of the last one. */}
+        {/* Keyed by replay and trial, so a replay or a new attempt starts on a fresh board instead of animating out of the last one. */}
         <Board
-          key={attempt.n}
+          key={`${take}-${attempt.n}`}
           blueprint={attempt.blueprint}
           events={attempt.events}
           step={step}
@@ -74,7 +76,13 @@ function announcement(session: Session): string {
 
 // Form 27B/6 when nothing is in progress; the build's progress, ending or failure otherwise.
 export function BuildDesk({ canFile }: { canFile: boolean }) {
-  const { session, file, cancel, reset, pause, replay, setSpeed } = useBuild();
+  const { session, file, cancel, reset, pause, replay: restart, setSpeed } = useBuild();
+  // Replay rewinds the playhead without changing the trial, so each replay is counted to give the board a new key.
+  const [take, setTake] = useState(0);
+  const replay = () => {
+    setTake((n) => n + 1);
+    restart();
+  };
   const status = useRef<HTMLOutputElement>(null);
   // The control that was used disappears with each change of phase, so focus moves to the persistent status.
   const then = (action: () => void) => () => {
@@ -113,6 +121,7 @@ export function BuildDesk({ canFile }: { canFile: boolean }) {
               onSpeed={setSpeed}
             />
             <Trial
+              take={take}
               attempts={session.attempts}
               attempt={head?.attempt}
               step={head?.step}
@@ -134,7 +143,7 @@ export function BuildDesk({ canFile }: { canFile: boolean }) {
               onSkipVoice={skipVoice}
               onSpeed={setSpeed}
             />
-            <Trial attempts={session.attempts} attempt={session.attempts.at(-1)} />
+            <Trial take={take} attempts={session.attempts} attempt={session.attempts.at(-1)} />
             <Lines lines={said(session.lines, session.attempts.length + 1, 0)} />
             {withdraw}
           </>
@@ -144,7 +153,7 @@ export function BuildDesk({ canFile }: { canFile: boolean }) {
         return (
           <>
             <p className={styles.title}>{session.build.title}</p>
-            <Trial attempts={session.build.attempts} attempt={session.build.attempts.at(-1)} />
+            <Trial take={take} attempts={session.build.attempts} attempt={session.build.attempts.at(-1)} />
             <Lines lines={session.build.lines} />
             <button type="button" className={styles.action} onClick={then(replay)}>
               Replay from the start
@@ -161,7 +170,7 @@ export function BuildDesk({ canFile }: { canFile: boolean }) {
             <p role="alert" className={styles.error}>
               {message}
             </p>
-            <Trial attempts={session.attempts} attempt={session.attempts.at(-1)} />
+            <Trial take={take} attempts={session.attempts} attempt={session.attempts.at(-1)} />
             {action === 'retry' ? (
               <button type="button" className={styles.action} onClick={() => fileForm(session.form)}>
                 Build again
