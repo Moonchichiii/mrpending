@@ -261,6 +261,125 @@
   animation: cameo-lid-right 900ms var(--overshoot) forwards;
 }
 
+/* The mood class stays deadpan on the cameo line, so the final beat swaps the flat mouth for the slow curve. */
+.cameo .mouthSlow {
+  display: inline;
+  animation: cameo-mouth-in 900ms step-end forwards;
+}
+
+.cameo .mouthFlat {
+  animation: cameo-mouth-out 900ms step-end forwards;
+}
+
+/* Phones (section 8): the stalks turn, carrying the eyes, instead of the head and pupils looking. */
+.cameo.phone .eyeL {
+  transform-origin: 186px 80px;
+}
+
+.cameo.phone .eyeR {
+  transform-origin: 204px 80px;
+}
+
+.cameo.phone .stalkL {
+  animation: cameo-phone-stalk-left 900ms var(--overshoot) forwards;
+}
+
+.cameo.phone .stalkR,
+.cameo.phone .eyeL,
+.cameo.phone .eyeR {
+  animation: cameo-phone-stalk 900ms var(--overshoot) forwards;
+}
+
+.cameo.phone .head {
+  animation: cameo-phone-head 900ms var(--overshoot) forwards;
+}
+
+.cameo.phone .pupil {
+  animation: cameo-phone-pupil 900ms var(--overshoot) forwards;
+}
+
+@keyframes cameo-mouth-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes cameo-mouth-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Sloth up and to the left, board, audience, line to the left, paperwork; the left stalk keeps its rest angle. */
+@keyframes cameo-phone-stalk-left {
+  0% {
+    transform: rotate(-25.94deg);
+  }
+  20% {
+    transform: rotate(-41.94deg);
+  }
+  40% {
+    transform: rotate(-15.94deg);
+  }
+  60% {
+    transform: rotate(-25.94deg);
+  }
+  80% {
+    transform: rotate(-33.94deg);
+  }
+  100% {
+    transform: rotate(-25.94deg);
+  }
+}
+
+@keyframes cameo-phone-stalk {
+  0% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(-16deg);
+  }
+  40% {
+    transform: rotate(10deg);
+  }
+  60% {
+    transform: rotate(0deg);
+  }
+  80% {
+    transform: rotate(-8deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+/* The head and pupils only settle from deadpan into the slow default: the tilt goes at the last beat, the pupils centre at once. */
+@keyframes cameo-phone-head {
+  0%,
+  80% {
+    transform: rotate(-4deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes cameo-phone-pupil {
+  0% {
+    transform: translate(5px, 0);
+  }
+  20%,
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
 @keyframes cameo-head {
   0% {
     transform: rotate(-4deg);
