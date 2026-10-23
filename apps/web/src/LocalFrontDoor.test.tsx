@@ -153,3 +153,32 @@ test('a build that ends is kept once in My department, with a DUE number and no 
   await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(verdict));
   expect(within(department()).getAllByRole('listitem')).toHaveLength(1);
 });
+
+test('a build this browser will not keep says so at its ending instead of vanishing from My department', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: true }));
+  server.use(
+    http.get('*/api/config', () => HttpResponse.json(CONFIG)),
+    http.post('*/api/build', ({ request }) => {
+      const requestId = request.headers.get('x-request-id') ?? '';
+      const events: StreamEvent[] = [
+        { type: 'attempt', requestId, attempt: pressed(1) },
+        { type: 'done', requestId, header: header([pressed(1)]) },
+      ];
+      return new HttpResponse(events.map((e) => `${JSON.stringify(e)}\n`).join(''));
+    }),
+  );
+  const user = userEvent.setup();
+  render(<LocalFrontDoor />);
+  await screen.findByText(BADGE);
+  const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    throw new DOMException('full', 'QuotaExceededError');
+  });
+  try {
+    await user.click(fileButton());
+    expect((await screen.findByRole('alert')).textContent).toMatch(/would not keep the build/);
+    const department = screen.getByRole('region', { name: 'My department' });
+    expect(within(department).getByText('No builds filed in this browser yet.')).toBeDefined();
+  } finally {
+    setItem.mockRestore();
+  }
+});

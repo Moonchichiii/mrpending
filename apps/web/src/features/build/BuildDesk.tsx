@@ -1,7 +1,6 @@
-import type { Form } from '@pending/contract';
+import type { Build, Form } from '@pending/contract';
 import { useEffect, useRef, useState } from 'react';
 import { assertNever } from '../../shared/assertNever';
-import { keep } from '../gallery';
 import { Controls } from './Controls';
 import { errorCopy } from './model/errors';
 import { STEP_MS, playhead, said } from './model/session';
@@ -34,20 +33,25 @@ function announcement(session: Session): string {
 }
 
 // Form 27B/6 when nothing is in progress; the build's progress, ending or failure otherwise.
-// A build that ends is kept in this browser's department once, however often it is replayed afterwards.
-export function BuildDesk({ canFile, onKept }: { canFile: boolean; onKept?: (() => void) | undefined }) {
+// A build that ends is reported once, however often it is replayed afterwards; onFinished says whether it was kept.
+export function BuildDesk({
+  canFile,
+  onFinished,
+}: {
+  canFile: boolean;
+  onFinished?: ((build: Build) => boolean) | undefined;
+}) {
   const { session, file, cancel, reset, pause, replay: restart, setSpeed } = useBuild();
   const ended = session.status === 'pressed' || session.status === 'exhausted' ? session : undefined;
-  const keptFor = useRef<string>(undefined);
+  const finishedFor = useRef<string>(undefined);
   // The request whose build this browser refused to keep; its ending says so instead of failing silently.
   const [unkept, setUnkept] = useState<string>();
   useEffect(() => {
-    if (ended === undefined || keptFor.current === ended.requestId) return;
-    keptFor.current = ended.requestId;
-    if (keep(ended.build) !== undefined) onKept?.();
+    if (ended === undefined || onFinished === undefined || finishedFor.current === ended.requestId) return;
+    finishedFor.current = ended.requestId;
     // oxlint-disable-next-line react/set-state-in-effect -- the state reports the outcome of writing to localStorage
-    else setUnkept(ended.requestId);
-  }, [ended, onKept]);
+    if (!onFinished(ended.build)) setUnkept(ended.requestId);
+  }, [ended, onFinished]);
   // Replay rewinds the playhead without changing the trial, so each replay is counted to give the board a new key.
   const [take, setTake] = useState(0);
   const replay = () => {

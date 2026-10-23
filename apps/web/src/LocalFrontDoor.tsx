@@ -1,14 +1,20 @@
+import type { Build } from '@pending/contract';
 import { useState } from 'react';
 import { BuildDesk, InferenceBadge, useInference } from './features/build';
-import { Gallery, MyDepartment } from './features/gallery';
+import { Gallery, MyDepartment, keep } from './features/gallery';
 import styles from './FrontDoor.module.css';
 
 // The local installation: Form 27B/6 is the primary action, this browser's department and the gallery follow.
 // No prompt leaves the browser before the badge says where it goes.
 export function LocalFrontDoor() {
   const { inference, retry } = useInference();
-  // Each build the desk keeps remounts the department, which reads what this browser holds afresh.
+  // Each build that ends is kept here; a kept one remounts the department, which reads what this browser holds afresh.
   const [filed, setFiled] = useState(0);
+  const finished = (build: Build) => {
+    if (keep(build) === undefined) return false;
+    setFiled((n) => n + 1);
+    return true;
+  };
   return (
     <main className={styles.page}>
       <header className={styles.intro}>
@@ -20,7 +26,7 @@ export function LocalFrontDoor() {
         <InferenceBadge inference={inference} onRetry={retry} />
       </header>
       <section className={styles.section} aria-label="Form 27B/6">
-        <BuildDesk canFile={inference.status === 'confirmed'} onKept={() => setFiled((n) => n + 1)} />
+        <BuildDesk canFile={inference.status === 'confirmed'} onFinished={finished} />
       </section>
       <section className={styles.section} aria-labelledby="department-title">
         <h2 id="department-title">My department</h2>

@@ -1,6 +1,5 @@
 import type { Build } from '@pending/contract';
-// Direct, not through the build feature's index: that index's BuildDesk imports this feature.
-import { Playback } from '../build/Playback';
+import { Playback } from '../build';
 import { GUIDE, provenance } from './model/records';
 import styles from './Gallery.module.css';
 import stamp from './GalleryShelf.module.css';
