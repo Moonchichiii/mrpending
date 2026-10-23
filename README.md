@@ -110,7 +110,7 @@ The maintainer performs and dates this checklist before the production release i
 - **The button is rarely pressed.** The shipping configuration pressed in 2 of 15 eval builds, both by repair, at attempts 5 and 6. The eval allows 5 repairs per build (`EVAL_REPAIRS`); the app allows 2 (`APP_REPAIRS`, both in [`apps/agent/src/build/loop.ts`](apps/agent/src/build/loop.ts)), so neither press happened within the app's three attempts. Most builds end unpressed, with a full report; that is a result, not an error.
 - **The repair wait shows.** No repair in the eval returned before the previous attempt's animation ended (0/74 for the shipping configuration), so each correction is a visible wait.
 - **Slow and single.** Locally the first token and each model call time out at 90 s and a whole build at 6 minutes ([`apps/agent/src/http/limits.ts`](apps/agent/src/http/limits.ts)); the agent runs one build at a time by default (`MAX_CONCURRENT_BUILDS`), and its rate limits are in memory, for one instance only.
-- **Hosted mode is not measured.** The agent can run against OpenRouter (`INFERENCE_MODE=hosted`) as a labelled comparison; the eval did not run it and the public site never uses it.
+- **Hosted mode is not wired in.** The contract and the badge know a hosted mode (OpenRouter), but this release connects no hosted model: the agent refuses to start with `INFERENCE_MODE=hosted` ([`apps/agent/src/main.ts`](apps/agent/src/main.ts)). The eval did not run it and the public site never uses it.
 - **Chromium only.** The browser suites ran in Chromium; Firefox and WebKit were not run (see Accessibility).
 
 ## Licence
