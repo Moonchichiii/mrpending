@@ -50,9 +50,10 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const card = (status: Phase, current: Line | undefined, pressed = false) =>
+// By default the line's attempt is one the simulator failed, as the cameo line's always is in a real build.
+const card = (status: Phase, current: Line | undefined, pressed = false, failed = true) =>
   render(
-    <Engineer status={status} line={current} pressed={pressed}>
+    <Engineer status={status} line={current} failed={failed} pressed={pressed}>
       <p>{current?.text}</p>
     </Engineer>,
   ).container;
@@ -103,7 +104,7 @@ describe('the press', () => {
 
   test('the button event runs the timed sequence on both rigs and settles on the verdict mood', () => {
     const { container, rerender } = render(
-      <Engineer status="running" line={line('handoff', 'excited')} pressed={false}>
+      <Engineer status="running" line={line('handoff', 'excited')} failed={false} pressed={false}>
         <p />
       </Engineer>,
     );
@@ -111,7 +112,7 @@ describe('the press', () => {
 
     // The verdict, the last of the three lines at the button's step, is deadpan; the sequence plays excited first.
     rerender(
-      <Engineer status="pressed" line={line('pressed', 'deadpan')} pressed>
+      <Engineer status="pressed" line={line('pressed', 'deadpan')} failed={false} pressed>
         <p />
       </Engineer>,
     );
@@ -194,7 +195,7 @@ describe('the Sloth Incident', () => {
 
   test('the look sequence and the sloth appear only on the cameo line', () => {
     const { container, rerender } = render(
-      <Engineer status="running" line={line('failed', 'deadpan')} pressed={false}>
+      <Engineer status="running" line={line('failed', 'deadpan')} failed pressed={false}>
         <p />
       </Engineer>,
     );
@@ -202,7 +203,7 @@ describe('the Sloth Incident', () => {
     expect(cameo(container)).toBe(false);
 
     rerender(
-      <Engineer status="repairing" line={line('cameo', 'deadpan')} pressed={false}>
+      <Engineer status="repairing" line={line('cameo', 'deadpan')} failed pressed={false}>
         <p />
       </Engineer>,
     );
@@ -211,12 +212,21 @@ describe('the Sloth Incident', () => {
     expect(rigs(container).map(moods)).toEqual([['deadpan'], ['deadpan']]);
 
     rerender(
-      <Engineer status="running" line={line('repaired', 'slow')} pressed={false}>
+      <Engineer status="running" line={line('repaired', 'slow')} failed={false} pressed={false}>
         <p />
       </Engineer>,
     );
     expect(sloth(container)).toBeNull();
     expect(cameo(container)).toBe(false);
+  });
+
+  test('a cameo line on an attempt the simulator did not fail brings neither the sloth nor the looks', () => {
+    // A forged record can carry the cameo line on a pressed trial; the line still shows, nothing else does.
+    const container = card('running', line('cameo', 'deadpan'), true, false);
+    expect(sloth(container)).toBeNull();
+    expect(cameo(container)).toBe(false);
+    expect(container.querySelector(`.${styles.withSloth}`)).toBeNull();
+    expect(screen.getByText('This is why we employ snails.')).toBeDefined();
   });
 
   test('with reduced motion the sloth and the line show and nothing moves', () => {

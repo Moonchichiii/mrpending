@@ -55,6 +55,7 @@ export function Playback({ build }: { build: Build }) {
               key="lines"
               status={session.status}
               lines={said(session.lines, head?.attempt.n ?? 1, head?.step ?? 0)}
+              attempts={session.attempts}
               pressed={pressedAt(head)}
             />
           </>
@@ -69,6 +70,7 @@ export function Playback({ build }: { build: Build }) {
               key="lines"
               status={session.status}
               lines={session.build.lines}
+              attempts={session.build.attempts}
               pressed={session.build.report.pressed}
             />
             <button type="button" className={styles.action} onClick={replay}>

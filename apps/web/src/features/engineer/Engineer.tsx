@@ -10,16 +10,26 @@ import { useReducedMotion } from './useReducedMotion';
 import styles from './Engineer.module.css';
 
 // Both variants are drawn and the stylesheet shows one, so a phone needs no script to pick it.
-function Rig({ status, line, pressed }: { status: Phase; line: Line | undefined; pressed: boolean }) {
+function Rig({
+  status,
+  line,
+  cameo,
+  pressed,
+}: {
+  status: Phase;
+  line: Line | undefined;
+  cameo: boolean;
+  pressed: boolean;
+}) {
   const reduced = useReducedMotion();
   const current = mood(status, line);
-  const cameo = line?.beat === 'cameo' && !reduced;
+  const looks = cameo && !reduced;
   // The board's button event starts the press, never a line; the stylesheet times excited and the cut to deadpan.
   const press = pressed && !reduced;
   return (
     <>
-      <Figure variant="desk" mood={current} cameo={cameo} press={press} />
-      <Figure variant="phone" mood={current} cameo={cameo} press={press} />
+      <Figure variant="desk" mood={current} cameo={looks} press={press} />
+      <Figure variant="phone" mood={current} cameo={looks} press={press} />
     </>
   );
 }
@@ -39,18 +49,21 @@ class Boundary extends Component<{ fallback: ReactNode; children: ReactNode }, {
 }
 
 // Mr. Pending's line card: the rig in the corner, the line beside it, and on the cameo line the sloth on its top edge.
+// failed is the simulator's word that the line's attempt failed; a forged cameo line alone never brings the sloth.
 export function Engineer({
   status,
   line,
+  failed,
   pressed,
   children,
 }: {
   status: Phase;
   line: Line | undefined;
+  failed: boolean;
   pressed: boolean;
   children: ReactNode;
 }) {
-  const cameo = line?.beat === 'cameo';
+  const cameo = line?.beat === 'cameo' && failed;
   return (
     <div className={cameo ? `${styles.card} ${styles.withSloth}` : styles.card}>
       {cameo && (
@@ -60,7 +73,7 @@ export function Engineer({
       )}
       <div className={styles.portrait}>
         <Boundary fallback={<Still />}>
-          <Rig status={status} line={line} pressed={pressed} />
+          <Rig status={status} line={line} cameo={cameo} pressed={pressed} />
         </Boundary>
       </div>
       <div className={styles.text}>{children}</div>

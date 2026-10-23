@@ -74,6 +74,10 @@ export function playhead(attempts: Attempt[], step: number): { attempt: Attempt;
 export const pressedAt = (head: { attempt: Attempt; step: number } | undefined): boolean =>
   head?.attempt.events.some((event) => event.type === 'button.pressed' && event.step <= head.step) ?? false;
 
+// Whether the simulator failed the attempt a line sits on: the cameo needs that failure, never just a line claiming it.
+export const failedOn = (attempts: Attempt[], line: Line | undefined): boolean =>
+  line !== undefined && attempts.some((a) => a.n === line.at.attempt && a.outcome !== 'pressed');
+
 // The lines placed at or before the playhead: earlier attempts in full, the current one up to its step.
 export const said = (lines: Line[], attempt: number, step: number): Line[] =>
   lines.filter((line) => line.at.attempt < attempt || (line.at.attempt === attempt && line.at.step <= step));

@@ -2,7 +2,7 @@ import { Line } from '@pending/contract';
 import type { Attempt } from '@pending/contract';
 import { describe, expect, test } from 'vitest';
 import { appError } from './errors';
-import { IDLE, pressedAt, reduce, said } from './session';
+import { IDLE, failedOn, pressedAt, reduce, said } from './session';
 import type { Motion, Session, SessionEvent, Speed } from './session';
 import { form, header, lost, pressed } from './testBuild';
 
@@ -225,4 +225,22 @@ test('the press is reached by the button event on the board, never by a line', (
   // A failed trial has no button event, whatever a record's lines claim about it.
   expect(pressedAt({ attempt: lost(1), step: lastStep(lost(1)) })).toBe(false);
   expect(pressedAt(undefined)).toBe(false);
+});
+
+test('a line counts as on a failure only when the simulator failed the attempt it sits on', () => {
+  const cameo = (attempt: number) =>
+    Line.parse({
+      id: 'c',
+      beat: 'cameo',
+      mood: 'deadpan',
+      text: 'c',
+      source: 'table',
+      at: { attempt, step: 0 },
+    });
+  const held = [lost(1), pressed(2)];
+  expect(failedOn(held, cameo(1))).toBe(true);
+  // A record can place the cameo line on its pressed trial, or on a trial it never held.
+  expect(failedOn(held, cameo(2))).toBe(false);
+  expect(failedOn(held, cameo(3))).toBe(false);
+  expect(failedOn(held, undefined)).toBe(false);
 });
