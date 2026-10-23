@@ -5,12 +5,14 @@ import { Engineer } from '../engineer';
 import { Voice } from '../voice';
 import { Controls } from './Controls';
 import { errorCopy } from './model/errors';
+import { pressLine } from './model/press';
 import { STEP_MS, playhead, said } from './model/session';
 import type { Session } from './model/session';
 import { Form27B6 } from './Form27B6';
 import { Lines } from './Lines';
 import { Trial } from './Trial';
 import { useBuild } from './useBuild';
+import { usePress } from './usePress';
 import styles from './BuildDesk.module.css';
 
 // What the status region announces; it changes per phase and per trial, never per tick. Errors use their alert.
@@ -56,6 +58,16 @@ function spoken(session: Session): Line[] | undefined {
   }
 }
 
+// The success sequence starts on the tick that reaches button.pressed, never on done (ARCHITECTURE section 3), so a
+// playhead waiting at the press for the header is already on the press clock. Gives the request being pressed.
+function pressing(session: Session): string | undefined {
+  if (session.status === 'pressed') return session.requestId;
+  if (session.status !== 'running') return undefined;
+  const head = playhead(session.attempts, session.step);
+  const press = head?.attempt.events.find((event) => event.type === 'button.pressed');
+  return head !== undefined && press !== undefined && head.step >= press.step ? session.requestId : undefined;
+}
+
 // Form 27B/6 when nothing is in progress; the build's progress, ending or failure otherwise.
 // A build that ends is reported once, however often it is replayed afterwards; onFinished says whether it was kept.
 export function BuildDesk({
@@ -90,9 +102,12 @@ export function BuildDesk({
   };
   const fileForm = (form: Form) => then(() => file(form))();
   const lines = spoken(session);
-  // The rig reacts to the last line said; its card holds the lines list.
+  const pressed = pressing(session);
+  // The same take keeps its clock from the press tick through done, so the sequence runs once per playback.
+  const press = usePress(pressed === undefined ? undefined : `${pressed}:${take}`);
+  // The rig reacts to the last line said, or on a press to the line its clock has reached; its card holds the lines list.
   const engineer = lines && (
-    <Engineer status={session.status} line={lines.at(-1)}>
+    <Engineer status={session.status} line={pressed === undefined ? lines.at(-1) : pressLine(lines, press)}>
       <Lines lines={lines} />
     </Engineer>
   );

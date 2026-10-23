@@ -1,10 +1,11 @@
 import { Attempt } from '@pending/contract';
-import type { Build, StreamEvent } from '@pending/contract';
+import type { Build, Line, StreamEvent } from '@pending/contract';
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, expect, test, vi } from 'vitest';
+import engineer from '../engineer/Engineer.module.css';
 import { BuildDesk } from './BuildDesk';
 import { header, lost, pressed } from './model/testBuild';
 
@@ -203,6 +204,41 @@ test('reduced motion: final frames, the full minutes, the correction diff and th
   expect(screen.getByRole('status').textContent).toBe('Trial 1 in progress.');
 });
 
+const said = (id: string, beat: Line['beat'], mood: Line['mood'], text: string) => (requestId: string) =>
+  ({
+    type: 'line',
+    requestId,
+    line: { id, beat, mood, text, source: 'table', at: { attempt: 1, step: 0 } },
+  }) as const;
+const mood = () => {
+  const svg = document.querySelector('svg[data-variant="desk"]');
+  return (['slow', 'excited', 'deadpan'] as const).find((m) => svg?.classList.contains(engineer[m] ?? ''));
+};
+
+test('a press keeps the rig, goes excited at 0.90 s and cuts to deadpan at 1.60 s, though every line is said', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
+  stream([
+    said('l1', 'running', 'slow', 'Commencing trial 1.'),
+    (requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }),
+    said('l2', 'pressed', 'excited', 'WE DID IT! Please inform the entire Department.'),
+    said('l3', 'pressed', 'deadpan', 'The Department acknowledges this development.'),
+    said('l4', 'pressed', 'deadpan', 'One button. An extraordinary amount of paperwork.'),
+    (requestId) => ({ type: 'done', requestId, header: header([pressed(1)]) }),
+  ]);
+  const user = userEvent.setup();
+  render(<BuildDesk canFile />);
+  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+
+  await vi.waitFor(() =>
+    expect(screen.getByRole('status').textContent).toBe('One button. An extraordinary amount of paperwork.'),
+  );
+  // The pressed lines are all said, but the rig waits for the press clock.
+  expect(screen.getByRole('list', { name: 'Mr. Pending' }).textContent).toContain('WE DID IT!');
+  expect(mood()).toBe('slow');
+  await vi.waitFor(() => expect(mood()).toBe('excited'), { timeout: 1500 });
+  await vi.waitFor(() => expect(mood()).toBe('deadpan'), { timeout: 1500 });
+});
+
 // Answers a filing with a stream the test writes to and never closes.
 const held = () => {
   const encoder = new TextEncoder();
@@ -296,6 +332,30 @@ test('Space pauses from anywhere but a control, which keeps its own Space, and E
   // Esc is handled by the voice alone, so the line is skipped once, not once per listener.
   await user.keyboard('{Escape}');
   expect(cancel).toHaveBeenCalledTimes(1);
+});
+
+test('the press clock starts on the tick that reaches button.pressed and runs once, however late done arrives', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
+  const send = held();
+  const user = userEvent.setup();
+  render(<BuildDesk canFile />);
+  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  send(said('l1', 'running', 'slow', 'Commencing trial 1.'));
+  send((requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }));
+  await vi.waitFor(() => expect(document.querySelector('[data-button][data-pressed="true"]')).not.toBeNull());
+  send(said('l2', 'pressed', 'excited', 'WE DID IT! Please inform the entire Department.'));
+  send(said('l3', 'pressed', 'deadpan', 'One button. An extraordinary amount of paperwork.'));
+
+  // The header has not come, so playback waits at the press while the rig runs its sequence.
+  await vi.waitFor(() => expect(mood()).toBe('excited'), { timeout: 1500 });
+  await vi.waitFor(() => expect(mood()).toBe('deadpan'), { timeout: 1500 });
+  expect(screen.getByRole('status').textContent).toBe('Trial 1 in progress.');
+
+  send((requestId) => ({ type: 'done', requestId, header: header([pressed(1)]) }));
+  await vi.waitFor(() =>
+    expect(screen.getByRole('status').textContent).toBe('One button. An extraordinary amount of paperwork.'),
+  );
+  expect(mood()).toBe('deadpan');
 });
 
 test('each trial starts on a fresh board, never animating out of the previous one', async () => {
