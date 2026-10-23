@@ -1,57 +1,15 @@
-import type { Attempt, Form } from '@pending/contract';
-import { useRef, useState } from 'react';
+import type { Build, Form } from '@pending/contract';
+import { useEffect, useRef, useState } from 'react';
 import { assertNever } from '../../shared/assertNever';
-import { Board, Correction, Minutes, lastStep } from '../board';
 import { Controls } from './Controls';
 import { errorCopy } from './model/errors';
 import { STEP_MS, playhead, said } from './model/session';
 import type { Session } from './model/session';
 import { Form27B6 } from './Form27B6';
 import { Lines } from './Lines';
+import { Trial, skipVoice } from './Trial';
 import { useBuild } from './useBuild';
 import styles from './BuildDesk.module.css';
-
-// The attempt on the board at `step` (its final frame by default), its minutes, and the correction that produced it.
-function Trial({
-  attempts,
-  attempt,
-  step = attempt ? lastStep(attempt.events) : 0,
-  stepMs,
-  take,
-}: {
-  attempts: Attempt[];
-  attempt: Attempt | undefined;
-  step?: number | undefined;
-  stepMs?: number | undefined;
-  take: number;
-}) {
-  if (!attempt) return null;
-  const previous = attempts.find((a) => a.n === attempt.n - 1);
-  return (
-    <>
-      {attempt.patch && previous && (
-        <Correction n={attempt.n} previous={previous.blueprint} current={attempt.blueprint} />
-      )}
-      <figure className={styles.trial}>
-        {/* Keyed by replay and trial, so a replay or a new attempt starts on a fresh board instead of animating out of the last one. */}
-        <Board
-          key={`${take}-${attempt.n}`}
-          blueprint={attempt.blueprint}
-          events={attempt.events}
-          step={step}
-          stepMs={stepMs}
-        />
-        <figcaption>Trial {attempt.n}</figcaption>
-      </figure>
-      <Minutes n={attempt.n} events={attempt.events} step={step} />
-    </>
-  );
-}
-
-// No voice tier exists yet beyond the browser's own; skipping cancels whatever it is saying.
-const skipVoice = () => {
-  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-};
 
 // What the status region announces; it changes per phase and per trial, never per tick. Errors use their alert.
 function announcement(session: Session): string {
@@ -75,8 +33,25 @@ function announcement(session: Session): string {
 }
 
 // Form 27B/6 when nothing is in progress; the build's progress, ending or failure otherwise.
-export function BuildDesk({ canFile }: { canFile: boolean }) {
+// A build that ends is reported once, however often it is replayed afterwards; onFinished says whether it was kept.
+export function BuildDesk({
+  canFile,
+  onFinished,
+}: {
+  canFile: boolean;
+  onFinished?: ((build: Build) => boolean) | undefined;
+}) {
   const { session, file, cancel, reset, pause, replay: restart, setSpeed } = useBuild();
+  const ended = session.status === 'pressed' || session.status === 'exhausted' ? session : undefined;
+  const finishedFor = useRef<string>(undefined);
+  // The request whose build this browser refused to keep; its ending says so instead of failing silently.
+  const [unkept, setUnkept] = useState<string>();
+  useEffect(() => {
+    if (ended === undefined || onFinished === undefined || finishedFor.current === ended.requestId) return;
+    finishedFor.current = ended.requestId;
+    // oxlint-disable-next-line react/set-state-in-effect -- the state reports the outcome of writing to localStorage
+    if (!onFinished(ended.build)) setUnkept(ended.requestId);
+  }, [ended, onFinished]);
   // Replay rewinds the playhead without changing the trial, so each replay is counted to give the board a new key.
   const [take, setTake] = useState(0);
   const replay = () => {
@@ -153,6 +128,12 @@ export function BuildDesk({ canFile }: { canFile: boolean }) {
         return (
           <>
             <p className={styles.title}>{session.build.title}</p>
+            {unkept === session.requestId && (
+              <p role="alert" className={styles.error}>
+                This browser would not keep the build; its storage is full or switched off. It is not in My
+                department.
+              </p>
+            )}
             <Trial take={take} attempts={session.build.attempts} attempt={session.build.attempts.at(-1)} />
             <Lines lines={session.build.lines} />
             <button type="button" className={styles.action} onClick={then(replay)}>
