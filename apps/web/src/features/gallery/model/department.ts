@@ -11,7 +11,10 @@ const MAX_DUE = 9999;
 
 const Due = range(1, MAX_DUE);
 const Kept = Build.extend({ due: Due }).array().max(KEPT);
-export type Kept = { due: number; build: Build };
+// A refused build is held exactly as stored, so a change of rules never erases a browser's history.
+export type Kept =
+  | { due: number; ok: true; build: Build }
+  | { due: number; ok: false; build: Build; reason: string };
 
 // The cosmetic DUE-nnnn number is a per-browser counter, never an address.
 export const dueLabel = (due: number) => `DUE-${String(due).padStart(4, '0')}`;
@@ -37,13 +40,15 @@ function save(key: string, value: unknown): boolean {
   }
 }
 
-// Every kept build is replayed again on the way out; one the current rules refuse is dropped.
+// Every kept build is replayed again on the way out; one the current rules refuse is kept with the refusal.
 export function kept(): Kept[] {
   const parsed = Kept.safeParse(stored(BUILDS));
   if (!parsed.success) return [];
-  return parsed.data.flatMap(({ due, ...build }) => {
+  return parsed.data.map(({ due, ...build }) => {
     const replayed = replay(build);
-    return replayed.ok ? [{ due, build: replayed.build }] : [];
+    return replayed.ok
+      ? { due, ok: true, build: replayed.build }
+      : { due, ok: false, build, reason: replayed.reason };
   });
 }
 
@@ -58,8 +63,9 @@ function write(builds: Kept[]): boolean {
 export function keep(build: Build): Kept | undefined {
   const last = Due.safeParse(stored(COUNTER));
   const due = last.success ? (last.data % MAX_DUE) + 1 : 1;
-  if (!save(COUNTER, due) || !write([{ due, build }, ...kept()].slice(0, KEPT))) return undefined;
-  return { due, build };
+  const filed: Kept = { due, ok: true, build };
+  if (!save(COUNTER, due) || !write([filed, ...kept()].slice(0, KEPT))) return undefined;
+  return filed;
 }
 
 // An imported file is refused over 512 KB, then replayed; only the rules' account of it is kept.

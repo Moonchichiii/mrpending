@@ -51,20 +51,30 @@ export function MyDepartment() {
         <p className={styles.note}>No builds filed in this browser yet.</p>
       ) : (
         <ul className={stamp.shelf}>
-          {builds.map(({ due, build }) => (
-            <li key={due} className={stamp.card}>
-              <p className={styles.due}>{dueLabel(due)}</p>
-              <h3 className={stamp.title}>{build.title}</h3>
-              <p className={build.report.pressed ? stamp.approved : stamp.pending}>
-                {build.report.pressed ? 'APPROVED' : 'PENDING'}
-              </p>
-              <p>
-                {build.report.attempts} {build.report.attempts === 1 ? 'trial' : 'trials'} ·{' '}
-                {build.report.parts} {build.report.parts === 1 ? 'part' : 'parts'}
-              </p>
-              <p>{build.report.verdict}</p>
-              <button type="button" className={styles.action} onClick={() => download(due, build)}>
-                Export {dueLabel(due)} as JSON
+          {builds.map((entry) => (
+            <li key={entry.due} className={stamp.card}>
+              <p className={styles.due}>{dueLabel(entry.due)}</p>
+              <h3 className={stamp.title}>{entry.build.title}</h3>
+              {entry.ok ? (
+                <>
+                  <p className={entry.build.report.pressed ? stamp.approved : stamp.pending}>
+                    {entry.build.report.pressed ? 'APPROVED' : 'PENDING'}
+                  </p>
+                  <p>
+                    {entry.build.report.attempts} {entry.build.report.attempts === 1 ? 'trial' : 'trials'} ·{' '}
+                    {entry.build.report.parts} {entry.build.report.parts === 1 ? 'part' : 'parts'}
+                  </p>
+                  <p>{entry.build.report.verdict}</p>
+                </>
+              ) : (
+                <p className={styles.note}>{entry.reason}</p>
+              )}
+              <button
+                type="button"
+                className={styles.action}
+                onClick={() => download(entry.due, entry.build)}
+              >
+                Export {dueLabel(entry.due)} as JSON
               </button>
             </li>
           ))}

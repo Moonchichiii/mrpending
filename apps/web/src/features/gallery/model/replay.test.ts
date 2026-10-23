@@ -124,6 +124,25 @@ test('storage that refuses to be read reads as an empty department', () => {
   }
 });
 
+test('a kept build the current rules refuse stays kept with the plain refusal, and filing another build keeps it', () => {
+  const older = { ...record('scenic'), rulesVersion: 'r1' };
+  localStorage.setItem('mrpending.department.builds', JSON.stringify([{ ...older, due: 7 }]));
+  expect(kept()).toEqual([
+    {
+      due: 7,
+      ok: false,
+      build: older,
+      reason: `This build was filed under rules r1; the Department now works to rules ${RULES_VERSION} and cannot replay it.`,
+    },
+  ]);
+  keep(record('budget'));
+  expect(kept().map((k) => [k.due, k.ok])).toEqual([
+    [1, true],
+    [7, false],
+  ]);
+  expect(kept()[1]?.build.rulesVersion).toBe('r1');
+});
+
 test('a kept build tampered with in storage is replayed again and the rules account is shown', () => {
   keep(record('scenic'));
   const stored: unknown = JSON.parse(localStorage.getItem('mrpending.department.builds') ?? '[]');
