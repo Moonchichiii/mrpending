@@ -165,6 +165,45 @@ test('the board is axe clean while a trial runs and beside the correction', asyn
   await expectAxeClean(page, 'board running, trial 2 with the correction diff');
 });
 
+test('a pressed build ends on the Engineering Report, saved as a 1200 x 630 PNG, and the card is axe clean', async ({
+  page,
+}, testInfo) => {
+  await open(page);
+  await page.route('**/api/build', (route) => {
+    const requestId = route.request().headers()['x-request-id'] ?? '';
+    return route.fulfill({
+      body: recorded(requestId)
+        .map((e) => `${JSON.stringify(e)}\n`)
+        .join(''),
+    });
+  });
+  await page.getByLabel('1. Nature of the request').fill(FORM.nature);
+  await page.getByRole('button', { name: 'File Form 27B/6' }).click();
+
+  // Both trials at 120 ms a step, then the press clock's hard cut at 1.60 s.
+  const card = page.getByRole('region', { name: 'Engineering Report' });
+  await expect(card).toBeVisible({ timeout: 20_000 });
+  const landscape = card.locator('svg[data-shape="landscape"]');
+  await expect(landscape.locator('[data-stamp]')).toHaveAttribute('data-stamp', 'APPROVED');
+  await expect(landscape.locator('[data-number="attempts"]')).toHaveText('2');
+
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    card.getByRole('button', { name: 'Save as image' }).click(),
+  ]);
+  expect(download.suggestedFilename()).toBe('mr-pending-b1.png');
+  // The issue's evidence, kept as a report attachment in the ignored test output, never compared or committed.
+  const path = testInfo.outputPath('engineering-report.png');
+  await download.saveAs(path);
+  await testInfo.attach('engineering-report', { path, contentType: 'image/png' });
+  const png = readFileSync(path);
+  // The PNG signature, then the IHDR width and height: the landscape card at its own size.
+  expect([...png.subarray(0, 8)]).toEqual([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1200, 630]);
+
+  await expectAxeClean(page, 'engineering report card', 'section[aria-label="Engineering Report"]');
+});
+
 // One line per mood in trial 1, so the playhead walks Mr. Pending through all three.
 const MOODS = [
   { mood: 'slow', step: 0, text: 'The Department will now observe the apparatus.' },

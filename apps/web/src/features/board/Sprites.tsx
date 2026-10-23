@@ -1,7 +1,7 @@
 import type { Part } from '@pending/contract';
 import type { CSSProperties, ReactNode } from 'react';
 import type { Failure, PartView, Point } from './model/frame';
-import { BOARD } from './model/frame';
+import { BOARD, BUTTON, centre } from './model/frame';
 import styles from './Board.module.css';
 
 const CELL = BOARD.cell;
@@ -191,6 +191,8 @@ export function Ball({ at }: { at: Point }) {
 export function Button({ at, pressed }: { at: Point; pressed: boolean }) {
   return (
     <g className={styles.part} data-button data-pressed={pressed} transform={translate(at)}>
+      {/* The base shadow, which collapses into the base when the button is pressed (character sheet section 6). */}
+      <rect className={styles.baseShadow} x={-26} y={22} width={52} height={8} rx={4} />
       <Haloed>
         <path
           className={pressed ? styles.domePressed : styles.dome}
@@ -199,6 +201,46 @@ export function Button({ at, pressed }: { at: Point; pressed: boolean }) {
         />
         <rect className={styles.base} x={-24} y={14} width={48} height={10} rx={2} />
       </Haloed>
+    </g>
+  );
+}
+
+const SPARKS = [-150, -110, -70, -30, 10] as const;
+
+// The press at rest (character sheet section 6): cracks across the sunk dome, sparks, PRESSED beside the button and
+// APPROVED on the board; the sheet's data-press decides whether its beats play in sequence.
+export function Press() {
+  const button = centre(BUTTON);
+  return (
+    <g data-press-layer>
+      <g className={styles.cracks} transform={translate({ x: button.x, y: button.y + 6 })}>
+        <path pathLength={1} d="M -11 12 L -6 5 L -9 0" />
+        <path pathLength={1} d="M 1 13 L 3 4 L -1 -3" />
+        <path pathLength={1} d="M 9 12 L 12 6 L 8 2" />
+      </g>
+      {/* The animated scale replaces an element's own transform, so the position sits on the group around it. */}
+      <g transform={translate(button)}>
+        <g className={styles.sparks}>
+          {SPARKS.map((angle) => (
+            <path key={angle} d="M 30 0 L 42 0" transform={`rotate(${angle})`} />
+          ))}
+        </g>
+      </g>
+      <g className={styles.pressedLabel} transform={translate({ x: button.x - 94, y: button.y - 40 })}>
+        <rect className={styles.chip} x={-46} y={-16} width={92} height={32} rx={6} />
+        <text className={styles.chipText} y={6}>
+          PRESSED
+        </text>
+      </g>
+      <g transform={`${translate({ x: BOARD.width / 2, y: BOARD.height / 2 })} rotate(-6)`}>
+        <g className={styles.stamp} data-stamp>
+          <rect className={styles.stampRuling} x={-150} y={-46} width={300} height={92} rx={16} />
+          <rect className={styles.stampRuling} x={-140} y={-36} width={280} height={72} rx={10} />
+          <text className={styles.stampText} y={16}>
+            APPROVED
+          </text>
+        </g>
+      </g>
     </g>
   );
 }

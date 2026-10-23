@@ -247,11 +247,17 @@ test('a press keeps the rig, goes excited at 0.90 s and cuts to deadpan at 1.60 
       ),
     { timeout: 3000 },
   );
-  // The pressed lines are all said, but the rig waits for the press clock.
+  // The pressed lines are all said, but the rig, the board and the report wait for the press clock.
   expect(screen.getByRole('list', { name: 'Mr. Pending' }).textContent).toContain('WE DID IT!');
   expect(mood()).toBe('slow');
+  expect(document.querySelector('[data-button]')?.closest('svg')?.getAttribute('data-press')).toBe(
+    'sequence',
+  );
+  const report = () => screen.queryByRole('region', { name: 'Engineering Report' });
   await vi.waitFor(() => expect(mood()).toBe('excited'), { timeout: 1500 });
+  expect(report()).toBeNull();
   await vi.waitFor(() => expect(mood()).toBe('deadpan'), { timeout: 1500 });
+  expect(report()).not.toBeNull();
 });
 
 test('with reduced motion a press shows its final deadpan at once, with no timed pose before it', async () => {

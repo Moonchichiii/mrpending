@@ -1,0 +1,53 @@
+/* Character sheet section 6: at the hard cut to deadpan the report card slides up from the bottom. */
+.report {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  animation: slide-up 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100vh);
+  }
+}
+
+.landscape svg,
+.portrait svg {
+  width: 100%;
+  height: auto;
+}
+
+/* The portrait 3:4 card replaces the landscape one on phones (character sheet section 8). */
+.portrait {
+  display: none;
+}
+
+@media (max-width: 40rem) {
+  .landscape {
+    display: none;
+  }
+
+  .portrait {
+    display: block;
+  }
+}
+
+/* The primary button: ink on cream, copper shadow, a -1 degree tilt (character sheet section 5). */
+.save {
+  justify-self: start;
+  min-height: var(--target);
+  padding: var(--space-2) var(--space-4);
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 700;
+  border: var(--border-paper);
+  border-radius: 8px;
+  box-shadow: var(--shadow-primary);
+  transform: rotate(-1deg);
+  cursor: pointer;
+}
+
+.save:disabled {
+  cursor: progress;
+}

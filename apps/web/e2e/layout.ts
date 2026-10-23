@@ -24,12 +24,18 @@ export async function expectNoOverflow(page: Page) {
   expect(widest.width, `${widest.tag} is wider than the viewport`).toBeLessThanOrEqual(viewport);
 }
 
-// WCAG 2.2 A and AA plus the AAA rules axe implements (enhanced contrast among them).
-// The summary line is the evidence the issue asks for.
-export async function expectAxeClean(page: Page, label: string) {
-  const { violations, passes, incomplete } = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'wcag2aaa'])
-    .analyze();
+// WCAG 2.2 A and AA plus the AAA rules axe implements (enhanced contrast among them), on the page or on the part of it
+// that `include` selects. The summary line is the evidence the issue asks for.
+export async function expectAxeClean(page: Page, label: string, include?: string) {
+  const axe = new AxeBuilder({ page }).withTags([
+    'wcag2a',
+    'wcag2aa',
+    'wcag21a',
+    'wcag21aa',
+    'wcag22aa',
+    'wcag2aaa',
+  ]);
+  const { violations, passes, incomplete } = await (include ? axe.include(include) : axe).analyze();
   process.stdout.write(
     `axe ${label}: ${violations.length} violations, ${passes.length} rules passed, ${incomplete.length} incomplete` +
       `${incomplete.map((r) => ` ${r.id} (${r.nodes.length} nodes)`).join(',')}\n`,
