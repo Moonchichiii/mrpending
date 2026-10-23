@@ -1,6 +1,6 @@
 import type { Part } from '@pending/contract';
-import type { ReactNode } from 'react';
-import type { PartView, Point } from './model/frame';
+import type { CSSProperties, ReactNode } from 'react';
+import type { Failure, PartView, Point } from './model/frame';
 import { BOARD } from './model/frame';
 import styles from './Board.module.css';
 
@@ -19,6 +19,9 @@ function Haloed({ children }: { children: ReactNode }) {
   );
 }
 
+// A small ink chevron pointing east at (x, y), so direction never rests on shape alone.
+const chevron = (x: number, y: number) => `M ${x - 4} ${y - 5} L ${x + 3} ${y} L ${x - 4} ${y + 5}`;
+
 // Sprites are drawn facing east around the anchor cell's centre; west mirrors them.
 function Shape({ part, fallen }: { part: Part; fallen: number[] }) {
   switch (part.kind) {
@@ -30,13 +33,27 @@ function Shape({ part, fallen }: { part: Part; fallen: number[] }) {
           {Array.from({ length: part.length }, (_, i) => (
             <circle key={i} className={styles.roller} cx={CELL * i} cy={17} r={4} />
           ))}
+          {Array.from({ length: part.length - 1 }, (_, i) => (
+            <path key={i} className={styles.arrow} data-direction d={chevron(CELL * i + CELL / 2, 17)} />
+          ))}
         </>
       );
     }
     case 'ramp': {
       const end = CELL * (part.length - 1) + 26;
       return (
-        <polygon className={styles.ramp} points={`-26,-14 ${end},${end + 12} ${end},${end + 22} -26,-4`} />
+        <>
+          <polygon className={styles.ramp} points={`-26,-14 ${end},${end + 12} ${end},${end + 22} -26,-4`} />
+          {Array.from({ length: part.length }, (_, i) => (
+            <path
+              key={i}
+              className={styles.arrow}
+              data-direction
+              d={chevron(CELL * i, CELL * i + 3)}
+              transform={`rotate(45 ${CELL * i} ${CELL * i + 3})`}
+            />
+          ))}
+        </>
       );
     }
     case 'dominoes':
@@ -51,11 +68,11 @@ function Shape({ part, fallen }: { part: Part; fallen: number[] }) {
               y={-24}
               width={10}
               height={48}
-              transform={fallen.includes(i) ? `rotate(90 ${CELL * i + 5} 24)` : undefined}
             />
           ))}
         </>
       );
+    // The pivot is the anchor; the load end lies opposite dir (a weight arrow down), the launch end toward dir (up).
     case 'seesaw':
       return (
         <>
@@ -69,6 +86,8 @@ function Shape({ part, fallen }: { part: Part; fallen: number[] }) {
             rx={3}
             transform="rotate(-10)"
           />
+          <path className={styles.end} data-end="load" d="M -64 -12 L -48 -12 L -56 -2 Z" />
+          <path className={styles.end} data-end="launch" d="M 48 -26 L 64 -26 L 56 -36 Z" />
         </>
       );
     case 'catapult':
@@ -91,24 +110,58 @@ function Shape({ part, fallen }: { part: Part; fallen: number[] }) {
   }
 }
 
-export function PartSprite({ view }: { view: PartView }) {
-  const { part, at, fallen } = view;
-  const wind = part.kind === 'fan' ? CELL * part.power : 0;
+// A fan's wind is drawn in each cell it covers, one arrow per cell of power, pointing the way it blows.
+function Wind({ view, className }: { view: PartView; className: string }) {
+  const sign = view.part.dir === 'east' ? 1 : -1;
   return (
-    <g className={styles.part} data-part={part.id} data-kind={part.kind} transform={translate(at)}>
-      <g transform={part.dir === 'west' ? 'scale(-1 1)' : undefined}>
-        {wind > 0 && (
-          <g className={styles.wind}>
-            {[-10, 0, 10].map((y) => (
-              <line key={y} x1={30} y1={y} x2={CELL / 2 + wind} y2={y} />
-            ))}
-          </g>
-        )}
-        <Haloed>
-          <Shape part={part} fallen={fallen} />
-        </Haloed>
-      </g>
+    <g className={className} data-wind={view.part.id}>
+      {view.wind.map(({ x, y }) => (
+        <path
+          key={x}
+          d={`M ${x - 18 * sign} ${y} L ${x + 14 * sign} ${y} M ${x + 6 * sign} ${y - 8} L ${x + 14 * sign} ${y} L ${x + 6 * sign} ${y + 8}`}
+        />
+      ))}
     </g>
+  );
+}
+
+// A correction's styling (dashed, faded) marks the fan's wind as well as the fan.
+export function PartSprite({ view, className }: { view: PartView; className?: string | undefined }) {
+  const { part, at, fallen } = view;
+  const marked = (base: string | undefined) => [base, className].filter(Boolean).join(' ');
+  return (
+    <>
+      {view.wind.length > 0 && <Wind view={view} className={marked(styles.wind)} />}
+      <g
+        className={marked(styles.part)}
+        data-part={part.id}
+        data-kind={part.kind}
+        data-dir={part.dir}
+        data-active={view.active}
+        transform={translate(at)}
+      >
+        <g transform={part.dir === 'west' ? 'scale(-1 1)' : undefined}>
+          <Haloed>
+            <Shape part={part} fallen={fallen} />
+          </Haloed>
+        </g>
+      </g>
+    </>
+  );
+}
+
+// Only the active part keeps its label on a phone (ARCHITECTURE section 3); on wider boards every part is named.
+export function PartLabel({ view }: { view: PartView }) {
+  return (
+    <text
+      className={styles.partLabel}
+      data-label={view.part.id}
+      data-active={view.active}
+      x={view.at.x}
+      y={view.at.y - 32}
+    >
+      {view.part.kind}
+    </text>
   );
 }
 
@@ -122,9 +175,11 @@ export function Hopper({ at }: { at: Point }) {
   );
 }
 
+// The ball moves by a CSS transform, so the board's step duration animates it from cell to cell.
 export function Ball({ at }: { at: Point }) {
+  const style: CSSProperties = { transform: `translate(${at.x}px, ${at.y}px)` };
   return (
-    <g className={styles.part} data-ball transform={translate(at)}>
+    <g className={`${styles.part} ${styles.moving}`} data-ball style={style}>
       <Haloed>
         <circle className={styles.ball} r={9} />
       </Haloed>
@@ -144,6 +199,45 @@ export function Button({ at, pressed }: { at: Point; pressed: boolean }) {
         />
         <rect className={styles.base} x={-24} y={14} width={48} height={10} rx={2} />
       </Haloed>
+    </g>
+  );
+}
+
+// The terminal event rings its cell and names itself in a paper chip, placed on the side with room.
+export function FailureRing({ failure }: { failure: Failure }) {
+  const width = 116;
+  const left = failure.at.x > BOARD.width / 2;
+  const chipX = left ? -30 - width : 30;
+  const chipY = failure.at.y < BOARD.y + CELL ? 4 : -40;
+  return (
+    <g
+      className={styles.failure}
+      data-failure={failure.event}
+      data-cell={failure.cell}
+      transform={translate(failure.at)}
+    >
+      <circle className={styles.ringHalo} r={27} />
+      <circle className={styles.ring} r={27} />
+      {/* On a phone the chip grows from the corner nearest the ring, so it never covers the ring. */}
+      <g
+        className={styles.chipBox}
+        style={{ transformOrigin: `${left ? '100%' : '0%'} ${chipY > 0 ? '0%' : '100%'}` }}
+      >
+        <rect className={styles.chip} x={chipX} y={chipY} width={width} height={30} rx={6} />
+        <text className={styles.chipText} x={chipX + width / 2} y={chipY + 21}>
+          {failure.event}
+        </text>
+      </g>
+    </g>
+  );
+}
+
+// A diff badge: a paper disc with the op's sign, never colour alone.
+export function Badge({ at, sign, dx }: { at: Point; sign: '+' | '−'; dx: number }) {
+  return (
+    <g className={styles.badge} data-badge={sign} transform={translate({ x: at.x + dx, y: at.y - 24 })}>
+      <circle r={12} />
+      <text y={6}>{sign}</text>
     </g>
   );
 }

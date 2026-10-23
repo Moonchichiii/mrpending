@@ -8,8 +8,11 @@ import type { AppError } from './errors';
 export type Speed = 0.5 | 1 | 3;
 export type Motion = 'full' | 'reduced';
 
-// ARCHITECTURE section 3, with three additions the sketch leaves implicit: idle keeps the form after a cancel, designing
-// holds the lines said before the first attempt, and repairing keeps the chosen speed.
+// ARCHITECTURE section 3: 240 / 120 / 40 ms per step.
+export const STEP_MS: Record<Speed, number> = { 0.5: 240, 1: 120, 3: 40 };
+
+// ARCHITECTURE section 3, with four additions the sketch leaves implicit: idle keeps the form after a cancel, designing
+// holds the lines said before the first attempt, repairing keeps the chosen speed, and running can be paused.
 export type Session =
   | { status: 'idle'; form?: Form }
   | {
@@ -28,6 +31,7 @@ export type Session =
       lines: Line[];
       step: number;
       speed: Speed;
+      paused: boolean;
       final?: BuildHeader;
     }
   | { status: 'repairing'; requestId: string; form: Form; attempts: Attempt[]; lines: Line[]; speed: Speed }
@@ -45,7 +49,9 @@ export type SessionEvent =
   | { type: 'CANCEL'; requestId: string }
   | { type: 'RESET'; requestId: string }
   | { type: 'TICK'; requestId: string; motion: Motion }
-  | { type: 'SPEED'; requestId: string; speed: Speed };
+  | { type: 'SPEED'; requestId: string; speed: Speed }
+  | { type: 'PAUSE'; requestId: string; paused: boolean }
+  | { type: 'REPLAY'; requestId: string };
 
 export const IDLE: Session = { status: 'idle' };
 
@@ -63,6 +69,10 @@ export function playhead(attempts: Attempt[], step: number): { attempt: Attempt;
   const last = attempts.at(-1);
   return last && { attempt: last, step: span(last) - 1 };
 }
+
+// The lines placed at or before the playhead: earlier attempts in full, the current one up to its step.
+export const said = (lines: Line[], attempt: number, step: number): Line[] =>
+  lines.filter((line) => line.at.attempt < attempt || (line.at.attempt === attempt && line.at.step <= step));
 
 // Reduced motion jumps to the final frame of the next attempt end in one tick.
 function advance(attempts: Attempt[], step: number, motion: Motion): number {
@@ -103,7 +113,16 @@ function attempt(state: Session, next: Attempt): Session {
     case 'designing': {
       if (next.n !== 1) return state;
       const { requestId, form, lines } = state;
-      return { status: 'running', requestId, form, attempts: [next], lines, step: 0, speed: 1 };
+      return {
+        status: 'running',
+        requestId,
+        form,
+        attempts: [next],
+        lines,
+        step: 0,
+        speed: 1,
+        paused: false,
+      };
     }
     case 'running':
       if (next.n !== state.attempts.length + 1 || next.n > MAX_ATTEMPTS) return state;
@@ -119,11 +138,44 @@ function attempt(state: Session, next: Attempt): Session {
         lines,
         step: length(attempts),
         speed,
+        paused: false,
       };
     }
     case 'idle':
     case 'pressed':
     case 'exhausted':
+    case 'error':
+      return state;
+    default:
+      return assertNever(state);
+  }
+}
+
+// Replay from the start of the first attempt, during playback or after it; a finished build plays to its ending again.
+function replay(state: Session): Session {
+  switch (state.status) {
+    case 'running':
+      return { ...state, step: 0, paused: false };
+    case 'repairing':
+      return { ...state, status: 'running', step: 0, paused: false };
+    case 'pressed':
+    case 'exhausted': {
+      const { attempts, lines, ...final } = state.build;
+      const { requestId } = state;
+      return {
+        status: 'running',
+        requestId,
+        form: final.form,
+        attempts,
+        lines,
+        step: 0,
+        speed: 1,
+        paused: false,
+        final,
+      };
+    }
+    case 'idle':
+    case 'designing':
     case 'error':
       return state;
     default:
@@ -153,7 +205,13 @@ export function reduce(state: Session, event: SessionEvent): Session {
     case 'DONE':
       if (state.status === 'running') return { ...state, final: event.header };
       if (state.status !== 'repairing') return state;
-      return { ...state, status: 'running', step: length(state.attempts) - 1, final: event.header };
+      return {
+        ...state,
+        status: 'running',
+        step: length(state.attempts) - 1,
+        paused: false,
+        final: event.header,
+      };
     case 'FAIL': {
       if (state.status !== 'designing' && state.status !== 'running' && state.status !== 'repairing')
         return state;
@@ -170,11 +228,15 @@ export function reduce(state: Session, event: SessionEvent): Session {
         return { status: 'idle', form: state.build.form };
       return state;
     case 'TICK':
-      return state.status === 'running' ? tick(state, event.motion) : state;
+      return state.status === 'running' && !state.paused ? tick(state, event.motion) : state;
     case 'SPEED':
       return state.status === 'running' || state.status === 'repairing'
         ? { ...state, speed: event.speed }
         : state;
+    case 'PAUSE':
+      return state.status === 'running' ? { ...state, paused: event.paused } : state;
+    case 'REPLAY':
+      return replay(state);
     default:
       return assertNever(event);
   }
