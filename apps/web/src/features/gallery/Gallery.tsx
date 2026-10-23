@@ -53,7 +53,9 @@ export function Gallery() {
     return opened === undefined ? (
       <>
         {refused}
-        <a href={import.meta.env.BASE_URL}>Back to the gallery</a>
+        <a className={styles.link} href={import.meta.env.BASE_URL}>
+          Back to the gallery
+        </a>
       </>
     ) : (
       <RecordPage build={opened.build} corrected={opened.corrected} />

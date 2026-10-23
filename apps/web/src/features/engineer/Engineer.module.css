@@ -521,8 +521,10 @@
     display: block;
   }
 
+  /* Level here: the card fills the column, and a tilt widens it with its height, so enlarged text pushed it off screen. */
   .card {
     grid-template-columns: 1fr auto;
+    transform: none;
   }
 
   .portrait {
