@@ -1,6 +1,6 @@
 # Working on Mr. Pending
 
-Shared rules for every agent and reviewer in this repository. Claude Code builds, Codex reviews, GitHub Actions decides, the maintainer approves. The authoritative specifications are `ARCHITECTURE.md`, `MACHINE-RULES.md`, `SECURITY-AND-FAILURE-CONTRACT.md` and `MR-PENDING-CHARACTER-SHEET.md`; this file never repeats them.
+Shared rules for every agent and reviewer in this repository. Claude Code builds, Codex reviews, GitHub Actions decides, the maintainer approves. The authoritative specifications are `docs/ARCHITECTURE.md`, `docs/MACHINE-RULES.md`, `docs/SECURITY-AND-FAILURE-CONTRACT.md` and `docs/MR-PENDING-CHARACTER-SHEET.md`; this file never repeats them.
 
 ## Scope
 
@@ -23,7 +23,7 @@ Shared rules for every agent and reviewer in this repository. Claude Code builds
 ## Tests and evidence
 
 - Tests assert behaviour at boundaries: simulator, validation, repair, streaming, accessibility, security, end to end. No snapshots, no duplicated cases, no coverage target, no test added to inflate a count.
-- A test or a gate is never weakened to turn CI green. Fixture `events.json` files are frozen; a rule change bumps `RULES_VERSION` in `MACHINE-RULES.md` first.
+- A test or a gate is never weakened to turn CI green. Fixture `events.json` files are frozen; a rule change bumps `RULES_VERSION` in `docs/MACHINE-RULES.md` first.
 - Only measured numbers from `eval/results/` appear anywhere. Nothing is described as working until its evidence exists.
 - An issue is Done when its definition of done is met, its evidence is attached and CI is green on the merged PR, not when code has been written.
 
@@ -46,4 +46,4 @@ Codex reviews read-only: locally through its Claude Code plugin's script (`codex
 7. Are assertions hiding invalid states, and does the type checker actually cover the changed files?
 8. Could the behaviour be done more simply with code that already exists?
 
-End with one verdict line, `PASS`, `CHANGES_REQUIRED` or `BLOCKED`, and numbered findings, each with location, severity and the required correction. Claude corrects `CHANGES_REQUIRED` findings inside the allowed paths and asks for another review; after two rounds without `PASS` it stops and hands the findings to the maintainer. `BLOCKED` (a protected path, a scope conflict, missing evidence, a milestone decision) goes to the maintainer at once. A review that did not happen is not a `PASS`; a review never edits code (`@codex fix it` is not used). Review at feature boundaries (simulator rules, the Gemma spike gate, streaming and cancellation, security, voice, accessibility, the final integration), not after every save.
+End with one verdict line, `PASS`, `CHANGES_REQUIRED` or `BLOCKED`, and numbered findings, each with location, severity and the required correction. Claude corrects `CHANGES_REQUIRED` findings inside the allowed paths and asks for another review, up to four rounds; after a fourth round without `PASS` it stops and hands the findings to the maintainer. Only a finding that needs a decision is escalated earlier: `BLOCKED` (a protected path, a scope conflict, missing evidence, a milestone decision) goes to the maintainer at once. A review that did not happen is not a `PASS`; a review never edits code (`@codex fix it` is not used). Review at feature boundaries (simulator rules, the Gemma spike gate, streaming and cancellation, security, voice, accessibility, the final integration), not after every save.

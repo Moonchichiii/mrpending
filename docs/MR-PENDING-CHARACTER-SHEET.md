@@ -25,9 +25,9 @@ Chief Engineer, extremely slow, extremely thorough, and quietly thrilled by mach
 | `designing` | design call started | slow | "Drafting. Please do not rush the Department." |
 | `designed` | blueprint validated | slow | model memo, then "Blueprint {n}: “{title}”. {parts} components for one button. Proportionate." (the title is captioned; the spoken cloud line omits it) |
 | `running` | attempt starts | slow | "Commencing trial {n}." |
-| `handoff` | first part-to-part handover of an attempt | excited | "A successful descent! Alert the committee!" (three variants, chosen by step number) |
+| `handoff` | first part-to-part handover of an attempt | excited | "A successful descent! Alert the committee!" / "A handover! The parts are cooperating!" / "Contact! Enter it in the minutes at once!" (chosen by step number) |
 | `failed` | outcome `lost` / `stalled` / `invalid` | deadpan | "Finding: the ball left the premises at {cell}." / "Finding: the ball came to rest at {cell}." / "Finding: the blueprint breaches {violation}." then "A correction will be issued." |
-| `repaired` | patch validated | slow | model memo, then "Correction {n}: {changes}." (e.g. "removed catapult at K6, added seesaw at K6 and fan at L5") |
+| `repaired` | patch validated | slow | model memo, then "Correction {n}: {changes}." (e.g. "removed catapult at K6, added seesaw at K6 and fan at L5"); a repair that changed nothing gets no correction line |
 | `pressed` | `button.pressed` | excited → deadpan | "WE DID IT! Please inform the entire Department." then the verdict "One button. An extraordinary amount of paperwork." |
 | `exhausted` | last attempt not pressed | deadpan | "After {n} trials the button remains unpressed. The paperwork is immaculate. Your request is pending. Naturally." |
 | `rejected` | contradictory form | deadpan | "Form 27B/6 rejected: items 4 and 5 name the same equipment. The Department does not do paradoxes before lunch." |

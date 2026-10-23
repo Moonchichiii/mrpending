@@ -35,7 +35,7 @@ export const ApiError = z.object({
 
 ## 3. Streaming (`POST /api/build`)
 
-- NDJSON events, schemas in `contract/api.ts`: `partial`, `line`, `attempt`, `patch`, `done`, `error`, `ping` (every 10 s while waiting). Each carries `requestId`.
+- NDJSON events, schemas in `contract/api.ts`: `partial`, `line`, `attempt`, `patch`, `done`, `error`, `ping` (every 10 s while waiting, once the stream has started). Each carries `requestId`.
 - Three endings, kept distinct. **Completed:** the server writes exactly one terminal event (`done` or `error`) and closes; after headers are sent, any server failure is an `error` event. **Cancelled:** the client aborts, the socket closes, the server sees it and cancels the model call; no event is written and the client records `CANCEL`. **Interrupted:** the socket closes for any other reason before a terminal event; the client records `INTERRUPTED`. No partial is ever simulated; no attempt is ever shown before it passes `Attempt`.
 - `done` carries the `BuildHeader`; the client assembles the `Build` from the `attempt` and `line` events it received and recomputes `report` with `machine/report.ts`. A mismatch with the header's report is `UNKNOWN` with the `requestId`.
 - `requestId` is a client UUID, echoed on every event and in `X-Request-Id`. Events for another `requestId` are ignored, so an old slow build cannot overwrite a new one.
@@ -52,7 +52,7 @@ export const ApiError = z.object({
 | Model output | 1,024 tokens per call; every text field has a `.max()` | agent call, contract |
 | First token / one call | 15 s / 45 s hosted; local: set from the laptop measurement in the eval (placeholder 90 s until then) | route → 504 |
 | Whole build | 3 min hosted, 6 min local | route → 504 |
-| Concurrent builds | 1 per identity; `MAX_CONCURRENT_BUILDS` globally, default 1 in `local` (one model, CPU-bound on a laptop), 10 in `hosted` | semaphore; a waiting build sees "queued" |
+| Concurrent builds | 1 per identity; `MAX_CONCURRENT_BUILDS` globally, default 1 in `local` (one model, CPU-bound on a laptop), 10 in `hosted` | semaphore; a build over the cap is not queued: 429 + `Retry-After: 30` |
 | Builds | 10 per 10 min per identity | sliding window |
 | TTS | 10 per 10 min per identity, one `Line` per request | `/api/tts` |
 
