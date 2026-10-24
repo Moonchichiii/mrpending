@@ -1,5 +1,7 @@
 import type { Line } from '@pending/contract';
 import { useEffect, useReducer, useRef, useState } from 'react';
+import { activated, clipFor, loadClips, playClip } from './clips';
+import type { Clips } from './clips';
 import { initialVoice, nextLine, voiceReducer } from './model/voice';
 import type { VoiceStatus } from './model/voice';
 import { findVoice, speak } from './speech';
@@ -27,6 +29,9 @@ export function useSpeaker(lines: readonly Line[], playback: number | string, mu
   const setMutedState = mute?.setMuted ?? setOwn;
   const [heard, setHeard] = useState(playback);
   const playing = useRef<{ id: string; controller: AbortController } | undefined>(undefined);
+  // The manifest is fetched at the first line heard, and every clip plays on one element that loads nothing ahead.
+  const clips = useRef<Promise<Clips> | undefined>(undefined);
+  const audio = useRef<HTMLAudioElement | undefined>(undefined);
 
   if (heard !== playback) {
     setHeard(playback);
@@ -60,12 +65,34 @@ export function useSpeaker(lines: readonly Line[], playback: number | string, mu
     const play = { id: next.id, controller };
     playing.current = play;
     dispatch({ type: 'start', line: next });
-    void speak(next, muted ? null : voice, controller.signal, () => {
+    let started = false;
+    const onStart = () => {
+      started = true;
       if (playing.current === play) dispatch({ type: 'speaking', id: next.id });
-    }).then((outcome) => {
-      // A line from a playback that has since been reset says nothing about the current one, even under the same id.
-      if (playing.current === play) dispatch({ type: 'finish', id: next.id, outcome });
-    });
+    };
+    const browser = () => speak(next, muted ? null : voice, controller.signal, onStart);
+    // A line with a clip plays it; a clip that fails before a sound is heard leaves the line to the browser voice.
+    // Skip or Mute while the manifest loads settles the line at once, as a skip, without dropping the shared request.
+    const skipped = new Promise<undefined>((resolve) =>
+      controller.signal.addEventListener('abort', () => resolve(undefined), { once: true }),
+    );
+    const clip =
+      muted || !activated()
+        ? Promise.resolve(undefined)
+        : Promise.race([(clips.current ??= loadClips()), skipped]);
+    void clip
+      .then((found) => {
+        const id = found === undefined ? undefined : clipFor(found, next);
+        if (id === undefined) return browser();
+        audio.current ??= Object.assign(document.createElement('audio'), { preload: 'none' });
+        return playClip(audio.current, id, next.mood, controller.signal, onStart).then((outcome) =>
+          outcome === 'failed' && !started ? browser() : outcome,
+        );
+      })
+      .then((outcome) => {
+        // A line from a playback that has since been reset says nothing about the current one, even under the same id.
+        if (playing.current === play) dispatch({ type: 'finish', id: next.id, outcome });
+      });
   }, [next, voice, muted]);
 
   const skip = () => playing.current?.controller.abort();

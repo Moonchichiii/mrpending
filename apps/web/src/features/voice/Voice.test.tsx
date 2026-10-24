@@ -3,6 +3,7 @@ import { act, cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, expect, test, vi } from 'vitest';
+import { WAIT_MS } from './clips';
 import { Voice } from './Voice';
 
 afterEach(() => {
@@ -101,7 +102,7 @@ test.each([
   // A voice list without a usable voice keeps the search open until VOICES_WAIT_MS.
   expect(await screen.findByText(verdict.text, undefined, { timeout: 3000 })).toBeDefined();
   expect(
-    screen.getByText('This device has no voice for Mr. Pending, so his lines are captioned only.'),
+    screen.getByText("This device has no voice, so only Mr. Pending's recorded lines are spoken aloud."),
   ).toBeDefined();
   expect(screen.queryByRole('alert')).toBeNull();
   expect(synth?.spoken ?? []).toEqual([]);
@@ -135,7 +136,7 @@ test('the caption is the text of the line being spoken, a memo under its label',
   expect(synth.spoken[0]).toMatchObject({ text: memo.text, rate: 0.8 });
   expect(screen.getByText(memo.text).textContent).toBe(`Memo: ${memo.text}`);
   expect(
-    screen.getByText("Mr. Pending speaks with your browser's on-device voice; no line leaves this device."),
+    screen.getByText('Mr. Pending speaks from recordings or on-device voice; no line leaves this device.'),
   ).toBeDefined();
 
   synth.end();
@@ -226,4 +227,150 @@ test('Mute silences the current line and captions the rest until unmuted', async
   await user.click(mute);
   rerender(<Voice lines={[weDidIt, acknowledged, verdict]} playback={0} />);
   await vi.waitFor(() => expect(synth.spoken.map((u) => u.text)).toEqual([weDidIt.text, verdict.text]));
+});
+
+// A fake manifest served at voice/manifest.json, and the page as if the visitor had already pressed something.
+function withClips(manifest: unknown, active = true) {
+  const fetch = vi.fn<(url: string) => Promise<Response>>(async (url) =>
+    url.endsWith('/voice/manifest.json') && manifest !== undefined
+      ? Response.json(manifest)
+      : new Response(null, { status: 404 }),
+  );
+  vi.stubGlobal('fetch', fetch);
+  Object.defineProperty(navigator, 'userActivation', {
+    configurable: true,
+    value: { hasBeenActive: active },
+  });
+  return fetch;
+}
+const entry = (id: string, l: Line) => ({ id, text: l.text, sha256: 'a'.repeat(64) });
+const MANIFEST = [entry('we-did-it', weDidIt), entry('acknowledged', acknowledged)];
+
+// A jsdom audio element whose play starts at once, fails to load its clip, or waits for data that never comes.
+function withAudio(load: 'playing' | 'error' | 'stall' = 'playing') {
+  const played: { audio: HTMLMediaElement; src: string }[] = [];
+  vi.spyOn(HTMLMediaElement.prototype, 'play').mockImplementation(function (this: HTMLMediaElement) {
+    played.push({ audio: this, src: this.src });
+    if (load === 'stall') return new Promise(() => undefined);
+    queueMicrotask(() => this.dispatchEvent(new Event(load)));
+    return Promise.resolve();
+  });
+  const pause = vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => undefined);
+  const end = () =>
+    act(() => {
+      played.at(-1)?.audio.dispatchEvent(new Event('ended'));
+    });
+  return { played, pause, end };
+}
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  Reflect.deleteProperty(navigator, 'userActivation');
+});
+
+const speaking = () => document.querySelector('[data-speaking]');
+
+test('a line with a clip plays it on one audio element, paced by mood, while the indicator moves', async () => {
+  const synth = withSynth([voice('en-GB', true)]);
+  withClips(MANIFEST);
+  const { played, end } = withAudio();
+  render(<Voice lines={[weDidIt, acknowledged]} playback={0} />);
+  await vi.waitFor(() => expect(speaking()).not.toBeNull());
+  const [first] = played;
+  expect(first?.src).toMatch(/\/voice\/we-did-it\.mp3$/);
+  expect(first?.audio).toMatchObject({ preload: 'none', playbackRate: 1.15, preservesPitch: true });
+  expect(screen.getByText(weDidIt.text)).toBeDefined();
+
+  end();
+  await vi.waitFor(() => expect(played).toHaveLength(2));
+  expect(played[1]?.audio).toBe(first?.audio);
+  expect(played[1]?.src).toMatch(/\/voice\/acknowledged\.mp3$/);
+  expect(first?.audio.playbackRate).toBe(0.75);
+  end();
+  await vi.waitFor(() => expect(speaking()).toBeNull());
+  expect(synth.spoken).toEqual([]);
+});
+
+test('Skip voice stops the clip, and a line without a clip goes to the browser voice', async () => {
+  const synth = withSynth([voice('en-GB', true)]);
+  withClips(MANIFEST);
+  const { played, pause } = withAudio();
+  render(<Voice lines={[weDidIt, verdict]} playback={0} />);
+  await vi.waitFor(() => expect(speaking()).not.toBeNull());
+  await userEvent.setup().click(screen.getByRole('button', { name: 'Skip voice' }));
+  expect(pause).toHaveBeenCalledTimes(1);
+  await vi.waitFor(() => expect(synth.spoken.map((u) => u.text)).toEqual([verdict.text]));
+  expect(played).toHaveLength(1);
+});
+
+test('Mute stops the clip and the muted lines are captioned, never played', async () => {
+  withSynth([voice('en-GB', true)]);
+  withClips(MANIFEST);
+  const { played, pause } = withAudio();
+  const { rerender } = render(<Voice lines={[weDidIt]} playback={0} />);
+  await vi.waitFor(() => expect(speaking()).not.toBeNull());
+  await userEvent.setup().click(screen.getByRole('button', { name: 'Mute' }));
+  expect(pause).toHaveBeenCalledTimes(1);
+  rerender(<Voice lines={[weDidIt, acknowledged]} playback={0} />);
+  expect(await screen.findByText(acknowledged.text)).toBeDefined();
+  expect(played).toHaveLength(1);
+});
+
+test('Skip settles a line at once while the manifest stalls, and the next line waits only so long', async () => {
+  const synth = withSynth([voice('en-GB', true)]);
+  withClips(MANIFEST);
+  // A request that never answers and gives up only when its signal does.
+  const stalled = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(
+    (_, init) =>
+      new Promise((_resolve, reject) =>
+        init?.signal?.addEventListener('abort', () => reject(new Error('timeout'))),
+      ),
+  );
+  vi.stubGlobal('fetch', stalled);
+  render(<Voice lines={[weDidIt, verdict]} playback={0} />);
+  await vi.waitFor(() => expect(stalled).toHaveBeenCalledTimes(1));
+  await userEvent.setup().click(screen.getByRole('button', { name: 'Skip voice' }));
+  expect(await screen.findByText(verdict.text)).toBeDefined();
+  await vi.waitFor(() => expect(synth.spoken.map((u) => u.text)).toEqual([verdict.text]), {
+    timeout: WAIT_MS + 1000,
+  });
+  expect(stalled).toHaveBeenCalledTimes(1);
+});
+
+test('a clip that stalls after it started fails within the bound, and the queue moves on', async () => {
+  const synth = withSynth([voice('en-GB', true)]);
+  withClips(MANIFEST);
+  const { played, pause } = withAudio();
+  render(<Voice lines={[weDidIt, verdict]} playback={0} />);
+  await vi.waitFor(() => expect(speaking()).not.toBeNull());
+  act(() => {
+    played[0]?.audio.dispatchEvent(new Event('waiting'));
+  });
+  await vi.waitFor(() => expect(synth.spoken.map((u) => u.text)).toEqual([verdict.text]), {
+    timeout: WAIT_MS + 1000,
+  });
+  // A line that was heard in part is not said again by the browser voice.
+  expect(pause).toHaveBeenCalledTimes(1);
+  expect(played).toHaveLength(1);
+});
+
+test.each([
+  ['the visitor has not pressed anything yet', MANIFEST, false, 'playing', [weDidIt]],
+  ['there is no manifest', undefined, true, 'playing', [weDidIt]],
+  ['the manifest is malformed', [{ id: '../x', text: weDidIt.text }], true, 'playing', [weDidIt]],
+  ['the clip will not load', MANIFEST, true, 'error', [weDidIt]],
+  ['the clip never starts', MANIFEST, true, 'stall', [weDidIt]],
+  ['a memo has the words of a clip', MANIFEST, true, 'playing', [line('m1', weDidIt.text, 'slow', 'model')]],
+] as const)('when %s, the line goes to the browser voice', async (_, manifest, active, load, lines) => {
+  const synth = withSynth([voice('en-GB', true)]);
+  const fetch = withClips(manifest, active);
+  const { played, pause } = withAudio(load);
+  render(<Voice lines={lines} playback={0} />);
+  await vi.waitFor(() => expect(synth.spoken.map((u) => u.text)).toEqual([weDidIt.text]), {
+    timeout: WAIT_MS + 1000,
+  });
+  expect(played).toHaveLength(load === 'playing' ? 0 : 1);
+  // A clip given up on is paused, so it cannot start over the browser voice once its data arrives.
+  expect(pause).toHaveBeenCalledTimes(load === 'stall' ? 1 : 0);
+  expect(fetch).toHaveBeenCalledTimes(active ? 1 : 0);
 });

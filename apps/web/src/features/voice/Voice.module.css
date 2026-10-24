@@ -36,6 +36,28 @@
   rotate: 45deg;
 }
 
+/* Pulses in the bubble's corner padding while a line is heard, so it takes no room from the line. */
+.speaking {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 0.625rem;
+  height: 0.625rem;
+  background: var(--copper);
+  border-radius: 50%;
+  animation: speaking 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes speaking {
+  from {
+    scale: 0.5;
+  }
+
+  to {
+    scale: 1.2;
+  }
+}
+
 .memo {
   color: var(--copper-text);
   font-family: var(--font-note);

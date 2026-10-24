@@ -48,6 +48,7 @@ export function voiceReducer(state: VoiceState, event: VoiceEvent): VoiceState {
 
 // Browser speech has its own rate, separate from the audio tier's playbackRate (character sheet section 7).
 export const RATE: Record<Line['mood'], number> = { slow: 0.8, excited: 1.1, deadpan: 0.8 };
+export const AUDIO_RATE: Record<Line['mood'], number> = { slow: 0.75, excited: 1.15, deadpan: 0.75 };
 
 // Only voices that run on this device, and only English ones, since every line is English; none means captions.
 export function localVoice(voices: readonly SpeechSynthesisVoice[]): SpeechSynthesisVoice | undefined {
