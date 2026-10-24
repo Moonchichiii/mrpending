@@ -1,4 +1,4 @@
-/* The rejection and the folded form, under the board. */
+/* The rejection and the folded form, the first closed section under the stage. */
 .form {
   display: grid;
   gap: var(--space-3);
@@ -6,19 +6,17 @@
   min-width: 0;
 }
 
-/* A paper card with level fields: controls and body text never tilt (character sheet section 5). */
+/* Level and undecorated, like every section under the stage; open, the items sit on a plain paper panel, where the
+   *-text tokens of the hints keep their contrast (character sheet section 5). */
 .sheet {
   min-width: 0;
-  padding: 0 var(--space-4);
-  background: var(--paper);
-  border: var(--border-paper);
-  border-radius: var(--radius-paper);
-  box-shadow: var(--shadow-paper);
   container-type: inline-size;
 }
 
 .sheet[open] {
-  padding-block-end: var(--space-4);
+  padding: 0 var(--space-4) var(--space-4);
+  background: var(--paper);
+  border-radius: var(--radius-control);
 }
 
 .sheet > * + * {
@@ -28,8 +26,11 @@
 /* A list item, so the summary keeps its disclosure triangle; at least 52 px tall (character sheet section 8). */
 .adjust {
   min-height: var(--target);
-  padding-block: var(--space-3);
+  padding-block: var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--text-heading);
   font-weight: 700;
+  line-height: 1.2;
   cursor: pointer;
 }
 
@@ -64,8 +65,8 @@
   min-height: var(--target);
   padding: var(--space-2) var(--space-3);
   background: var(--paper);
-  border: 2px solid var(--ink);
-  border-radius: 6px;
+  border: var(--border-control);
+  border-radius: var(--radius-control);
 }
 
 .field textarea {
@@ -97,8 +98,8 @@
 
 /* Above the fold, on the yellow page, so it carries its own paper to keep coral text legible. */
 .rejection {
+  max-width: var(--measure);
   padding: var(--space-2) var(--space-3);
   background: var(--paper);
-  border: 3px double var(--coral);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
 }

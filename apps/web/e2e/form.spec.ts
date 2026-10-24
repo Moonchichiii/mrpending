@@ -22,6 +22,9 @@ test('Form 27B/6 is unfolded under the board, completed and filed with the keybo
   );
   const file = page.getByRole('button', { name: FILE });
   await file.focus();
+  // Past the board's folded minutes, the first closed section under the stage.
+  await page.keyboard.press('Tab');
+  await expect(page.getByText('Minutes and lines')).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.getByText('Advanced settings')).toBeFocused();
   await page.keyboard.press('Enter');
@@ -39,8 +42,8 @@ test('Form 27B/6 is unfolded under the board, completed and filed with the keybo
   await page.keyboard.press('ArrowDown');
   await page.keyboard.press('Tab');
   await expect(page.getByLabel('5. Forbidden equipment')).toBeFocused();
-  // Back past the five items and the fold to the button in the top row.
-  for (let i = 0; i < 6; i += 1) await page.keyboard.press('Shift+Tab');
+  // Back past the five items, the fold and the board's minutes to the button beside Mr. Pending.
+  for (let i = 0; i < 7; i += 1) await page.keyboard.press('Shift+Tab');
   await expect(file).toBeFocused();
   await page.keyboard.press('Enter');
   expect((await filed).postDataJSON()).toEqual({
@@ -53,12 +56,13 @@ test('Form 27B/6 is unfolded under the board, completed and filed with the keybo
   await expectAxeClean(page, 'form after filing, model unavailable');
 });
 
-// The maintainer's layout: one screen. Mr. Pending, his voice and the board's button in the top row, the idle board
+// The maintainer's layout: one stage. Mr. Pending, his bubble and the board's button in the top row, the idle board
 // under it with the model it will use, everything else folded away; at 1440 the board fits, at 390 the button does.
 const SCREENS = [
   { width: 1440, height: 900, shown: 'desk' },
   { width: PHONE, height: 844, shown: 'phone' },
 ] as const;
+const CONTROLS = ['Pause', 'Replay', '0.5×', '1×', 'Impatient'];
 
 test('the front door is one screen: Mr. Pending, the blue button and the idle board, the rest folded away', async ({
   page,
@@ -70,19 +74,22 @@ test('the front door is one screen: Mr. Pending, the blue button and the idle bo
     const rig = page.locator(`svg[data-variant="${shown}"]`);
     await expect(rig).toBeVisible();
     await expect(rig).toHaveClass(/slow/);
+    // Mr. Pending beside his one bubble, which says his introduction, with Mute and Skip under it.
     const card = rig.locator('xpath=../..');
-    await expect(card).toHaveText(INTRODUCTION);
-    // The status region keeps the phase for assistive technology without showing it.
-    await expect(page.getByRole('status')).toHaveText('Form 27B/6 awaits filing.');
     const voice = page.getByRole('region', { name: 'Voice' });
+    await expect(card.getByRole('region', { name: 'Voice' })).toHaveCount(1);
+    await expect(voice.locator('[aria-live="polite"]')).toHaveText(INTRODUCTION);
+    await expect(page.getByRole('status')).toHaveText('Form 27B/6 awaits filing.');
     await expect(voice.getByRole('button', { name: 'Mute' })).toBeVisible();
     await expect(voice.getByRole('button', { name: 'Skip voice' })).toBeVisible();
 
-    // The one call to action is the board's own button sprite, inside the first screen at both widths.
+    // The one call to action is the board's own button sprite, inside the first screen at both widths; the playback
+    // controls already stand on the board, waiting.
     const file = page.getByRole('button', { name: FILE });
     await expect(file).toBeVisible();
     await expect(file.locator('[data-button]')).toHaveCount(1);
-    await expect(page.getByRole('button')).toHaveText(['Mute', 'Skip voice', FILE]);
+    await expect(page.getByRole('button')).toHaveText(['Mute', 'Skip voice', FILE, ...CONTROLS]);
+    for (const control of CONTROLS) await expect(page.getByRole('button', { name: control })).toBeDisabled();
     const fileBox = await file.boundingBox();
     expect(fileBox && fileBox.y + fileBox.height).toBeLessThanOrEqual(height);
     expect(fileBox?.height).toBeGreaterThanOrEqual(78);
@@ -198,7 +205,7 @@ test('the board is axe clean while a trial runs and beside the correction', asyn
   await expectAxeClean(page, 'board running, trial 2 with the correction diff');
 });
 
-test('a pressed build ends on the Engineering Report, saved as a 1200 x 630 PNG, and the card is axe clean', async ({
+test('a pressed build ends on its verdict, the report saved as a 1200 x 630 PNG and opened on demand, axe clean', async ({
   page,
 }, testInfo) => {
   await open(page);
@@ -208,16 +215,15 @@ test('a pressed build ends on the Engineering Report, saved as a 1200 x 630 PNG,
   });
   await page.getByRole('button', { name: FILE }).click();
 
-  // Both trials at 120 ms a step, then the press clock's hard cut at 1.60 s.
-  const card = page.getByRole('region', { name: 'Engineering Report' });
-  await expect(card).toBeVisible({ timeout: 20_000 });
-  const landscape = card.locator('svg[data-shape="landscape"]');
-  await expect(landscape.locator('[data-stamp]')).toHaveAttribute('data-stamp', 'APPROVED');
-  await expect(landscape.locator('[data-number="attempts"]')).toHaveText('2');
+  // Both trials at 120 ms a step, then the press clock's hard cut at 1.60 s, where the verdict covers the board.
+  const verdict = page.getByRole('region', { name: 'The board' }).getByRole('region', { name: 'Verdict' });
+  await expect(verdict).toBeVisible({ timeout: 20_000 });
+  await expect(verdict).toContainText('APPROVED');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
 
   const [download] = await Promise.all([
     page.waitForEvent('download'),
-    card.getByRole('button', { name: 'Save as image' }).click(),
+    verdict.getByRole('button', { name: 'Save the report' }).click(),
   ]);
   expect(download.suggestedFilename()).toBe('mr-pending-b1.png');
   // The issue's evidence, kept as a report attachment in the ignored test output, never compared or committed.
@@ -229,7 +235,13 @@ test('a pressed build ends on the Engineering Report, saved as a 1200 x 630 PNG,
   expect([...png.subarray(0, 8)]).toEqual([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
   expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1200, 630]);
 
-  await expectAxeClean(page, 'engineering report card', 'section[aria-label="Engineering Report"]');
+  // The Engineering Report opens on demand, the simulator's numbers on the card.
+  await verdict.getByRole('button', { name: 'Open the report' }).click();
+  const card = page.getByRole('dialog', { name: 'Engineering Report' });
+  const landscape = card.locator('svg[data-shape="landscape"]');
+  await expect(landscape.locator('[data-stamp]')).toHaveAttribute('data-stamp', 'APPROVED');
+  await expect(landscape.locator('[data-number="attempts"]')).toHaveText('2');
+  await expectAxeClean(page, 'engineering report card', 'dialog');
 });
 
 // One line per mood in trial 1, so the playhead walks Mr. Pending through all three.
@@ -245,7 +257,7 @@ const said = (requestId: string): StreamEvent[] =>
     line: Line.parse({ id: mood, beat: 'running', mood, text, source: 'table', at: { attempt: 1, step } }),
   }));
 
-test('Mr. Pending takes the mood of each line, beside the voice, and the desk is axe clean', async ({
+test('Mr. Pending takes the mood of each line, beside his bubble, and the stage is axe clean', async ({
   page,
 }, testInfo) => {
   await page.clock.install();
@@ -258,10 +270,10 @@ test('Mr. Pending takes the mood of each line, beside the voice, and the desk is
   await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
   await page.getByRole('button', { name: FILE }).click();
   await expect(page.getByRole('status')).toHaveText('Trial 1 in progress.');
-  const lines = page.getByRole('list', { name: 'Mr. Pending' });
-  // The card holds the portrait and the lines; the desk figure is the rig itself.
-  const card = lines.locator('xpath=../..');
-  const rig = card.locator('svg[data-variant="desk"]');
+  // The lines said are kept in the board's closed fold; the rig and his bubble stand side by side above it.
+  const lines = page.getByRole('list', { name: 'Mr. Pending', includeHidden: true });
+  const rig = page.locator('svg[data-variant="desk"]');
+  const card = rig.locator('xpath=../..');
 
   let at = 0;
   for (const { mood, step, text } of MOODS) {
@@ -284,7 +296,7 @@ test('Mr. Pending takes the mood of each line, beside the voice, and the desk is
   await expect(
     page.getByRole('group', { name: 'Playback' }).getByRole('button', { name: 'Skip voice' }),
   ).toHaveCount(0);
-  await expectAxeClean(page, 'desk with the rig and the voice');
+  await expectAxeClean(page, 'stage with the rig and the bubble');
 });
 
 for (const viewport of VIEWPORTS) {

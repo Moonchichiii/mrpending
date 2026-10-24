@@ -8,16 +8,19 @@ import styles from './Voice.module.css';
 const ON_DEVICE = "Mr. Pending speaks with your browser's on-device voice; no line leaves this device.";
 const CAPTIONS_ONLY = 'This device has no voice for Mr. Pending, so his lines are captioned only.';
 
-// The caption of the line being spoken, Mute and Skip; the lines list owns the live announcement, so the caption is not live.
-// `lines` are the lines said so far; `playback` changes on a replay or a new build; `mute`, when given, is a Mute
-// setting held above, so it carries over to the voice that replaces this one.
+// Mr. Pending's one speech bubble: the line being spoken, which the next one replaces, with Mute and Skip under it.
+// The bubble is the live announcement of his lines; the full list stays folded away with the minutes.
+// `lines` are the lines said so far; `playback` changes on a replay or a new build; `idle` is what the bubble says
+// before any line; `mute`, when given, is a Mute setting held above, so it carries over to a voice that replaces this one.
 export function Voice({
   lines,
   playback,
+  idle,
   mute,
 }: {
   lines: readonly Line[];
   playback: number | string;
+  idle?: string | undefined;
   mute?: Mute | undefined;
 }) {
   const { status, caption, voice, muted, setMuted, skip } = useSpeaker(lines, playback, mute);
@@ -37,11 +40,10 @@ export function Voice({
 
   return (
     <section className={styles.voice} aria-label="Voice">
-      <p className={styles.caption} data-mood={caption?.mood}>
+      <p className={styles.bubble} data-mood={caption?.mood} aria-live="polite">
         {caption?.source === 'model' && <span className={styles.memo}>Memo: </span>}
-        {caption?.text}
+        {caption?.text ?? idle}
       </p>
-      <p className={styles.disclosure}>{voice === 'none' ? CAPTIONS_ONLY : ON_DEVICE}</p>
       <div className={styles.controls}>
         <button
           type="button"
@@ -54,6 +56,7 @@ export function Voice({
         <button type="button" className={styles.control} onClick={skip} aria-keyshortcuts="Escape">
           Skip voice
         </button>
+        <p className={styles.disclosure}>{voice === 'none' ? CAPTIONS_ONLY : ON_DEVICE}</p>
       </div>
     </section>
   );

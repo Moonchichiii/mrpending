@@ -1,10 +1,8 @@
 import type { BuildHeader } from '@pending/contract';
 import { useEffect, useState } from 'react';
-import { Hero, IdleBoard, Playback, Stage, source } from './features/build';
-import { Engineer } from './features/engineer';
+import { Playback } from './features/build';
 import { Gallery, GalleryShelf, fetchRecord, slugOf } from './features/gallery';
 import type { Replayed } from './features/gallery';
-import { Voice } from './features/voice';
 import styles from './FrontDoor.module.css';
 
 const REPO = 'https://github.com/Moonchichiii/mrpending';
@@ -16,15 +14,11 @@ const DEMO = 'scenic';
 export const CLOSED =
   'The Department is closed to new applications. The button plays a recorded build, which this browser checks again with the simulator before it is shown.';
 
-// The public site on the same screen as the local one: no form, no build client, no API. The button plays a recorded
-// build; the gallery is folded away below, and opened when the address names a record.
+// The public site on the same stage as the local one: no form, no build client, no API. The button plays a recorded
+// build on the stage's one board; the gallery is folded away below, and opened when the address names a record.
 // Headers handed in are shelved as they are, so the layout harness can show records at every schema maximum.
 export function StaticFrontDoor({ records }: { records?: BuildHeader[] | undefined }) {
   const [demo, setDemo] = useState<Replayed>();
-  const [playing, setPlaying] = useState(false);
-  // Mute is held here, so a visitor who muted the idle screen is not spoken to by the recording that replaces it.
-  const [muted, setMuted] = useState(false);
-  const mute = { muted, setMuted };
   useEffect(() => {
     const controller = new AbortController();
     const settle = (replayed: Replayed) => {
@@ -49,22 +43,14 @@ export function StaticFrontDoor({ records }: { records?: BuildHeader[] | undefin
   return (
     <>
       <main className={styles.page}>
-        {playing && demo?.ok ? (
-          <Playback build={demo.build} heading={heading} focused mute={mute} />
-        ) : (
-          <Stage
-            heading={heading}
-            card={
-              <Engineer status="idle" line={undefined} failed={false}>
-                <p>{CLOSED}</p>
-              </Engineer>
-            }
-            voice={<Voice lines={[]} playback="idle" mute={mute} />}
-            action={<Hero onPress={() => setPlaying(true)} disabled={record || !demo?.ok} note={note} />}
-            header={demo?.ok ? source(demo.build.model, 'recorded') : undefined}
-            board={<IdleBoard />}
-          />
-        )}
+        <Playback
+          build={demo?.ok ? demo.build : undefined}
+          heading={heading}
+          intro={CLOSED}
+          note={note}
+          blocked={record}
+          autoplay={false}
+        />
         <details className={styles.fold} open={window.location.pathname !== import.meta.env.BASE_URL}>
           <summary className={styles.summary}>
             <h2 id="gallery-title">The gallery</h2>

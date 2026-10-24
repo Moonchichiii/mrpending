@@ -1,15 +1,117 @@
-/* Character sheet section 6: at the hard cut to deadpan the report card slides up from the bottom. */
-.report {
+/* The verdict over the board: a level panel; only its stamp is paper, tilted. Character sheet section 6: it slides up at
+   the hard cut to deadpan, inside the board, which clips it, so the page around it never moves. */
+.verdict {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-2);
+  justify-items: start;
+  width: min(100%, 34rem);
   min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: var(--radius-control);
   animation: slide-up 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes slide-up {
   from {
-    transform: translateY(100vh);
+    transform: translateY(120%);
   }
+}
+
+/* Stamps are the *-text token on paper inside a bright double ruling, rotated -6 degrees (character sheet section 5). */
+.approved,
+.pending {
+  padding: var(--space-1) var(--space-3);
+  background: var(--paper);
+  font-family: var(--font-display);
+  font-size: var(--text-heading);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border: 4px double;
+  border-radius: 10px 4px 12px 6px;
+  rotate: -6deg;
+}
+
+.approved {
+  color: var(--teal-text);
+  border-color: var(--teal);
+}
+
+.pending {
+  color: var(--coral-text);
+  border-color: var(--coral);
+}
+
+.title {
+  font-size: var(--text-heading);
+}
+
+.text {
+  max-width: var(--measure);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding-block-start: var(--space-2);
+}
+
+.primary,
+.secondary {
+  min-height: var(--target);
+  padding: var(--space-2) var(--space-3);
+  font-weight: 700;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+/* The one accent: paper on the blue text token is 10:1. */
+.primary {
+  background: var(--accent);
+  color: var(--paper);
+  border: 2px solid var(--accent);
+}
+
+.secondary {
+  background: transparent;
+  color: var(--ink);
+  border: var(--border-control);
+}
+
+.secondary:disabled {
+  cursor: progress;
+}
+
+.failed {
+  color: var(--coral-text);
+  font-weight: 700;
+}
+
+/* The Engineering Report on demand: the card at the width of the screen, the page behind it held still. */
+.dialog {
+  width: min(100% - 2 * var(--space-3), 64rem);
+  max-height: calc(100svh - 2 * var(--space-3));
+  margin: auto;
+  padding: var(--space-4);
+  background: var(--paper);
+  color: var(--ink);
+  border: 0;
+  border-radius: var(--radius-control);
+}
+
+.dialog[open] {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.dialog::backdrop {
+  background: rgb(31 27 46 / 0.6);
+}
+
+.heading {
+  font-size: var(--text-heading);
 }
 
 .landscape svg,
@@ -31,23 +133,4 @@
   .portrait {
     display: block;
   }
-}
-
-/* The primary button: ink on cream, copper shadow, a -1 degree tilt (character sheet section 5). */
-.save {
-  justify-self: start;
-  min-height: var(--target);
-  padding: var(--space-2) var(--space-4);
-  background: var(--paper);
-  color: var(--ink);
-  font-weight: 700;
-  border: var(--border-paper);
-  border-radius: 8px;
-  box-shadow: var(--shadow-primary);
-  transform: rotate(-1deg);
-  cursor: pointer;
-}
-
-.save:disabled {
-  cursor: progress;
 }

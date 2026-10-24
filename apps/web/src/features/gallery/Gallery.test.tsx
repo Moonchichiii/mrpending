@@ -73,14 +73,18 @@ test('a record page plays the recording back with the playback controls, its lin
 
   await vi.waitFor(() => expect(within(record).getByRole('status').textContent).toBe(budget.report.verdict));
   const last = budget.attempts.at(-1);
-  expect(within(record).getByText(`Trial ${last?.n}`)).toBeDefined();
+  expect(
+    within(record)
+      .getByRole('button', { name: `Trial ${last?.n}` })
+      .getAttribute('aria-pressed'),
+  ).toBe('true');
   expect(
     within(within(record).getByRole('list', { name: 'Mr. Pending' }))
       .getAllByRole('listitem')
       .map((li) => li.textContent),
   ).toEqual(budget.lines.map((l) => (l.source === 'model' ? `Memo: ${l.text}` : l.text)));
 
-  await user.click(within(record).getByRole('button', { name: 'Replay from the start' }));
+  await user.click(within(record).getByRole('button', { name: 'Replay' }));
   expect(within(record).getByRole('status').textContent).toBe('Trial 1 in progress.');
   expect(document.activeElement).toBe(within(record).getByRole('status'));
   expect(agent.requests).toBe(0);

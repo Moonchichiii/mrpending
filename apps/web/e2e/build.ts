@@ -71,7 +71,7 @@ export const ndjson = (events: StreamEvent[]) => events.map((e) => `${JSON.strin
 // The front door's one button files a pre-filled request; a test that changes an item opens the fold first, as a
 // visitor must.
 export const DEFAULT = { nature: 'Press the blue button. Scenic route, please.', minParts: 3, maxParts: 8 };
-export const FILE = 'Ask Mr. Pending to press it';
+export const FILE = 'Ask him to press it';
 export const adjust = (page: Page) => page.getByText('Advanced settings').click();
 
 // The local front door with the agent mocked at the network boundary.

@@ -1,8 +1,9 @@
 import { Attempt, Build, Form } from '@pending/contract';
 import { report } from '@pending/machine';
-import { cleanup, render } from '@testing-library/react';
-import { afterEach, expect, test } from 'vitest';
-import { EngineeringReport } from './EngineeringReport';
+import { cleanup, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterEach, expect, test, vi } from 'vitest';
+import { Verdict } from './Verdict';
 import { estimate, reportView, wrap } from './model/view';
 import { ReportCard, SHAPES } from './ReportCard';
 
@@ -48,7 +49,10 @@ const build = (attempts: Attempt[]) =>
     ],
   });
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 const repaired = build([attempt(1, 'lost'), attempt(2, 'pressed')]);
 const exhausted = build([attempt(1, 'lost'), attempt(2, 'lost')]);
@@ -96,8 +100,8 @@ test('the thumbnail is drawn from the final attempt, not the failed one before i
 });
 
 test('a pressed build is stamped APPROVED; an exhausted one PENDING on the same card, with its failure', () => {
-  const won = render(<EngineeringReport build={repaired} />).container;
-  const lost = render(<EngineeringReport build={exhausted} />).container;
+  const won = render(<Verdict build={repaired} />).container;
+  const lost = render(<Verdict build={exhausted} />).container;
   for (const card of won.querySelectorAll('svg[data-shape]')) {
     expect(card.querySelector('[data-stamp]')?.getAttribute('data-stamp')).toBe('APPROVED');
   }
@@ -109,10 +113,45 @@ test('a pressed build is stamped APPROVED; an exhausted one PENDING on the same 
   expect(won.querySelectorAll('svg[data-shape]')).toHaveLength(2);
 });
 
-test('Save as image says so when this browser cannot make the image', async () => {
-  // jsdom lays nothing out, so neither card has a box to rasterise.
-  const { getByRole, findByText } = render(<EngineeringReport build={repaired} />);
-  getByRole('button', { name: 'Save as image' }).click();
+test('the verdict stamps the build, says the simulator verdict, tries again and opens the report on demand', async () => {
+  // jsdom has no modal dialogs; opening one sets its open attribute, as a browser does.
+  if (!('showModal' in HTMLDialogElement.prototype))
+    Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+      configurable: true,
+      value(this: HTMLDialogElement) {
+        this.setAttribute('open', '');
+      },
+    });
+  const onTryAgain = vi.fn<() => void>();
+  const user = userEvent.setup();
+  render(<Verdict build={exhausted} onTryAgain={onTryAgain} />);
+  const verdict = screen.getByRole('region', { name: 'Verdict' });
+  expect(verdict.textContent).toContain('PENDING');
+  expect(screen.getByRole('heading', { name: 'The Scenic Route' })).toBeDefined();
+  expect(verdict.textContent).toContain(exhausted.report.verdict);
+  // The report waits in a closed dialog until it is asked for.
+  expect(screen.queryByRole('dialog')).toBeNull();
+  await user.click(screen.getByRole('button', { name: 'Try again' }));
+  expect(onTryAgain).toHaveBeenCalledTimes(1);
+  await user.click(screen.getByRole('button', { name: 'Open the report' }));
+  const report = screen.getByRole('dialog', { name: 'Engineering Report' });
+  expect(report.querySelector('svg[data-shape="landscape"] [data-stamp]')?.getAttribute('data-stamp')).toBe(
+    'PENDING',
+  );
+});
+
+test('Try again files the form it names', () => {
+  render(<Verdict build={repaired} form="form-27b6" />);
+  const again = screen.getByRole('button', { name: 'Try again' });
+  expect(again.getAttribute('type')).toBe('submit');
+  expect(again.getAttribute('form')).toBe('form-27b6');
+});
+
+test('Save the report says so when this browser cannot make the image', async () => {
+  // jsdom draws no image, so the card cannot be rasterised.
+  vi.stubGlobal('matchMedia', () => ({ matches: false }));
+  const { getByRole, findByText } = render(<Verdict build={repaired} />);
+  getByRole('button', { name: 'Save the report' }).click();
   expect(await findByText(/could not make the image/)).toBeTruthy();
 });
 

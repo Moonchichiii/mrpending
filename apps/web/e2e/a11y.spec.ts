@@ -15,7 +15,7 @@ const STEP = 120;
 const LOST_AT = Math.max(...(ATTEMPTS[0]?.events.map((e) => e.step) ?? [0]));
 const PRESS_AT = ATTEMPTS[1]?.events.find((e) => e.type === 'button.pressed')?.step ?? 0;
 
-const STATES = ['drawing', 'running', 'failure', 'diff', 'press', 'report', 'department'] as const;
+const STATES = ['drawing', 'running', 'failure', 'diff', 'press', 'verdict', 'report', 'department'] as const;
 type State = (typeof STATES)[number];
 
 // One build from filing to My department on the page clock, held still on each state while `at` looks at it.
@@ -70,12 +70,19 @@ async function walk(page: Page, at: (state: State) => Promise<void>, longest = f
   await at('press');
   await expect(sequence).toHaveCount(1);
   await page.clock.runFor(1000);
-  const card = page.getByRole('region', { name: 'Engineering Report' });
-  await expect(card).toBeVisible();
+  const verdict = page.getByRole('region', { name: 'Verdict' });
+  await expect(verdict).toBeVisible();
   await page.clock.resume();
-  // The card slides up; it is looked at once it has arrived, not halfway through its fade.
-  await card.evaluate((el) => Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)));
+  // The verdict slides up; it is looked at once it has arrived, not halfway through its slide.
+  await verdict.evaluate((el) => Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)));
+  await at('verdict');
+  // The Engineering Report opens on demand over the page, and closes back to it.
+  await verdict.getByRole('button', { name: 'Open the report' }).click();
+  const report = page.getByRole('dialog', { name: 'Engineering Report' });
+  await expect(report).toBeVisible();
   await at('report');
+  await report.getByRole('button', { name: 'Close' }).click();
+  await expect(report).toBeHidden();
   await page.getByText('My department').click();
   await page
     .getByRole('region', { name: 'My department' })
@@ -142,9 +149,19 @@ for (const layout of LAYOUTS) {
     }
     await walk(
       page,
-      async () => {
+      async (state) => {
         await expectNoOverflow(page);
         if (layout.width <= PHONE) await expectTargets(page);
+        // A verdict taller than the board scrolls on it, its top reachable: scrolled up, it starts inside the board.
+        if (state === 'verdict')
+          expect(
+            await page.getByRole('region', { name: 'Verdict' }).evaluate((el) => {
+              const board = el.parentElement;
+              if (board === null) return false;
+              board.scrollTop = 0;
+              return el.getBoundingClientRect().top >= board.getBoundingClientRect().top;
+            }),
+          ).toBe(true);
       },
       true,
     );
@@ -182,20 +199,17 @@ test('a build is filed, watched, paused, saved and filed again with the keyboard
   await page.route('**/api/build', (route) =>
     route.fulfill({ body: ndjson(recorded(route.request().headers()['x-request-id'] ?? '')) }),
   );
-  // After the voice the button is the next stop, then the fold under the board, which opens by keyboard; the request
-  // is rewritten in item 1.
+  // After the voice the button is the next stop, then past the board the fold under the stage, which opens by keyboard;
+  // the request is rewritten in item 1.
   const file = page.getByRole('button', { name: FILE });
   await tabTo(page, file);
-  await page.keyboard.press('Tab');
-  await expect(page.getByText('Advanced settings')).toBeFocused();
+  await tabTo(page, page.getByText('Advanced settings'));
   await page.keyboard.press('Enter');
   await page.keyboard.press('Tab');
   await expect(page.getByLabel('1. Nature of the request')).toBeFocused();
   await page.keyboard.press('ControlOrMeta+a');
   await page.keyboard.type(FORM.nature);
-  await page.keyboard.press('Shift+Tab');
-  await page.keyboard.press('Shift+Tab');
-  await expect(file).toBeFocused();
+  await tabTo(page, file, 'Shift+Tab');
   await page.keyboard.press('Enter');
 
   // Focus moves to the status; Space pauses the machine from there, and every control is then walked by Tab.
@@ -214,15 +228,15 @@ test('a build is filed, watched, paused, saved and filed again with the keyboard
   await page.keyboard.press('Enter');
   await expect(impatient).toHaveAttribute('aria-pressed', 'true');
 
-  const card = page.getByRole('region', { name: 'Engineering Report' });
-  await expect(card).toBeVisible({ timeout: 20_000 });
-  await expectFocusVisible(page, 'report');
-  await tabTo(page, card.getByRole('button', { name: 'Save as image' }));
+  const verdict = page.getByRole('region', { name: 'Verdict' });
+  await expect(verdict).toBeVisible({ timeout: 20_000 });
+  await expectFocusVisible(page, 'verdict');
+  await tabTo(page, verdict.getByRole('button', { name: 'Save the report' }));
   const [download] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
   expect(download.suggestedFilename()).toBe('mr-pending-b1.png');
-  // The ending's controls sit in the top row, above the report.
-  await tabTo(page, page.getByRole('button', { name: 'File another form' }), 'Shift+Tab');
+  // Try again sits before it on the verdict, and files the request as it stands once more.
+  await tabTo(page, verdict.getByRole('button', { name: 'Try again' }), 'Shift+Tab');
   await page.keyboard.press('Enter');
-  await expect(page.getByLabel('1. Nature of the request')).toHaveValue(FORM.nature);
   await expect(status).toBeFocused();
+  await expect(page.getByLabel('1. Nature of the request')).toHaveValue(FORM.nature);
 });

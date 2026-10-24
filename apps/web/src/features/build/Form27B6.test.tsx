@@ -12,7 +12,7 @@ const setup = (initial?: Form) => {
   render(
     <>
       <button type="submit" form="form-27b6">
-        Ask Mr. Pending to press it
+        Ask him to press it
       </button>
       <Form27B6 id="form-27b6" initial={initial} onFile={onFile} />
     </>,
@@ -21,7 +21,7 @@ const setup = (initial?: Form) => {
 };
 
 const DEFAULT = { nature: 'Press the blue button. Scenic route, please.', minParts: 3, maxParts: 8 };
-const fileButton = () => screen.getByRole('button', { name: 'Ask Mr. Pending to press it' });
+const fileButton = () => screen.getByRole('button', { name: 'Ask him to press it' });
 const sheet = () => screen.getByText('Advanced settings').closest('details');
 // The visitor opens the folded form, as they must before any item can be changed.
 const adjust = (user: ReturnType<typeof userEvent.setup>) =>

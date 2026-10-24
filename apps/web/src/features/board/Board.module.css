@@ -417,30 +417,20 @@
   stroke-linejoin: round;
 }
 
-.unchanged {
-  opacity: 0.45;
-}
-
 .added {
   fill: none;
   stroke: #1fb5a3;
   stroke-width: 6;
 }
 
-.correction,
 .minutes {
   display: grid;
   gap: var(--space-2);
   min-width: 0;
 }
 
-.changes,
 .minutes ol {
   margin: 0;
-}
-
-.changes {
-  padding-inline-start: var(--space-4);
 }
 
 /* A trial has up to 400 events, so the gutter holds a marker like "400." instead of spilling past a phone's edge. */

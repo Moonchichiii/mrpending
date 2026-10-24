@@ -2,10 +2,9 @@ import type { Blueprint, Part } from '@pending/contract';
 import type { ReactNode } from 'react';
 import { assertNever } from '../../shared/assertNever';
 import type { Change } from './model/diff';
-import { changeText, diff } from './model/diff';
+import { diff } from './model/diff';
 import type { PartView } from './model/frame';
 import { centre, windCells } from './model/frame';
-import { Sheet } from './Sheet';
 import { Badge, PartSprite } from './Sprites';
 import styles from './Board.module.css';
 
@@ -31,10 +30,15 @@ function Removed({ part, children }: { part: Part; children?: ReactNode }) {
   );
 }
 
-function Drawn({ change }: { change: Change }) {
+const Halo = ({ part }: { part: Part }) => (
+  <circle className={styles.added} cx={centre(part.cell).x} cy={centre(part.cell).y} r={32} />
+);
+
+// The trial draws the parts that stand, so a change is drawn only as its marks: what went, and where the new parts are.
+function Marks({ change }: { change: Change }) {
   switch (change.kind) {
     case 'unchanged':
-      return <PartSprite view={view(change.part)} className={styles.unchanged} />;
+      return null;
     case 'removed':
       return (
         <Removed part={change.part}>
@@ -44,13 +48,7 @@ function Drawn({ change }: { change: Change }) {
     case 'added':
       return (
         <>
-          <circle
-            className={styles.added}
-            cx={centre(change.part.cell).x}
-            cy={centre(change.part.cell).y}
-            r={32}
-          />
-          <PartSprite view={view(change.part)} />
+          <Halo part={change.part} />
           <Badge at={centre(change.part.cell)} sign="+" dx={0} />
         </>
       );
@@ -64,7 +62,6 @@ function Drawn({ change }: { change: Change }) {
       const barb = (side: number) => `${tip.x - ux * 10 + uy * 7 * side} ${tip.y - uy * 10 - ux * 7 * side}`;
       return (
         <>
-          <PartSprite view={view(change.part)} />
           <path
             className={styles.moveArrow}
             d={`M ${from.x} ${from.y} L ${tip.x} ${tip.y} M ${barb(1)} L ${tip.x} ${tip.y} L ${barb(-1)}`}
@@ -78,13 +75,7 @@ function Drawn({ change }: { change: Change }) {
     case 'replaced':
       return (
         <Removed part={change.removed}>
-          <circle
-            className={styles.added}
-            cx={centre(change.added.cell).x}
-            cy={centre(change.added.cell).y}
-            r={32}
-          />
-          <PartSprite view={view(change.added)} />
+          <Halo part={change.added} />
           <Badge at={centre(change.added.cell)} sign="−" dx={-14} />
           <Badge at={centre(change.added.cell)} sign="+" dx={14} />
         </Removed>
@@ -94,27 +85,15 @@ function Drawn({ change }: { change: Change }) {
   }
 }
 
-// The repair diff for trial n: the previous board with what its correction changed marked in symbols, and in words.
-export function Correction({ n, previous, current }: { n: number; previous: Blueprint; current: Blueprint }) {
-  const changes = diff(previous, current);
-  const written = changes.flatMap((change) => changeText(change) ?? []);
+// The repair diff on the board of the trial it produced: the previous board's changes marked in symbols over the parts.
+export function Correction({ previous, current }: { previous: Blueprint; current: Blueprint }) {
   return (
-    <figure className={styles.correction}>
-      <Sheet title={`Correction for trial ${n}`} description={written.join(' ')} pressed={false}>
-        {changes.map((change) => (
-          <g key={change.kind === 'replaced' ? change.removed.id : change.part.id} data-change={change.kind}>
-            <Drawn change={change} />
-          </g>
-        ))}
-      </Sheet>
-      <figcaption>
-        Correction {n - 1}, for trial {n}:
-        <ul className={styles.changes}>
-          {written.map((text) => (
-            <li key={text}>{text}</li>
-          ))}
-        </ul>
-      </figcaption>
-    </figure>
+    <g data-correction>
+      {diff(previous, current).map((change) => (
+        <g key={change.kind === 'replaced' ? change.removed.id : change.part.id} data-change={change.kind}>
+          <Marks change={change} />
+        </g>
+      ))}
+    </g>
   );
 }
