@@ -2,7 +2,7 @@ import { Attempt } from '@pending/contract';
 import type { Build, Line, StreamEvent } from '@pending/contract';
 import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, expect, test, vi } from 'vitest';
 import engineer from '../engineer/Engineer.module.css';
@@ -21,6 +21,42 @@ afterAll(() => server.close());
 // A media query list the rig can subscribe to, as the build clock and the engineer read it.
 const prefersReduced = (matches: boolean) =>
   vi.stubGlobal('matchMedia', () => ({ matches, addEventListener() {}, removeEventListener() {} }));
+
+test('before filing Mr. Pending holds the status line in the slow mood above the steps, and the same rig drafts', async () => {
+  prefersReduced(false);
+  // The agent never answers, so the build stays in drafting until the desk is unmounted.
+  server.use(
+    http.post('*/api/build', async () => {
+      await delay('infinite');
+      return new HttpResponse('');
+    }),
+  );
+  const user = userEvent.setup();
+  render(<BuildDesk canFile />);
+
+  const rig = document.querySelector('svg[data-variant="desk"]');
+  expect(rig?.classList.contains(engineer.slow ?? '')).toBe(true);
+  expect(document.querySelectorAll('svg[data-variant="phone"]')).toHaveLength(1);
+  const card = rig?.parentElement?.parentElement;
+  expect(card?.textContent).toBe('Form 27B/6 awaits filing.');
+  expect(screen.getByRole('status').textContent).toBe('Form 27B/6 awaits filing.');
+  // The three steps come before the form, in order.
+  const steps = within(screen.getByRole('list', { name: 'How to file' })).getAllByRole('listitem');
+  expect(steps.map((li) => li.querySelector('strong')?.textContent)).toEqual([
+    'Describe what the button needs.',
+    'File Form 27B/6.',
+    'Watch him design, fail and repair.',
+  ]);
+  const form = screen.getByRole('form', { name: 'Form 27B/6' });
+  expect(steps.every((li) => li.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+
+  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  expect(screen.getByRole('status').textContent).toBe('Drafting. Please do not rush the Department.');
+  expect(screen.queryByRole('list', { name: 'How to file' })).toBeNull();
+  // One rig, the very element that stood on the front door.
+  expect(document.querySelectorAll('svg[data-variant="desk"]')).toHaveLength(1);
+  expect(document.querySelector('svg[data-variant="desk"]')).toBe(rig);
+});
 
 test('filing moves focus to the status region, which announces progress and then the verdict', async () => {
   // Reduced motion: one tick jumps to the final frame, so playback ends quickly.

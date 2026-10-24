@@ -1,4 +1,5 @@
 import type { BuildHeader } from '@pending/contract';
+import { Engineer } from './features/engineer';
 import { Gallery, GalleryShelf } from './features/gallery';
 import styles from './FrontDoor.module.css';
 
@@ -19,6 +20,9 @@ export function StaticFrontDoor({ records }: { records?: BuildHeader[] | undefin
             Chief Engineer of the Department of Unnecessary Engineering. One job: press one blue button.
             Recorded local inference.
           </p>
+          <Engineer status="idle" line={undefined} failed={false}>
+            <p>The Department is closed to new applications. The archive is open.</p>
+          </Engineer>
           <nav className={styles.actions} aria-label="Start">
             <a className={styles.primary} href="#gallery">
               Watch Mr. Pending at work

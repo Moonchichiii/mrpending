@@ -21,8 +21,8 @@ const server = setupServer(
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 beforeEach(() => {
   agent.requests = 0;
-  // Reduced motion: a record page's playback jumps trial by trial.
-  vi.stubGlobal('matchMedia', () => ({ matches: true }));
+  // Reduced motion: a record page's playback jumps trial by trial; the front door's rig subscribes to the same query.
+  vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
 });
 afterEach(() => {
   cleanup();
@@ -40,6 +40,10 @@ test('the static front door opens on the gallery with the two actions and no for
   expect(screen.getByRole('link', { name: 'Run it on your machine' }).getAttribute('href')).toMatch(
     /README|#readme/i,
   );
+  // Mr. Pending stands at the closed counter from the first render, both rig variants drawn for the stylesheet to pick.
+  const closed = screen.getByText('The Department is closed to new applications. The archive is open.');
+  const variants = closed.parentElement?.parentElement?.querySelectorAll('svg[data-variant]');
+  expect([...(variants ?? [])].map((svg) => svg.getAttribute('data-variant'))).toEqual(['desk', 'phone']);
   const gallery = screen.getByRole('region', { name: 'The gallery' });
   expect(gallery.id).toBe('gallery');
   expect(screen.queryByRole('form')).toBeNull();

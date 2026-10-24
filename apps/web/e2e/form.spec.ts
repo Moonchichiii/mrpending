@@ -40,6 +40,46 @@ test('Form 27B/6 is completed and filed with the keyboard alone', async ({ page 
   await expectAxeClean(page, 'form after filing, model unavailable');
 });
 
+test('the front door shows Mr. Pending, three steps and an example request, and his rig carries on into the build', async ({
+  page,
+}) => {
+  for (const { width, shown } of [
+    { width: 1440, shown: 'desk' },
+    { width: PHONE, shown: 'phone' },
+  ]) {
+    await page.setViewportSize({ width, height: 900 });
+    await open(page);
+    const rig = page.locator(`svg[data-variant="${shown}"]`);
+    await expect(rig).toBeVisible();
+    await expect(rig).toHaveClass(/slow/);
+    // The status line is on his card; the status region keeps the same words for assistive technology.
+    await expect(page.locator('p', { hasText: 'Form 27B/6 awaits filing.' })).toBeVisible();
+    await expect(page.getByRole('status')).toHaveText('Form 27B/6 awaits filing.');
+    const steps = page.getByRole('list', { name: 'How to file' }).getByRole('listitem');
+    await expect(steps).toHaveText([
+      /^Describe what the button needs\./,
+      /^File Form 27B\/6\./,
+      /^Watch him design/,
+    ]);
+    await expect(page.getByLabel('1. Nature of the request')).toHaveAttribute(
+      'placeholder',
+      'Press the blue button. Scenic route, please.',
+    );
+    await expect(page.getByText('0 of 180 characters')).toBeVisible();
+    await expectAxeClean(page, `front door with Mr. Pending at ${width}`);
+  }
+
+  // The rig on the front door is marked, and the drafting build shows that same element, not a second rig.
+  await page.route('**/api/build', () => {});
+  await page.locator('svg[data-variant="desk"]').evaluate((el) => el.setAttribute('data-front-door', ''));
+  await page.getByLabel('1. Nature of the request').fill(FORM.nature);
+  await page.getByRole('button', { name: 'File Form 27B/6' }).click();
+  await expect(page.getByRole('status')).toHaveText('Drafting. Please do not rush the Department.');
+  await expect(page.locator('svg[data-variant="desk"]')).toHaveCount(1);
+  await expect(page.locator('svg[data-variant="desk"][data-front-door]')).toHaveCount(1);
+  await expect(page.getByRole('list', { name: 'How to file' })).toHaveCount(0);
+});
+
 test('the form is axe clean empty, with field errors and with the rejection', async ({ page }) => {
   await open(page);
   await expectAxeClean(page, 'form empty');

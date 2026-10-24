@@ -161,6 +161,7 @@ export function Form27B6({
           value={draft.nature}
           onChange={set('nature')}
           maxLength={NATURE_MAX}
+          placeholder="Press the blue button. Scenic route, please."
           rows={3}
           aria-invalid={errors.nature ? true : undefined}
           aria-describedby={describedBy('nature', `${id}-nature-count`)}

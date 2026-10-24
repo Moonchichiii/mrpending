@@ -35,6 +35,16 @@ describe('Form 27B/6', () => {
     expect(onFile).toHaveBeenCalledWith({ nature: 'A scenic route, please.', minParts: 4, maxParts: 9 });
   });
 
+  test('item 1 shows an example request that is not its value, and the counter counts only what is typed', async () => {
+    const { user } = setup();
+    const nature = screen.getByLabelText<HTMLTextAreaElement>('1. Nature of the request');
+    expect(nature.placeholder).toBe('Press the blue button. Scenic route, please.');
+    expect(nature.value).toBe('');
+    expect(screen.getByText('0 of 180 characters')).toBeDefined();
+    await user.type(nature, 'Ramp.');
+    expect(screen.getByText('5 of 180 characters')).toBeDefined();
+  });
+
   test('the same equipment required and forbidden is rejected in character, and nothing is filed', async () => {
     const { onFile, user } = setup();
     await user.selectOptions(screen.getByLabelText('4. Required equipment'), 'fan');
