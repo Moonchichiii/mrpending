@@ -30,6 +30,10 @@ export type AsideKey = keyof typeof ASIDES;
 export const REJECTED =
   'Form 27B/6 rejected: items 4 and 5 name the same equipment. The Department does not do paradoxes before lunch.';
 
+// The INPUT_INVALID message of a 403: a build filed from another origin, host or form type is not read at all.
+export const REFUSED =
+  'Form 27B/6 refused unread: it arrived at the wrong window. The Department accepts paperwork at its own counter only.';
+
 const line = (beat: Beat, mood: Mood, text: string, attempt: number, step = 0): Draft => ({
   beat,
   mood,

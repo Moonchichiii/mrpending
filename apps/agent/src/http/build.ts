@@ -2,10 +2,12 @@ import { BlueprintPartial, BuildHeader, Form, MAX_STREAM_BYTES, StreamEvent } fr
 import type { ApiError, Model } from '@pending/contract';
 import { randomUUID } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { isIPv6 } from 'node:net';
 import * as z from 'zod';
-import { REJECTED } from '../build/beats';
+import { REFUSED, REJECTED } from '../build/beats';
 import { APP_REPAIRS, BuildInterrupted, runBuild } from '../build/loop';
 import type { Infer } from '../models/ollama';
+import { loopback } from './config';
 import type { Admission } from './limits';
 import { BASE_HEADERS, apiError, fail } from './reply';
 
@@ -21,6 +23,8 @@ export type BuildRoute = {
   model: Model;
   system: string;
   promptVersion: string;
+  // WEB_ORIGIN, the one page that may file a build.
+  origin: string;
   // A model client per build, so its partials reach this build's stream and no other.
   infer: (onPartial: (partial: unknown) => void) => Infer;
   admit: (who: string, now: number) => Admission;
@@ -107,8 +111,34 @@ function partialOf(value: unknown): BlueprintPartial | undefined {
 const opening = (e: StreamEvent) =>
   e.type === 'line' && (e.line.beat === 'intake' || e.line.beat === 'designing');
 
+// The address and port this socket was accepted on, as a Host header names them; only a loopback one counts.
+function boundHost(req: IncomingMessage): string | undefined {
+  const { localAddress, localPort } = req.socket;
+  if (localAddress === undefined || localPort === undefined || !loopback(localAddress)) return undefined;
+  return isIPv6(localAddress) ? `[${localAddress}]:${localPort}` : `${localAddress}:${localPort}`;
+}
+
+// A page on another origin, a rebound host name or a form post never reaches the body, a slot or the model.
+function foreign(req: IncomingMessage, origin: string): boolean {
+  const { headers } = req;
+  const media = headers['content-type']?.split(';')[0]?.trim().toLowerCase();
+  const host = boundHost(req);
+  return (
+    (headers.origin !== undefined && headers.origin !== origin) ||
+    host === undefined ||
+    headers.host !== host ||
+    media !== 'application/json'
+  );
+}
+
 export async function buildRoute(req: IncomingMessage, res: ServerResponse, who: string, route: BuildRoute) {
   const claimed = z.uuid().safeParse(req.headers['x-request-id']);
+  if (foreign(req, route.origin))
+    return fail(
+      res,
+      apiError('INPUT_INVALID', claimed.success ? claimed.data : randomUUID(), { message: REFUSED }),
+      403,
+    );
   if (!claimed.success)
     return fail(res, apiError('INPUT_INVALID', randomUUID(), { message: 'The request needs a request id.' }));
   const requestId = claimed.data;

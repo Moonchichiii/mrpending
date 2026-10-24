@@ -21,8 +21,11 @@ export function healthz(): { ok: true; rulesVersion: typeof RULES_VERSION } {
 // The local installation's routes (ARCHITECTURE section 4); the public static site calls none of them.
 export function agentServer(deps: AgentDeps): Server {
   const { env } = deps;
+  // SECURITY-AND-FAILURE-CONTRACT section 7: one allowed origin from WEB_ORIGIN, no wildcard, no credentials.
+  const allowed = new URL(env.WEB_ORIGIN).origin;
   const route: BuildRoute = {
     ...deps,
+    origin: allowed,
     admit: limiter(env.MAX_CONCURRENT_BUILDS, LIMITS.buildsPerWindow, LIMITS.windowMs),
     limits: {
       bodyBytes: LIMITS.bodyBytes,
@@ -34,9 +37,6 @@ export function agentServer(deps: AgentDeps): Server {
     },
     now: deps.now ?? (() => new Date()),
   };
-
-  // SECURITY-AND-FAILURE-CONTRACT section 7: one allowed origin from WEB_ORIGIN, no wildcard, no credentials.
-  const allowed = new URL(env.WEB_ORIGIN).origin;
 
   async function handle(req: IncomingMessage, res: ServerResponse) {
     const path = new URL(req.url ?? '/', 'http://agent').pathname;

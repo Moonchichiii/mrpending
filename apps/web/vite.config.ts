@@ -31,10 +31,12 @@ export default defineConfig(({ mode }) => ({
     'import.meta.env.VITE_COMMIT': JSON.stringify(commit(mode)),
   },
   // The local installation runs the agent beside the dev server (apps/agent, PORT 4111); bypass false answers 404.
+  // changeOrigin sets Host to the agent's own 127.0.0.1:4111, which the agent requires; Origin stays the page's.
   server: {
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:4111',
+        changeOrigin: true,
         bypass: (req) => (loopbackClient(req.socket.remoteAddress) ? undefined : false),
       },
     },
