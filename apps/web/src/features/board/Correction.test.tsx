@@ -1,9 +1,9 @@
 import { Blueprint, Patch } from '@pending/contract';
 import { applyPatch } from '@pending/machine';
-import { cleanup, render, within } from '@testing-library/react';
+import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, test } from 'vitest';
-import { Correction } from './Correction';
-import { diff } from './model/diff';
+import { Board } from './Board';
+import { diff, written } from './model/diff';
 import styles from './Board.module.css';
 
 afterEach(cleanup);
@@ -35,11 +35,13 @@ const extra = Patch.parse([
   { op: 'add', part: { id: 'p6', kind: 'dominoes', cell: 'J7', dir: 'east', length: 2 } },
 ]);
 
-// The board a patch produces, as the machine applies it; the diff is drawn between the two boards.
+// The board a patch produces, as the machine applies it; the diff is marked on that board, over the parts that stand.
 const FORM = { nature: 'x', minParts: 2, maxParts: 14 };
 const applied = (previous: Blueprint, ops: Patch) => applyPatch(previous, ops, new Set(), FORM).blueprint;
 const drawn = (previous: Blueprint, ops: Patch) =>
-  render(<Correction n={2} previous={previous} current={applied(previous, ops)} />);
+  render(<Board blueprint={applied(previous, ops)} events={[]} previous={previous} />);
+const outside = (container: Element, id: string) =>
+  [...container.querySelectorAll(`[data-part="${id}"]`)].filter((p) => p.closest('[data-change]') === null);
 const group = (container: Element, kind: string) => [
   ...container.querySelectorAll(`[data-change="${kind}"]`),
 ];
@@ -55,10 +57,10 @@ describe('diff symbols per op kind', () => {
     expect(badges(removed)).toEqual(['−']);
   });
 
-  test('added: a halo and a plus badge', () => {
+  test('added: the part on the board, a halo and a plus badge', () => {
     const { container } = drawn(board, extra);
     const [added] = group(container, 'added');
-    expect(added?.querySelector('[data-part="p6"]')).not.toBeNull();
+    expect(outside(container, 'p6')).toHaveLength(1);
     expect(added?.querySelector(':scope > circle')).not.toBeNull();
     expect(badges(added)).toEqual(['+']);
   });
@@ -66,7 +68,7 @@ describe('diff symbols per op kind', () => {
   test('moved: the part at its new cell, an arrow from the old one and a label', () => {
     const { container } = drawn(board, patch);
     const [moved] = group(container, 'moved');
-    expect(moved?.querySelector('[data-part="p4"]')?.getAttribute('transform')).toBe('translate(456 168)');
+    expect(outside(container, 'p4')[0]?.getAttribute('transform')).toBe('translate(456 168)');
     // The arrow starts at the old anchor H4 (456, 224).
     expect(moved?.querySelector(':scope > path')?.getAttribute('d')).toMatch(/^M 456 224 L /);
     expect(moved?.querySelector('text')?.textContent).toBe('from H4');
@@ -77,32 +79,31 @@ describe('diff symbols per op kind', () => {
     const { container } = drawn(board, patch);
     const [replaced] = group(container, 'replaced');
     expect(replaced?.querySelector('[data-part="p3"]')).not.toBeNull();
-    expect(replaced?.querySelector('[data-part="p5"]')).not.toBeNull();
+    expect(outside(container, 'p5')).toHaveLength(1);
     expect(badges(replaced)).toEqual(['−', '+']);
   });
 
-  test('unchanged: the part alone, faded, with no badge', () => {
+  test('unchanged: the part on the board as it stands, with no mark', () => {
     const { container } = drawn(board, patch);
     const unchanged = group(container, 'unchanged');
-    expect(unchanged.map((g) => g.querySelector('[data-part]')?.getAttribute('data-part'))).toEqual(['p1']);
-    expect(badges(unchanged[0])).toEqual([]);
+    expect(unchanged).toHaveLength(1);
+    expect(unchanged[0]?.childElementCount).toBe(0);
+    expect(outside(container, 'p1')).toHaveLength(1);
   });
 
-  test('the written change list says each change in words', () => {
-    const { getByRole } = drawn(board, patch);
-    expect(
-      within(getByRole('list'))
-        .getAllByRole('listitem')
-        .map((li) => li.textContent),
-    ).toEqual([
+  test('the change list says each change in words, and the board describes it', () => {
+    const changes = [
       'Removed ramp p2 at E2.',
       'Replaced catapult p3 at F6 with catapult p5 at F6 facing east, power 4.',
       'Moved fan p4 from H4 to H3.',
-    ]);
+    ];
+    expect(written(board, applied(board, patch))).toEqual(changes);
+    const { container } = drawn(board, patch);
+    for (const change of changes) expect(container.querySelector('desc')?.textContent).toContain(change);
   });
 });
 
-test("a removed or unchanged fan's wind carries the fan's styling", () => {
+test("a removed fan's wind carries the fan's styling; the fan that stands is drawn as it is", () => {
   const fans = Blueprint.parse({
     title: 'Two fans',
     parts: [
@@ -112,14 +113,10 @@ test("a removed or unchanged fan's wind carries the fan's styling", () => {
   });
   const { container } = drawn(fans, Patch.parse([{ op: 'remove', id: 'p7' }]));
   const classes = (selector: string) => container.querySelector(selector)?.getAttribute('class')?.split(' ');
-  for (const [id, mark] of [
-    ['p7', styles.removed],
-    ['p8', styles.unchanged],
-  ] as const) {
-    expect(mark).toBeTruthy();
-    expect(classes(`[data-part="${id}"]`)).toContain(mark);
-    expect(classes(`[data-wind="${id}"]`)).toEqual([styles.wind, mark]);
-  }
+  expect(styles.removed).toBeTruthy();
+  expect(classes('[data-part="p7"]')).toContain(styles.removed);
+  expect(classes('[data-wind="p7"]')).toEqual([styles.wind, styles.removed]);
+  expect(classes('[data-wind="p8"]')).toEqual([styles.wind]);
 });
 
 test('an op the machine skipped is not drawn or written', () => {
@@ -129,8 +126,8 @@ test('an op the machine skipped is not drawn or written', () => {
   ]);
   const { container } = drawn(board, reused);
   expect(group(container, 'unchanged')).toHaveLength(board.parts.length);
-  expect(container.querySelectorAll('[data-badge]')).toHaveLength(0);
-  expect(container.querySelectorAll('li')).toHaveLength(0);
+  expect(container.querySelectorAll('[data-change] > *')).toHaveLength(0);
+  expect(written(board, applied(board, reused))).toEqual([]);
 });
 
 describe('the diff of each recorded correction is drawn from the boards before and after it', () => {

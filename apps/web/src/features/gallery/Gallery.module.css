@@ -14,8 +14,7 @@
 .record {
   padding: var(--space-3);
   background: var(--paper);
-  border: var(--border-paper);
-  border-radius: var(--radius-paper);
+  border-radius: var(--radius-control);
 }
 
 /* Provenance names the recording; it wraps rather than overflowing on a long model id. */
@@ -53,8 +52,8 @@
   font: inherit;
   font-weight: 700;
   color: var(--ink);
-  background: var(--paper);
-  border: var(--border-paper);
-  border-radius: 10px 4px 12px 6px;
+  background: transparent;
+  border: var(--border-control);
+  border-radius: var(--radius-control);
   cursor: pointer;
 }

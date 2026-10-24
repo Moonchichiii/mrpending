@@ -68,3 +68,7 @@ export function changeText(change: Change): string | undefined {
       return assertNever(change);
   }
 }
+
+// The correction in words: one sentence per change, in the diff's order.
+export const written = (previous: Blueprint, current: Blueprint): string[] =>
+  diff(previous, current).flatMap((change) => changeText(change) ?? []);

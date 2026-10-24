@@ -1,5 +1,6 @@
-/* One screen: on a phone everything stacks with the button before the voice; wider, Mr. Pending and the button share
-   the top row and the board spans the width under it. The container is the stage's own, so a record page reflows too. */
+/* One stage. On a phone it stacks: the name, Mr. Pending and his bubble, the button, the board. Wider, Mr. Pending and
+   the button share a row and the board spans the width under it. The container is the stage's own, so a record page
+   reflows too. */
 .frame {
   min-width: 0;
   container-type: inline-size;
@@ -8,31 +9,42 @@
 .stage {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-areas: 'heading' 'card' 'action' 'voice' 'board' 'after';
-  gap: var(--space-3);
+  grid-template-areas: 'top' 'engineer' 'action' 'board';
+  gap: var(--space-4);
   min-width: 0;
 }
 
-@container (min-width: 44rem) {
+@container (min-width: 52rem) {
   .stage {
-    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-    grid-template-areas: 'heading action' 'card action' 'voice action' 'board board' 'after after';
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'top top' 'engineer action' 'board board';
     column-gap: var(--space-5);
+  }
+
+  /* A desktop screen tall enough is filled exactly: the board takes the height the top rows leave, and never pushes
+     the page longer as a build moves through its phases. */
+  @media (min-height: 36rem) {
+    .stage {
+      grid-template-rows: auto auto minmax(0, 1fr);
+      row-gap: var(--space-3);
+      min-height: calc(100svh - 2 * var(--space-3));
+    }
   }
 }
 
-.heading {
-  grid-area: heading;
+.top {
+  grid-area: top;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
   min-width: 0;
 }
 
-.card {
-  grid-area: card;
-  min-width: 0;
-}
-
-.voice {
-  grid-area: voice;
+.engineer {
+  grid-area: engineer;
+  align-self: center;
   min-width: 0;
 }
 
@@ -41,81 +53,56 @@
   display: grid;
   gap: var(--space-2);
   align-content: center;
-  justify-items: start;
+  justify-items: center;
   min-width: 0;
+  text-align: center;
 }
 
-.after {
-  grid-area: after;
-  display: grid;
-  gap: var(--space-3);
-  min-width: 0;
-}
-
-/* The board's height follows the viewport's, so the top row and the whole board fit one desktop screen. */
 .board {
   grid-area: board;
   display: grid;
-  gap: var(--space-2);
-  justify-self: center;
-  width: 100%;
-  max-width: max(20rem, calc((100svh - 33rem) * 720 / 440));
   min-width: 0;
+  min-height: 0;
 }
 
-.header,
-.level {
-  font-weight: 700;
-  overflow-wrap: anywhere;
-}
-
-.header {
-  font-family: var(--font-display);
-}
-
-/* The idle caption sits in the empty middle of the board, between the hopper and the button; paper on navy is 7.5:1. */
-.figure {
-  position: relative;
-  min-width: 0;
-}
-
-.caption {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: var(--space-5) var(--space-4);
-  color: var(--paper);
-  font-family: var(--font-display);
-  font-size: var(--text-heading);
-  line-height: 1.2;
-  text-align: center;
-  overflow-wrap: anywhere;
-  pointer-events: none;
-}
-
-/* The board's own button at hero size on a paper card: ink on cream, copper shadow, a -1 degree tilt. */
+/* The board's own button at hero size: the sprite is the decoration, the button around it is flat and level. */
 .hero {
   display: grid;
   justify-items: center;
   gap: var(--space-2);
-  width: min(100%, 20rem);
-  padding: var(--space-3) var(--space-4);
-  background: var(--paper);
+  width: min(100%, 18rem);
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
   color: var(--ink);
   font-family: var(--font-display);
-  font-size: var(--text-heading);
+  font-size: clamp(1.25rem, 1rem + 0.6vw, 1.625rem);
   font-weight: 700;
   line-height: 1.2;
-  border: var(--border-paper);
-  border-radius: 10px 4px 12px 6px;
-  box-shadow: var(--shadow-primary);
-  rotate: -1deg;
+  border: 0;
+  border-radius: var(--radius-control);
   cursor: pointer;
 }
 
 .hero > svg {
-  width: min(100%, 12rem);
+  width: clamp(7rem, 9vw, 8.5rem);
+  transition: translate 120ms ease-out;
+}
+
+.hero:enabled:hover > svg {
+  translate: 0 -3px;
+}
+
+.hero:enabled:active > svg {
+  translate: 0 4px;
+}
+
+.hero:disabled {
+  cursor: not-allowed;
+}
+
+/* Waiting while a build is on the board: the sprite greys out rather than tinting with the page. */
+.hero:disabled > svg {
+  filter: grayscale(1);
 }
 
 .label {
@@ -124,18 +111,15 @@
   overflow-wrap: anywhere;
 }
 
-.hero:disabled {
-  color: var(--copper-text);
-  box-shadow: none;
-  rotate: none;
-  cursor: not-allowed;
-}
-
-.hero:enabled:active {
-  translate: 2px 2px;
-  box-shadow: 3px 3px 0 var(--copper);
+/* Withdraw comes and goes with a build, so its place is kept in every phase. */
+.slot {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: center;
+  min-height: var(--target);
 }
 
 .note {
-  max-width: var(--measure);
+  max-width: 22rem;
+  font-size: var(--text-small);
 }

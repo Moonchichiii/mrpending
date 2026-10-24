@@ -47,8 +47,7 @@ function countBuilds() {
   return builds;
 }
 
-const fileButton = () =>
-  screen.getByRole<HTMLButtonElement>('button', { name: 'Ask Mr. Pending to press it' });
+const fileButton = () => screen.getByRole<HTMLButtonElement>('button', { name: 'Ask him to press it' });
 const nature = () => screen.getByLabelText<HTMLTextAreaElement>('1. Nature of the request');
 const adjust = (user: ReturnType<typeof userEvent.setup>) =>
   user.click(screen.getByText('Advanced settings'));
@@ -160,7 +159,7 @@ test('a build that ends is kept once in My department, with a DUE number and no 
   expect(within(card).getByText('The Scenic Route')).toBeDefined();
   expect(within(department()).queryAllByRole('link')).toEqual([]);
 
-  await user.click(screen.getByRole('button', { name: 'Replay from the start' }));
+  await user.click(screen.getByRole('button', { name: 'Replay' }));
   await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(verdict));
   expect(within(department()).getAllByRole('listitem')).toHaveLength(1);
 });

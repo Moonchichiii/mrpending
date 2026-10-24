@@ -3,17 +3,17 @@ import type { ReactNode } from 'react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { assertNever } from '../../shared/assertNever';
 import { Engineer } from '../engineer';
-import { EngineeringReport } from '../report';
+import { lastStep } from '../board';
+import { Verdict } from '../report';
 import { Voice } from '../voice';
+import { BoardPanel } from './BoardPanel';
 import { Controls } from './Controls';
 import { errorCopy } from './model/errors';
 import { pressLine, pressVoiced, pressing } from './model/press';
 import { STEP_MS, failedOn, playhead, said } from './model/session';
 import type { Session } from './model/session';
 import { Form27B6 } from './Form27B6';
-import { Lines } from './Lines';
-import { Hero, IdleBoard, Stage, source } from './Stage';
-import { Trial } from './Trial';
+import { Hero, Stage, source } from './Stage';
 import { useBuild } from './useBuild';
 import { usePress } from './usePress';
 import styles from './BuildDesk.module.css';
@@ -39,12 +39,12 @@ function announcement(session: Session): string {
   }
 }
 
-// The lines Mr. Pending has said by the playhead; none while the form is open or after a failure.
-function spoken(session: Session): Line[] | undefined {
+// The lines Mr. Pending has said by the playhead; none while the form waits or after a failure.
+function spoken(session: Session): Line[] {
   switch (session.status) {
     case 'idle':
     case 'error':
-      return undefined;
+      return [];
     case 'designing':
       return said(session.lines, 1, 0);
     case 'running': {
@@ -61,7 +61,7 @@ function spoken(session: Session): Line[] | undefined {
   }
 }
 
-// The attempts the simulator has run so far, which say whether the line on the card sits on a real failure.
+// The attempts the simulator has run so far, which say whether the line said sits on a real failure.
 function held(session: Session): Attempt[] {
   switch (session.status) {
     case 'idle':
@@ -79,14 +79,21 @@ function held(session: Session): Attempt[] {
   }
 }
 
-// His card while he has said nothing; the status region carries the phase to assistive technology.
+// Where the playhead stands: the attempt on the board and its step; outside playback, the last attempt's final frame.
+function playing(session: Session): { attempt: Attempt; step: number } | undefined {
+  if (session.status === 'running') return playhead(session.attempts, session.step);
+  const last = held(session).at(-1);
+  return last && { attempt: last, step: lastStep(last.events) };
+}
+
+// His bubble while he has said nothing; the status region carries the phase to assistive technology.
 export const INTRODUCTION =
   'Chief Engineer of the Department of Unnecessary Engineering. One job: press one blue button.';
 const WAITING = 'Filing opens once the Department confirms where drafting happens.';
 
-// One screen in every phase: Mr. Pending, his voice and the action in the top row, the board under it. When nothing
-// is in progress the board's button files Form 27B/6, folded away under the board. A build that ends is reported
-// once, however often it is replayed afterwards; onFinished says whether it was kept.
+// One stage in every phase: Mr. Pending, his bubble and the board's button in the top row, the one board under it.
+// The button files Form 27B/6, folded away under the stage as Advanced settings; while a build is on the board it waits.
+// A build that ends is reported once, however often it is replayed afterwards; onFinished says whether it was kept.
 export function BuildDesk({
   canFile,
   onFinished,
@@ -111,7 +118,7 @@ export function BuildDesk({
     // oxlint-disable-next-line react/set-state-in-effect -- the state reports the outcome of writing to localStorage
     if (!onFinished(ended.build)) setUnkept(ended.requestId);
   }, [ended, onFinished]);
-  // Replay rewinds the playhead without changing the trial, so each replay is counted to give the board a new key.
+  // Replay rewinds the playhead without changing the trial, so each replay is counted to give the board a new run.
   const [take, setTake] = useState(0);
   const replay = () => {
     setTake((n) => n + 1);
@@ -119,7 +126,7 @@ export function BuildDesk({
   };
   const formId = useId();
   const status = useRef<HTMLOutputElement>(null);
-  // The control that was used disappears with each change of phase, so focus moves to the persistent status.
+  // The control that was used may be disabled or replaced by the change of phase, so focus moves to the status.
   const then = (action: () => void) => () => {
     action();
     status.current?.focus();
@@ -129,196 +136,107 @@ export function BuildDesk({
   const pressed = pressing(session);
   // The same take keeps its clock from the press tick through done, so the sequence runs once per playback.
   const press = usePress(pressed === undefined ? undefined : `${pressed}:${take}`);
-  // The rig reacts to the last line said, or on a press to the line its clock has reached; its card holds the lines list.
-  const line = lines && (pressed === undefined ? lines.at(-1) : pressLine(lines, press.beat));
+  // The rig reacts to the last line said, or on a press to the line its clock has reached.
+  const line = pressed === undefined ? lines.at(-1) : pressLine(lines, press.beat);
   // The header names the model the build reports once it has ended, the configured one before.
   const model = ended?.build.model ?? config?.model;
   const header = config && model && source(model, config.inference);
-  const withdraw = (
-    <button type="button" className={styles.action} onClick={then(cancel)}>
-      Withdraw the form
-    </button>
-  );
+  const building =
+    session.status === 'designing' || session.status === 'running' || session.status === 'repairing';
+  const run = session.status === 'idle' ? 'idle' : `${session.requestId}:${take}`;
 
-  // The action in the top row and the board under it.
-  const phase = (): { action: ReactNode; board: ReactNode } => {
-    switch (session.status) {
-      case 'idle':
-        return {
-          action: <Hero form={formId} disabled={!canFile} note={canFile ? undefined : WAITING} />,
-          board: <IdleBoard />,
-        };
-      case 'designing':
-        return { action: withdraw, board: <IdleBoard caption={session.partial.title} /> };
-      case 'running': {
-        const head = playhead(session.attempts, session.step);
-        return {
-          action: (
-            <>
-              <Controls
-                speed={session.speed}
-                paused={session.paused}
-                onPause={pause}
-                onReplay={replay}
-                onSpeed={setSpeed}
-              />
-              {withdraw}
-            </>
-          ),
-          // A fragment in every phase that shows a trial, so the keyed trial keeps its board from playback to the ending.
-          board: (
-            <>
-              <Trial
-                key="trial"
-                take={take}
-                attempts={session.attempts}
-                attempt={head?.attempt}
-                step={head?.step}
-                stepMs={STEP_MS[session.speed]}
-                pressedAt={press.at}
-              />
-            </>
-          ),
-        };
-      }
-      case 'repairing':
-        return {
-          action: (
-            <>
-              <Controls
-                speed={session.speed}
-                paused={undefined}
-                onPause={pause}
-                onReplay={replay}
-                onSpeed={setSpeed}
-              />
-              {withdraw}
-            </>
-          ),
-          board: (
-            <>
-              <Trial key="trial" take={take} attempts={session.attempts} attempt={session.attempts.at(-1)} />
-            </>
-          ),
-        };
-      case 'pressed':
-      case 'exhausted':
-        return {
-          action: (
-            <>
-              {unkept === session.requestId && (
-                <p role="alert" className={styles.error}>
-                  This browser would not keep the build; its storage is full or switched off. It is not in My
-                  department.
-                </p>
-              )}
-              <button type="button" className={styles.action} onClick={then(replay)}>
-                Replay from the start
-              </button>
-              <button type="button" className={styles.action} onClick={then(reset)}>
-                File another form
-              </button>
-            </>
-          ),
-          board: (
-            <>
-              <p className={styles.title}>{session.build.title}</p>
-              <Trial
-                key="trial"
-                take={take}
-                attempts={session.build.attempts}
-                attempt={session.build.attempts.at(-1)}
-                pressedAt={press.at}
-              />
-              {/* Character sheet section 6: the report slides up at the press's hard cut, at once on an exhausted build. */}
-              {(session.status === 'exhausted' || press.beat === 'cut') && (
-                <EngineeringReport build={session.build} />
-              )}
-            </>
-          ),
-        };
-      case 'error': {
-        const { message, action } = errorCopy(session.error);
-        return {
-          action: (
-            <>
-              <p role="alert" className={styles.error}>
-                {message}
-              </p>
-              {action === 'retry' ? (
-                <button type="button" className={styles.action} onClick={() => fileForm(session.form)}>
-                  Build again
-                </button>
-              ) : (
-                <button type="button" className={styles.action} onClick={then(reset)}>
-                  Edit the form
-                </button>
-              )}
-            </>
-          ),
-          board:
-            session.attempts.length === 0 ? (
-              <IdleBoard />
-            ) : (
-              <>
-                <Trial
-                  key="trial"
-                  take={take}
-                  attempts={session.attempts}
-                  attempt={session.attempts.at(-1)}
-                />
-              </>
-            ),
-        };
-      }
-      default:
-        return assertNever(session);
+  const playable = session.status === 'running' || session.status === 'repairing' ? session : undefined;
+  // What sits on top of the board: the verdict at the end, an error in its place.
+  const overlay = (): ReactNode => {
+    if (session.status === 'error') {
+      const { message, action } = errorCopy(session.error);
+      return (
+        <div className={styles.notice}>
+          <p role="alert" className={styles.error}>
+            {message}
+          </p>
+          {action === 'retry' ? (
+            <button type="button" className={styles.action} onClick={() => fileForm(session.form)}>
+              Build again
+            </button>
+          ) : (
+            <button type="button" className={styles.action} onClick={then(reset)}>
+              Edit the form
+            </button>
+          )}
+        </div>
+      );
     }
+    // Character sheet section 6: the verdict slides up at the press's hard cut, at once on an exhausted build.
+    if (ended === undefined || (ended.status === 'pressed' && press.beat !== 'cut')) return undefined;
+    return (
+      <Verdict build={ended.build} form={formId}>
+        {unkept === ended.requestId && (
+          <p role="alert" className={styles.error}>
+            This browser would not keep the build; its storage is full or switched off. It is not in My
+            department.
+          </p>
+        )}
+      </Verdict>
+    );
   };
-  const { action, board } = phase();
 
   return (
-    <Stage
-      heading={heading}
-      // One key in every phase, so the card is not remounted between phases and the cameo's looks play once.
-      card={
-        <Engineer key="engineer" status={session.status} line={line} failed={failedOn(held(session), line)}>
-          {lines ? <Lines lines={lines} /> : <p>{INTRODUCTION}</p>}
-        </Engineer>
-      }
-      // Outside the phases, so the voice keeps its queue from drafting to the ending; a replay or a new build restarts it,
-      // and a failure stops it, so no line is spoken over the error or captioned beside it. Mute carries over.
-      voice={
-        <Voice
-          lines={lines ? pressVoiced(lines, press.beat) : []}
-          playback={
-            session.status === 'idle'
-              ? 'idle'
-              : session.status === 'error'
-                ? `${session.requestId}:error`
-                : `${session.requestId}:${take}`
-          }
-        />
-      }
-      action={
-        <>
-          <output
-            ref={status}
-            tabIndex={-1}
-            className={session.status === 'idle' ? `${styles.status} ${styles.quiet}` : styles.status}
-          >
-            {announcement(session)}
-          </output>
-          {action}
-          {notice}
-        </>
-      }
-      header={header}
-      board={board}
-    >
-      {session.status === 'idle' && (
-        <Form27B6 id={formId} initial={session.form} onFile={fileForm} canFile={canFile} />
-      )}
-    </Stage>
+    <>
+      <Stage
+        heading={heading}
+        notice={notice}
+        // One element in every phase, so the rig is not remounted between phases and the cameo's looks play once.
+        engineer={
+          <Engineer status={session.status} line={line} failed={failedOn(held(session), line)}>
+            {/* The voice keeps its queue from drafting to the ending; a replay or a new build restarts it, and a failure
+                stops it, so no line is spoken over the error or captioned beside it. Mute carries over. */}
+            <Voice
+              lines={pressVoiced(lines, press.beat)}
+              idle={session.status === 'idle' ? INTRODUCTION : undefined}
+              playback={session.status === 'error' ? `${session.requestId}:error` : run}
+            />
+          </Engineer>
+        }
+        action={
+          <>
+            <output ref={status} tabIndex={-1} className={styles.status}>
+              {announcement(session)}
+            </output>
+            <Hero form={formId} disabled={!canFile || building} note={canFile ? undefined : WAITING}>
+              {building && (
+                <button type="button" className={styles.action} onClick={then(cancel)}>
+                  Withdraw the form
+                </button>
+              )}
+            </Hero>
+          </>
+        }
+        board={
+          <BoardPanel
+            header={header}
+            attempts={held(session)}
+            playing={playing(session)}
+            run={run}
+            stepMs={session.status === 'running' ? STEP_MS[session.speed] : undefined}
+            pressedAt={press.at}
+            caption={session.status === 'designing' ? session.partial.title : undefined}
+            lines={lines}
+            // Playback controls stand on the board in every phase: Pause while a trial plays, Replay once there is one.
+            controls={
+              <Controls
+                speed={playable?.speed ?? 1}
+                paused={playable?.status === 'running' ? playable.paused : undefined}
+                onPause={pause}
+                onReplay={(playable ?? ended) ? replay : undefined}
+                onSpeed={playable && setSpeed}
+              />
+            }
+            overlay={overlay()}
+          />
+        }
+      />
+      <Form27B6 id={formId} onFile={fileForm} canFile={canFile} />
+    </>
   );
 }

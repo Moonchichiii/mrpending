@@ -1,11 +1,53 @@
-/* The persistent status region: an output element, block so it keeps the measure. */
+/* The persistent status region: an output element, block so it keeps the measure, and two lines tall in every phase,
+   which holds the longest phase text and either verdict at a phone's width. */
 .status {
   display: block;
-  max-width: var(--measure);
+  max-width: 22rem;
+  min-height: calc(2em * var(--leading));
+  font-weight: 700;
 }
 
-/* Idle, the line card holds this text, so the status shows only when focus is sent to it; it is announced throughout. */
-.quiet:not(:focus) {
+/* An error in the verdict's place over the board: a level paper panel, the alert in its coral text token. */
+.notice {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+  width: min(100%, 34rem);
+  padding: var(--space-4);
+  background: var(--paper);
+  border-radius: var(--radius-control);
+}
+
+.error {
+  max-width: var(--measure);
+  color: var(--coral-text);
+  font-weight: 700;
+}
+
+.action {
+  min-height: var(--target);
+  padding: var(--space-2) var(--space-4);
+  background: transparent;
+  color: var(--ink);
+  font-weight: 700;
+  border: var(--border-control);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+/* Instruments are level; every control is at least 52 px (character sheet section 8). */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* The group keeps its name for assistive technology; the toolbar shows what the buttons are. */
+.legend {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -14,65 +56,15 @@
   white-space: nowrap;
 }
 
-.title {
-  font-family: var(--font-display);
-  font-size: var(--text-heading);
-}
-
-.error {
-  max-width: var(--measure);
-  padding: var(--space-2) var(--space-3);
-  background: var(--paper);
-  color: var(--coral-text);
-  font-weight: 700;
-  border: 3px double var(--coral);
-  border-radius: 8px;
-}
-
-.trial {
-  display: grid;
-  gap: var(--space-2);
-  min-width: 0;
-}
-
-.action {
-  justify-self: start;
-  min-height: var(--target);
-  padding: var(--space-2) var(--space-4);
-  background: var(--paper);
-  color: var(--ink);
-  font-weight: 700;
-  border: var(--border-paper);
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-/* Instruments are level; every control is at least 52 px (character sheet section 8). */
-.controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.legend {
-  width: 100%;
-  padding: 0;
-  font-weight: 700;
-}
-
 .control {
   min-width: var(--target);
   min-height: var(--target);
   padding: var(--space-2) var(--space-3);
-  background: var(--paper);
+  background: transparent;
   color: var(--ink);
   font-weight: 700;
-  border: 2px solid var(--ink);
-  border-radius: 8px;
+  border: var(--border-control);
+  border-radius: var(--radius-control);
   cursor: pointer;
 }
 
@@ -94,7 +86,6 @@
   padding-inline-start: var(--space-4);
 }
 
-/* Text directly on the yellow page is ink (character sheet section 5). */
 .memo {
   font-weight: 700;
 }

@@ -23,16 +23,13 @@ export function RecordPage({ build, corrected }: { build: Build; corrected: bool
         </p>
       )}
       <p className={styles.note}>Form 27B/6: {build.form.nature}</p>
+      {/* The stamp and the verdict come on the board when the playback ends. */}
       <Playback build={build} />
-      <p className={build.report.pressed ? stamp.approved : stamp.pending}>
-        {build.report.pressed ? 'APPROVED' : 'PENDING'}
-      </p>
       <p>
         {build.report.attempts} {build.report.attempts === 1 ? 'trial' : 'trials'} · {build.report.parts}{' '}
         {build.report.parts === 1 ? 'part' : 'parts'}
         {build.report.failedAt === undefined ? '' : ` · stopped at ${build.report.failedAt}`}
       </p>
-      <p>{build.report.verdict}</p>
       <a className={styles.link} href={import.meta.env.BASE_URL}>
         Back to the gallery
       </a>

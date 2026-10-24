@@ -14,9 +14,7 @@
   min-width: 0;
   padding: var(--space-3) var(--space-4);
   background: var(--paper);
-  border: var(--border-paper);
-  border-radius: var(--radius-paper);
-  box-shadow: var(--shadow-paper);
+  border-radius: var(--radius-control);
 }
 
 /* Title and stamp share a line when the card is wide enough; flex children may shrink below their text. */
@@ -32,18 +30,6 @@
   min-width: 0;
 }
 
-.card:nth-child(3n + 1) {
-  rotate: var(--tilt-a);
-}
-
-.card:nth-child(3n + 2) {
-  rotate: var(--tilt-b);
-}
-
-.card:nth-child(3n) {
-  rotate: var(--tilt-c);
-}
-
 .title {
   font-size: var(--text-heading);
 }
@@ -56,6 +42,7 @@
   min-height: var(--target);
 }
 
+/* The stamp is the card's one paper flourish: a double ruling, rotated -6 degrees (character sheet section 5). */
 .approved,
 .pending {
   justify-self: start;

@@ -38,7 +38,7 @@ class Boundary extends Component<{ fallback: ReactNode; children: ReactNode }, {
   }
 }
 
-// Mr. Pending's line card: the rig in the corner, the line beside it, and on the cameo line the sloth on its top edge.
+// Mr. Pending at full size beside his speech bubble, and on the cameo line the sloth hanging from the bubble's top edge.
 // failed is the simulator's word that the line's attempt failed; a forged cameo line alone never brings the sloth.
 export function Engineer({
   status,
@@ -53,18 +53,20 @@ export function Engineer({
 }) {
   const cameo = line?.beat === 'cameo' && failed;
   return (
-    <div className={cameo ? `${styles.card} ${styles.withSloth}` : styles.card}>
-      {cameo && (
-        <Boundary fallback={null}>
-          <Sloth />
-        </Boundary>
-      )}
-      <div className={styles.portrait}>
+    <div className={styles.cast}>
+      <div>
         <Boundary fallback={<Still />}>
           <Rig status={status} line={line} cameo={cameo} />
         </Boundary>
       </div>
-      <div className={styles.text}>{children}</div>
+      <div className={cameo ? `${styles.text} ${styles.withSloth}` : styles.text}>
+        {cameo && (
+          <Boundary fallback={null}>
+            <Sloth />
+          </Boundary>
+        )}
+        {children}
+      </div>
     </div>
   );
 }

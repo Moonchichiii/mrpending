@@ -10,7 +10,11 @@ export default defineConfig({
   use: { browserName: 'chromium' },
   projects: [
     { name: 'static', testMatch: /front-door\.spec\.ts/, use: { baseURL: STATIC } },
-    { name: 'local', testMatch: /form\.spec\.ts|gallery\.spec\.ts|a11y\.spec\.ts/, use: { baseURL: LOCAL } },
+    {
+      name: 'local',
+      testMatch: /form\.spec\.ts|gallery\.spec\.ts|a11y\.spec\.ts|stage\.spec\.ts/,
+      use: { baseURL: LOCAL },
+    },
   ],
   webServer: [
     {

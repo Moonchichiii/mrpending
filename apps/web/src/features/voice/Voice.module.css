@@ -1,19 +1,39 @@
 .voice {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-3);
   min-width: 0;
   max-width: var(--measure);
 }
 
-/* Captions are paper with ink text; an empty caption keeps its line so the controls do not jump. */
-.caption {
-  min-height: calc(var(--text-body) * var(--leading));
+/* The one speech bubble: paper with ink text, a wonky outline, one tilt and a tail toward Mr. Pending (character sheet
+   section 5). It keeps two lines of height, its padding and its border, so a short line or none does not move the
+   controls under it. */
+.bubble {
+  position: relative;
+  min-height: calc(2lh + 2 * var(--space-3) + 6px);
   margin: 0;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-4);
   background: var(--paper);
   color: var(--ink);
+  font-size: clamp(1.125rem, 1rem + 0.5vw, 1.5rem);
+  line-height: 1.35;
   border: var(--border-paper);
   border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+  rotate: var(--tilt-c);
+}
+
+.bubble::before {
+  content: '';
+  position: absolute;
+  top: calc(50% - 0.75rem);
+  left: -0.85rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: var(--paper);
+  border-bottom: var(--border-paper);
+  border-left: var(--border-paper);
+  rotate: 45deg;
 }
 
 .memo {
@@ -21,31 +41,50 @@
   font-family: var(--font-note);
 }
 
-.disclosure {
-  margin: 0;
-  font-size: var(--text-small);
-}
-
 /* Instruments are level; every control is at least 52 px (character sheet section 8). */
 .controls {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
 }
 
 .control {
   min-width: var(--target);
   min-height: var(--target);
   padding: var(--space-2) var(--space-3);
-  background: var(--paper);
+  background: transparent;
   color: var(--ink);
   font-weight: 700;
-  border: 2px solid var(--ink);
-  border-radius: 8px;
+  border: var(--border-control);
+  border-radius: var(--radius-control);
   cursor: pointer;
 }
 
 .control[aria-pressed='true'] {
   background: var(--ink);
   color: var(--paper);
+}
+
+.disclosure {
+  flex: 1 1 14rem;
+  margin: 0;
+  font-size: var(--text-small);
+}
+
+/* Phones: level under the head, its tail pointing up at him, since a tilt widens it with its height and enlarged text
+   overflowed. Five lines are held in every phase, which a line at its 160-character maximum fits at the full width, so a
+   phone's page does not grow. */
+@media (max-width: 40rem) {
+  .bubble {
+    min-height: calc(5lh + 2 * var(--space-3) + 6px);
+    font-size: var(--text-body);
+    rotate: none;
+  }
+
+  .bubble::before {
+    top: -0.85rem;
+    left: 2.25rem;
+    rotate: 135deg;
+  }
 }

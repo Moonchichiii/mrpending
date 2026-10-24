@@ -1,4 +1,6 @@
 import type { Blueprint, SimEvent } from '@pending/contract';
+import { Correction } from './Correction';
+import { written } from './model/diff';
 import type { Segment } from './model/frame';
 import { BOARD, frame, lastStep } from './model/frame';
 import { Sheet } from './Sheet';
@@ -14,18 +16,25 @@ const path = ({ from, to, arc }: Segment) =>
 // The board at `step` (the final frame by default); the ball and the dominoes move by CSS transitions of `stepMs`.
 // Only the step that reaches button.pressed draws the press (character sheet section 6); `pressedAt`, the
 // performance.now() of that tick, plays it as the 2.2 s sequence, and without it the press is drawn at rest.
+// `previous` is the board a correction changed, whose diff is marked over this one. The sheet is one element for as
+// long as the board is mounted; a new `run` (a trial, a replay) redraws what stands on it, so nothing animates out of
+// the last run.
 export function Board({
   blueprint,
   events,
   step = lastStep(events),
   stepMs,
   pressedAt,
+  previous,
+  run,
 }: {
   blueprint: Blueprint;
   events: SimEvent[];
   step?: number | undefined;
   stepMs?: number | undefined;
   pressedAt?: number | undefined;
+  previous?: Blueprint | undefined;
+  run?: string | undefined;
 }) {
   const { parts, ball, trail, pressed, failure } = frame(blueprint, events, step);
   const description = [
@@ -34,6 +43,7 @@ export function Board({
       : `${parts.length} parts: ${parts.map(({ part }) => `${part.kind} at ${part.cell} facing ${part.dir}`).join(', ')}.`,
     failure ? `${failure.event} at ${failure.cell}.` : '',
     pressed ? 'The button is pressed.' : 'The button is not pressed.',
+    ...(previous ? written(previous, blueprint) : []),
   ]
     .filter(Boolean)
     .join(' ');
@@ -45,22 +55,25 @@ export function Board({
       pressedAt={pressedAt}
       stepMs={stepMs}
     >
-      {parts.map((view) => (
-        <PartSprite key={view.part.id} view={view} />
-      ))}
-      <g className={styles.trail} data-trail>
-        {trail.map((segment, i) => (
-          <path key={i} d={path(segment)} data-arc={segment.arc} />
-        ))}
-      </g>
-      <g className={styles.partLabels}>
+      <g key={run}>
         {parts.map((view) => (
-          <PartLabel key={view.part.id} view={view} />
+          <PartSprite key={view.part.id} view={view} />
         ))}
+        {previous && <Correction previous={previous} current={blueprint} />}
+        <g className={styles.trail} data-trail>
+          {trail.map((segment, i) => (
+            <path key={i} d={path(segment)} data-arc={segment.arc} />
+          ))}
+        </g>
+        <g className={styles.partLabels}>
+          {parts.map((view) => (
+            <PartLabel key={view.part.id} view={view} />
+          ))}
+        </g>
+        {failure && <FailureRing failure={failure} />}
+        <Ball at={ball} />
+        {pressed && <Press />}
       </g>
-      {failure && <FailureRing failure={failure} />}
-      <Ball at={ball} />
-      {pressed && <Press />}
     </Sheet>
   );
 }

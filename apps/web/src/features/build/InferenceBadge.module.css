@@ -1,33 +1,25 @@
+/* Plain notes beside the name: ink on the yellow page (12.1:1), level and undecorated. */
 .badge,
 .unconfirmed {
   max-width: var(--measure);
-  padding: var(--space-2) var(--space-3);
-  background: var(--paper);
   font-size: var(--text-small);
   font-weight: 700;
-  border-radius: 8px;
-}
-
-.badge {
-  color: var(--teal-text);
-  border: 3px double var(--teal);
 }
 
 .unconfirmed {
-  display: grid;
-  gap: var(--space-2);
-  justify-items: start;
-  color: var(--copper-text);
-  border: 3px double var(--copper);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
 }
 
 .retry {
   min-height: var(--target);
   padding: var(--space-1) var(--space-3);
-  background: var(--paper);
+  background: transparent;
   color: var(--ink);
   font-weight: 700;
-  border: 2px solid var(--ink);
-  border-radius: 6px;
+  border: var(--border-control);
+  border-radius: var(--radius-control);
   cursor: pointer;
 }

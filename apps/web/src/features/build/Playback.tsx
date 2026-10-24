@@ -1,18 +1,16 @@
 import type { Build } from '@pending/contract';
 import type { ReactNode } from 'react';
-import { useEffect, useReducer, useRef, useState } from 'react';
-import { assertNever } from '../../shared/assertNever';
+import { useReducer, useRef, useState } from 'react';
+import { lastStep } from '../board';
 import { Engineer } from '../engineer';
-import { EngineeringReport } from '../report';
+import { Verdict } from '../report';
 import { Voice } from '../voice';
-import type { Mute } from '../voice';
+import { BoardPanel } from './BoardPanel';
 import { Controls } from './Controls';
 import { pressLine, pressVoiced, pressing } from './model/press';
-import { STEP_MS, failedOn, playhead, reduce, said } from './model/session';
-import type { Session } from './model/session';
-import { Lines } from './Lines';
-import { Stage, source } from './Stage';
-import { Trial } from './Trial';
+import { IDLE, STEP_MS, failedOn, playhead, reduce, said } from './model/session';
+import type { Session, SessionEvent } from './model/session';
+import { Hero, Stage, source } from './Stage';
 import { usePress } from './usePress';
 import { useTicks } from './useTicks';
 import styles from './BuildDesk.module.css';
@@ -23,137 +21,115 @@ const start = (build: Build): Session =>
     { status: build.report.pressed ? 'pressed' : 'exhausted', requestId: build.id, build },
     { type: 'REPLAY', requestId: build.id },
   );
+const play = (session: Session, event: SessionEvent | { type: 'START'; build: Build }): Session =>
+  event.type === 'START' ? start(event.build) : reduce(session, event);
 
-// A recorded build played back on the same screen as a live one; nothing here contacts the agent. `focused` sends focus
-// to the status on mount, and `mute` keeps the Mute setting, for a screen that started the playback and gave way to it.
+// A recorded build played back on the same stage as a live one; nothing here contacts the agent. A front door's stage
+// stands idle until its button is pressed; a record page (`autoplay`) plays at once and has no button of its own, so a
+// page never offers two. `build` is undefined while the recording is fetched, and `blocked` keeps the button waiting
+// with `note` saying why. The button and Try again play the recording again from the start.
 export function Playback({
   build,
   heading,
-  focused = false,
-  mute,
+  intro,
+  note,
+  blocked = false,
+  autoplay = true,
 }: {
-  build: Build;
+  build: Build | undefined;
   heading?: ReactNode;
-  focused?: boolean;
-  mute?: Mute | undefined;
+  intro?: string | undefined;
+  note?: string | undefined;
+  blocked?: boolean;
+  autoplay?: boolean;
 }) {
-  const [session, dispatch] = useReducer(reduce, build, start);
+  const [session, dispatch] = useReducer(play, autoplay && build ? start(build) : IDLE);
   useTicks(session, dispatch);
-  // As on the desk: each replay gives the board a new key, and focus moves to the status the used control leaves.
+  // As on the desk: each playback gives the board a new run, and focus moves to the status the used control leaves.
   const [take, setTake] = useState(0);
   const status = useRef<HTMLOutputElement>(null);
-  useEffect(() => {
-    if (focused) status.current?.focus();
-  }, [focused]);
   const replay = () => {
+    if (build === undefined) return;
     setTake((n) => n + 1);
-    dispatch({ type: 'REPLAY', requestId: build.id });
+    dispatch({ type: 'START', build });
     status.current?.focus();
   };
-  const head = session.status === 'running' ? playhead(session.attempts, session.step) : undefined;
+  const ended = session.status === 'pressed' || session.status === 'exhausted' ? session : undefined;
+  const running = session.status === 'running' ? session : undefined;
+  const head = running && playhead(running.attempts, running.step);
+  const last = ended?.build.attempts.at(-1);
   const lines =
     session.status === 'running'
       ? said(session.lines, head?.attempt.n ?? 1, head?.step ?? 0)
-      : session.status === 'pressed' || session.status === 'exhausted'
-        ? session.build.lines
-        : [];
+      : (ended?.build.lines ?? []);
   // As on the desk, the voice holds "WE DID IT!" for the press clock's excited beat.
   const pressed = pressing(session);
   const press = usePress(pressed === undefined ? undefined : `${pressed}:${take}`);
   // As on the desk, the rig reacts to the last line said, or on a press to the line its clock has reached; the sloth
   // needs the recorded attempts to show the line's trial failed.
   const line = pressed === undefined ? lines.at(-1) : pressLine(lines, press.beat);
-
-  // The action in the top row and the board under it.
-  const phase = (): { action: ReactNode; board: ReactNode } => {
-    switch (session.status) {
-      case 'running':
-        return {
-          action: (
-            <Controls
-              speed={session.speed}
-              paused={session.paused}
-              onPause={(paused) => dispatch({ type: 'PAUSE', requestId: build.id, paused })}
-              onReplay={replay}
-              onSpeed={(speed) => dispatch({ type: 'SPEED', requestId: build.id, speed })}
-            />
-          ),
-          // A fragment here as at the ending, so the keyed trial keeps its board from playback to the ending.
-          board: (
-            <>
-              <Trial
-                key="trial"
-                take={take}
-                attempts={session.attempts}
-                attempt={head?.attempt}
-                step={head?.step}
-                stepMs={STEP_MS[session.speed]}
-                pressedAt={press.at}
-              />
-            </>
-          ),
-        };
-      case 'pressed':
-      case 'exhausted':
-        return {
-          action: (
-            <button type="button" className={styles.action} onClick={replay}>
-              Replay from the start
-            </button>
-          ),
-          board: (
-            <>
-              <Trial
-                key="trial"
-                take={take}
-                attempts={session.build.attempts}
-                attempt={session.build.attempts.at(-1)}
-                pressedAt={press.at}
-              />
-              {/* Character sheet section 6: the report slides up at the press's hard cut, at once on an exhausted build. */}
-              {(session.status === 'exhausted' || press.beat === 'cut') && (
-                <EngineeringReport build={session.build} />
-              )}
-            </>
-          ),
-        };
-      // A recorded build carries its ending, so playback never waits for a stream.
-      case 'idle':
-      case 'designing':
-      case 'repairing':
-      case 'error':
-        return { action: null, board: null };
-      default:
-        return assertNever(session);
-    }
-  };
-  const { action, board } = phase();
+  const run = session.status === 'idle' ? 'idle' : `${session.requestId}:${take}`;
 
   return (
     <Stage
       heading={heading}
-      // As on the desk, the card keeps one key in every phase.
-      card={
-        <Engineer key="engineer" status={session.status} line={line} failed={failedOn(build.attempts, line)}>
-          <Lines lines={lines} />
+      engineer={
+        <Engineer status={session.status} line={line} failed={failedOn(build?.attempts ?? [], line)}>
+          {/* As on the desk, the voice keeps its queue from playback to the ending; a replay restarts it. */}
+          <Voice
+            lines={pressVoiced(lines, press.beat)}
+            idle={session.status === 'idle' ? intro : undefined}
+            playback={run}
+          />
         </Engineer>
       }
-      // Outside the phases, so the voice keeps its queue from playback to the ending; a replay restarts it.
-      voice={<Voice lines={pressVoiced(lines, press.beat)} playback={`${build.id}:${take}`} mute={mute} />}
       action={
         <>
           <output ref={status} tabIndex={-1} className={styles.status}>
             {session.status === 'running'
               ? `Trial ${head?.attempt.n ?? 1} in progress.`
-              : session.status === 'pressed' || session.status === 'exhausted'
-                ? session.build.report.verdict
-                : ''}
+              : (ended?.build.report.verdict ?? '')}
           </output>
-          {action}
+          {!autoplay && (
+            <Hero
+              onPress={replay}
+              disabled={build === undefined || blocked || session.status === 'running'}
+              note={note}
+            />
+          )}
         </>
       }
-      header={source(build.model, 'recorded')}
-      board={board}
+      board={
+        <BoardPanel
+          header={build && source(build.model, 'recorded')}
+          attempts={session.status === 'running' ? session.attempts : (ended?.build.attempts ?? [])}
+          playing={head ?? (last && { attempt: last, step: lastStep(last.events) })}
+          run={run}
+          stepMs={session.status === 'running' ? STEP_MS[session.speed] : undefined}
+          pressedAt={press.at}
+          lines={lines}
+          // As on the desk, the controls stand on the board in every phase.
+          controls={
+            <Controls
+              speed={running?.speed ?? 1}
+              paused={running?.paused}
+              onPause={(paused) =>
+                running && dispatch({ type: 'PAUSE', requestId: running.requestId, paused })
+              }
+              onReplay={(running ?? ended) ? replay : undefined}
+              onSpeed={
+                running && ((speed) => dispatch({ type: 'SPEED', requestId: running.requestId, speed }))
+              }
+            />
+          }
+          // Character sheet section 6: the verdict slides up at the press's hard cut, at once on an exhausted build.
+          overlay={
+            ended && (ended.status === 'exhausted' || press.beat === 'cut') ? (
+              <Verdict build={ended.build} onTryAgain={replay} />
+            ) : undefined
+          }
+        />
+      }
     />
   );
 }

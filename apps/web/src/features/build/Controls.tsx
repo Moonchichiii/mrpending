@@ -12,6 +12,8 @@ const SPEEDS: { speed: Speed; label: string }[] = [
 ];
 
 // Playback controls: native buttons, so every one is reachable and operable from the keyboard; toggles say their state.
+// They stand on the board in every phase, so the stage keeps its size; a control without its handler is disabled, and
+// Pause without a paused state.
 export function Controls({
   speed,
   paused,
@@ -22,8 +24,8 @@ export function Controls({
   speed: Speed;
   paused: boolean | undefined;
   onPause: (paused: boolean) => void;
-  onReplay: () => void;
-  onSpeed: (speed: Speed) => void;
+  onReplay?: (() => void) | undefined;
+  onSpeed?: ((speed: Speed) => void) | undefined;
 }) {
   // ARCHITECTURE: Space pauses the machine from anywhere on the page; Esc and Skip voice belong to the voice control.
   useEffect(() => {
@@ -50,7 +52,7 @@ export function Controls({
       >
         Pause
       </button>
-      <button type="button" className={styles.control} onClick={onReplay}>
+      <button type="button" className={styles.control} disabled={onReplay === undefined} onClick={onReplay}>
         Replay
       </button>
       {SPEEDS.map((option) => (
@@ -59,7 +61,8 @@ export function Controls({
           type="button"
           className={styles.control}
           aria-pressed={speed === option.speed}
-          onClick={() => onSpeed(option.speed)}
+          disabled={onSpeed === undefined}
+          onClick={() => onSpeed?.(option.speed)}
         >
           {option.label}
         </button>

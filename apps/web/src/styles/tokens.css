@@ -34,13 +34,15 @@
   --space-4: 1.5rem;
   --space-5: 2.5rem;
 
-  /* Paper things are wonky; instruments stay level. */
+  /* One accent, the blue text token; controls are level, rounded and flat. */
+  --accent: var(--blue-text);
+  --radius-control: 12px;
+  --border-control: 2px solid var(--ink);
+
+  /* Only the speech bubble and the stamp are paper, wonky and tilted; everything else stays level. */
   --border-paper: 3px solid var(--ink);
   --shadow-paper: 4px 4px 0 var(--ink);
-  --shadow-primary: 5px 5px 0 var(--copper);
   --radius-paper: 18px 6px 22px 8px;
-  --tilt-a: -2deg;
-  --tilt-b: 1.5deg;
   --tilt-c: -0.8deg;
   --target: 52px;
 }

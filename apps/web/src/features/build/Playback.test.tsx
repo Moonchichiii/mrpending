@@ -83,13 +83,15 @@ const mood = () => {
   const svg = document.querySelector('svg[data-variant="desk"]');
   return (['slow', 'excited', 'deadpan'] as const).find((m) => svg?.classList.contains(engineer[m] ?? ''));
 };
+// The board's own button; the button beside Mr. Pending is the same sprite.
+const boardButton = () => screen.getByRole('region', { name: 'The board' }).querySelector('[data-button]');
 
-test('a recorded press plays on the rig beside its lines: slow in the trial, excited on the press, then deadpan', async () => {
+test('a recorded press plays on the rig beside its bubble: slow in the trial, excited on the press, then deadpan', async () => {
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
   render(<Playback build={pressedRecord} />);
 
-  const lines = screen.getByRole('list', { name: 'Mr. Pending' });
-  expect(lines.parentElement?.parentElement?.querySelector('svg[data-variant="desk"]')).not.toBeNull();
+  const voice = screen.getByRole('region', { name: 'Voice' });
+  expect(voice.parentElement?.parentElement?.querySelector('svg[data-variant="desk"]')).not.toBeNull();
   expect(mood()).toBe('slow');
   await vi.waitFor(() => expect(mood()).toBe('excited'), { timeout: 5000 });
   await vi.waitFor(() => expect(mood()).toBe('deadpan'), { timeout: 1500 });
@@ -106,7 +108,7 @@ test('the excited handoff ends when the trial reaches its terminal beat, before 
     ],
   });
   render(<Playback build={handed} />);
-  const button = () => document.querySelector('[data-button]')?.getAttribute('data-pressed');
+  const button = () => boardButton()?.getAttribute('data-pressed');
 
   await vi.waitFor(() => expect(mood()).toBe('excited'), { timeout: 1000 });
   expect(button()).not.toBe('true');
@@ -134,12 +136,12 @@ test('a recorded cameo line brings the sloth only on the failure the simulator r
   expect(document.querySelector('[data-sloth]')).toBeNull();
 });
 
-const report = () => screen.queryByRole('region', { name: 'Engineering Report' });
+const report = () => screen.queryByRole('region', { name: 'Verdict' });
 
-test('the report slides up at the hard cut to deadpan, beside the board that drew the press from the start', async () => {
+test('the verdict slides up at the hard cut to deadpan, over the board that drew the press from the start', async () => {
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
   render(<Playback build={pressedRecord} />);
-  const board = () => document.querySelector('[data-button]')?.closest('svg');
+  const board = () => boardButton()?.closest('svg');
   const first = board();
 
   await vi.waitFor(() => expect(board()?.getAttribute('data-press')).toBe('sequence'), { timeout: 5000 });
@@ -153,7 +155,7 @@ test('the report slides up at the hard cut to deadpan, beside the board that dre
   expect(report()?.querySelector('[data-stamp]')?.getAttribute('data-stamp')).toBe('APPROVED');
 });
 
-test('an exhausted record has no press, so its report shows at its ending, stamped PENDING', async () => {
+test('an exhausted record has no press, so its verdict shows at its ending, stamped PENDING', async () => {
   vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
   render(
     <Playback
