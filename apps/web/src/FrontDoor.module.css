@@ -23,11 +23,6 @@
   color: var(--ink);
 }
 
-.name {
-  font-size: var(--text-heading);
-  line-height: 1.2;
-}
-
 /* Everything past the stage is a closed section; its summary keeps the disclosure triangle and 52 px. */
 .fold {
   min-width: 0;

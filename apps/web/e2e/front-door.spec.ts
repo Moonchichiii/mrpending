@@ -55,14 +55,14 @@ for (const { width, height } of [
     await expect(file).toBeEnabled();
     const fileBox = await file.boundingBox();
     expect(fileBox && fileBox.y + fileBox.height).toBeLessThanOrEqual(height);
-    await expect(page.getByRole('button')).toHaveText(['Mute', 'Skip voice', FILE, ...CONTROLS]);
+    await expect(page.getByRole('button')).toHaveText(['Voice on', 'Skip voice', FILE, ...CONTROLS]);
     const board = page.getByRole('region', { name: 'The board' });
-    await expect(board.getByText('Gemma 4 E4B · Ollama · recorded', { exact: true })).toBeVisible();
+    await expect(board.getByText('Gemma 4 E4B · Ollama · Recorded', { exact: true })).toBeVisible();
     await expect(board.getByRole('img', { name: 'The empty board' })).toBeVisible();
     await expect(board.getByText('The ridiculous machinery appears here.', { exact: true })).toBeVisible();
-    const level = board.getByText('Gemma designs → Simulator tests → Gemma repairs', { exact: true });
-    const levelBox = await level.boundingBox();
-    if (width === 1440) expect(levelBox && levelBox.y + levelBox.height).toBeLessThanOrEqual(height);
+    const result = board.getByRole('region', { name: 'Simulation result' });
+    const resultBox = await result.boundingBox();
+    if (width === 1440) expect(resultBox && resultBox.y + resultBox.height).toBeLessThanOrEqual(height);
     await expect(page.getByRole('region', { name: 'The gallery' })).toBeHidden();
     await board.locator('svg[role="img"]').evaluate((el) => el.setAttribute('data-stage-mark', ''));
     const idle = await measure(page);
@@ -103,7 +103,10 @@ for (const { width, height } of [
     // The trial selector follows the playhead: the trial in progress is the one shown.
     const trial = async (n: number) => {
       await expect(status).toHaveText(`Trial ${n} in progress.`);
-      await expect(board.getByRole('button', { name: `Trial ${n}` })).toHaveAttribute('aria-pressed', 'true');
+      await expect(board.getByRole('button', { name: new RegExp(`^Trial ${n},`) })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
     };
     // The recording's first trial is refused before the ball moves, so the ball runs in trial 2, its first repair.
     await until(async () => (await status.textContent()) === 'Trial 2 in progress.');
@@ -117,10 +120,10 @@ for (const { width, height } of [
     await expect(board.locator('[data-change]').first()).toBeAttached();
     await hold('repair');
 
-    const verdict = board.getByRole('region', { name: 'Verdict' });
-    await until(() => verdict.isVisible());
+    // The ending: at the press's hard cut the pinned result turns PRESSED, with the verdict.
+    const stamp = result.locator('[data-stamp]');
+    await until(async () => (await stamp.textContent()) === 'PRESSED');
     await page.clock.resume();
-    await verdict.evaluate((el) => Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)));
     await look('verdict');
     expect(page.url()).toBe(address);
   });

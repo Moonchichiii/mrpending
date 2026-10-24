@@ -167,7 +167,7 @@ test('a silent voice on the same page leaves Esc to the voice that is speaking',
   await vi.waitFor(() => expect(synth.spoken.map((u) => u.text)).toEqual([weDidIt.text, verdict.text]));
 });
 
-test('a Mute held above carries over to the voice that replaces this one', async () => {
+test('a Mute held above carries over to the voice that replaces this one, its toggle switched off', async () => {
   const synth = withSynth([voice('en-GB', true)]);
   const user = userEvent.setup();
   function Screen({ playing }: { playing: boolean }) {
@@ -180,10 +180,11 @@ test('a Mute held above carries over to the voice that replaces this one', async
     );
   }
   const { rerender } = render(<Screen playing={false} />);
-  await user.click(screen.getByRole('button', { name: 'Mute' }));
+  expect(screen.getByRole('button', { name: 'Voice on' }).getAttribute('aria-pressed')).toBe('true');
+  await user.click(screen.getByRole('button', { name: 'Voice on' }));
 
   rerender(<Screen playing />);
-  expect(screen.getByRole('button', { name: 'Mute' }).getAttribute('aria-pressed')).toBe('true');
+  expect(screen.getByRole('button', { name: 'Voice on' }).getAttribute('aria-pressed')).toBe('false');
   expect(await screen.findByText(weDidIt.text)).toBeDefined();
   expect(synth.spoken).toHaveLength(0);
 });
@@ -209,14 +210,17 @@ test('a replay stops the line being spoken and hears every line again from the s
   );
 });
 
-test('Mute silences the current line and captions the rest until unmuted', async () => {
+test('switching the voice off silences the current line and captions the rest until it is on again', async () => {
   const synth = withSynth([voice('en-GB', true)]);
   const user = userEvent.setup();
   const { rerender } = render(<Voice lines={[weDidIt]} playback={0} />);
   await vi.waitFor(() => expect(synth.spoken).toHaveLength(1));
-  const mute = screen.getByRole('button', { name: 'Mute' });
+  // The speaking indicator moves while a line is spoken.
+  expect(document.querySelector('[data-speaking]')?.getAttribute('data-speaking')).toBe('true');
+  const mute = screen.getByRole('button', { name: 'Voice on' });
   await user.click(mute);
-  expect(mute.getAttribute('aria-pressed')).toBe('true');
+  expect(mute.getAttribute('aria-pressed')).toBe('false');
+  expect(document.querySelector('[data-speaking]')?.getAttribute('data-speaking')).toBe('false');
   expect(synth.cancel).toHaveBeenCalledTimes(1);
 
   rerender(<Voice lines={[weDidIt, acknowledged]} playback={0} />);

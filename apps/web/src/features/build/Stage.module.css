@@ -1,44 +1,71 @@
 /* One stage. On a phone it stacks: the name, Mr. Pending and his bubble, the button, the board. Wider, Mr. Pending and
-   the button share a row and the board spans the width under it. The container is the stage's own, so a record page
-   reflows too. */
+   the button share the yellow band, with the Department's paperwork beside him once there is room, and the board spans
+   the width under it. The container is the stage's own, so a record page reflows too. */
 .frame {
+  display: grid;
+  gap: var(--space-4);
   min-width: 0;
-  container-type: inline-size;
+  container: stage / inline-size;
 }
 
 .stage {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas: 'top' 'engineer' 'action' 'board';
-  gap: var(--space-4);
+  gap: var(--space-3);
   min-width: 0;
 }
 
-@container (min-width: 52rem) {
+@container stage (min-width: 48rem) {
   .stage {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) minmax(13rem, 18rem);
     grid-template-areas: 'top top' 'engineer action' 'board board';
-    column-gap: var(--space-5);
+    column-gap: var(--space-4);
   }
 
   /* A desktop screen tall enough is filled exactly: the board takes the height the top rows leave, and never pushes
      the page longer as a build moves through its phases. */
-  @media (min-height: 36rem) {
-    .stage {
+  @media (min-height: 44rem) {
+    .stage:not(.embedded) {
       grid-template-rows: auto auto minmax(0, 1fr);
-      row-gap: var(--space-3);
       min-height: calc(100svh - 2 * var(--space-3));
+    }
+
+    /* The board's machine (marked by the board panel) takes the height left instead of asking for its sheet's. */
+    .stage:not(.embedded) [data-machine] {
+      contain: size;
     }
   }
 }
 
 .top {
   grid-area: top;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-4);
+  min-width: 0;
+}
+
+.name {
+  font-size: clamp(2.25rem, 1.5rem + 2.4vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+/* Small capitals under the name, slightly skewed upward like the hand-set sign it is. */
+.department {
+  margin-block-start: var(--space-1);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.desk {
+  grid-area: desk;
+  display: none;
+  align-self: end;
+  width: min(100%, 13.5rem);
   min-width: 0;
 }
 
@@ -51,7 +78,7 @@
 .action {
   grid-area: action;
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-1);
   align-content: center;
   justify-items: center;
   min-width: 0;
@@ -61,65 +88,211 @@
 .board {
   grid-area: board;
   display: grid;
+  grid-template-rows: minmax(0, 1fr);
   min-width: 0;
   min-height: 0;
 }
 
-/* The board's own button at hero size: the sprite is the decoration, the button around it is flat and level. */
+/* Wide: the name heads the left column with the paperwork under it, beside Mr. Pending and the button. */
+@container stage (min-width: 70rem) {
+  .stage {
+    grid-template-columns: minmax(15rem, 19rem) minmax(0, 1fr) minmax(15rem, 18rem);
+    grid-template-areas: 'top engineer action' 'desk engineer action' 'board board board';
+  }
+
+  .desk {
+    display: block;
+  }
+}
+
+/* The Department's paperwork: flat fills from the tokens with the rig's ink outline. */
+.paperwork {
+  width: 100%;
+  height: auto;
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.loose rect,
+.pile rect {
+  fill: var(--paper);
+}
+
+.tab {
+  fill: var(--paper);
+  stroke-width: 2;
+}
+
+.tabText,
+.mugText,
+.mugSmall {
+  fill: var(--ink);
+  stroke: none;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.mugText,
+.mugSmall {
+  text-anchor: middle;
+  font-size: 15px;
+}
+
+.mugSmall {
+  font-size: 11px;
+}
+
+.cup {
+  fill: var(--paper);
+  stroke-width: 3;
+}
+
+.handle {
+  fill: none;
+  stroke-width: 6;
+}
+
+.coffee {
+  fill: var(--copper);
+}
+
+.pencil rect {
+  fill: var(--amber);
+}
+
+.pencil path {
+  fill: var(--paper);
+}
+
+/* The button is the dome; the box around it is flat and level, with the lettering and its arrow above the dome. */
 .hero {
+  position: relative;
   display: grid;
-  justify-items: center;
-  gap: var(--space-2);
-  width: min(100%, 18rem);
-  padding: var(--space-2) var(--space-3);
+  width: min(100%, 16rem);
+  padding: 4.25rem var(--space-2) var(--space-1);
   background: transparent;
   color: var(--ink);
-  font-family: var(--font-display);
-  font-size: clamp(1.25rem, 1rem + 0.6vw, 1.625rem);
-  font-weight: 700;
-  line-height: 1.2;
   border: 0;
   border-radius: var(--radius-control);
   cursor: pointer;
 }
 
-.hero > svg {
-  width: clamp(7rem, 9vw, 8.5rem);
+.lettering {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
+  width: 7ch;
+  font-family: var(--font-note);
+  font-size: clamp(1.5rem, 1.1rem + 0.9vw, 2.125rem);
+  line-height: 0.95;
+  text-align: start;
+  text-transform: uppercase;
+  rotate: -7deg;
+}
+
+.arrow {
+  position: absolute;
+  top: 2.25rem;
+  right: 7.25rem;
+  width: 3.25rem;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dome {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  stroke: var(--ink);
+  stroke-width: 4;
+  stroke-linejoin: round;
+}
+
+.hazardLight {
+  fill: var(--page);
+  stroke: none;
+}
+
+.hazardDark {
+  fill: var(--ink);
+  stroke: none;
+}
+
+.plinthTop {
+  fill: #2b2f45;
+}
+
+.collarSide {
+  fill: #3a3f58;
+}
+
+.collarTop {
+  fill: var(--ink);
+}
+
+.capBody {
+  fill: var(--button);
+}
+
+.capShade {
+  fill: #1f4fd1;
+  stroke: none;
+}
+
+.capShine {
+  fill: var(--paper);
+  stroke: none;
+  opacity: 0.6;
+}
+
+.sparks {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.cap {
   transition: translate 120ms ease-out;
 }
 
-.hero:enabled:hover > svg {
+.hero:enabled:hover .cap {
   translate: 0 -3px;
 }
 
-.hero:enabled:active > svg {
-  translate: 0 4px;
+.hero:enabled:active .cap {
+  translate: 0 8px;
 }
 
 .hero:disabled {
   cursor: not-allowed;
 }
 
-/* Waiting while a build is on the board: the sprite greys out rather than tinting with the page. */
-.hero:disabled > svg {
+/* Waiting while a build is on the board: the dome greys out rather than tinting with the page; the lettering stays ink. */
+.hero:disabled .dome {
   filter: grayscale(1);
-}
-
-.label {
-  text-align: center;
-  text-wrap: balance;
-  overflow-wrap: anywhere;
-}
-
-/* Withdraw comes and goes with a build, so its place is kept in every phase. */
-.slot {
-  display: grid;
-  gap: var(--space-2);
-  justify-items: center;
-  min-height: var(--target);
 }
 
 .note {
   max-width: 22rem;
   font-size: var(--text-small);
+}
+
+/* Phones: a smaller button, still well past 52 px. */
+@container stage (max-width: 30rem) {
+  .hero {
+    width: min(100%, 15rem);
+    padding-block-start: 4rem;
+  }
+
+  .arrow {
+    right: 6.5rem;
+    top: 2rem;
+  }
 }

@@ -4,8 +4,8 @@ import { BuildDesk, InferenceBadge, useInference } from './features/build';
 import { Gallery, MyDepartment, keep } from './features/gallery';
 import styles from './FrontDoor.module.css';
 
-// The local installation on one screen: Mr. Pending, the board's button and the board; this browser's department
-// and the gallery are folded away below. No prompt leaves the browser before the badge says where it goes.
+// The local installation on one screen: Mr. Pending, the button and the board; the Minutes, the form, this browser's
+// department and the gallery are folded away below. No prompt leaves the browser before the badge says where it goes.
 export function LocalFrontDoor() {
   const { inference, retry } = useInference();
   // Each build that ends is kept here; a kept one remounts the department, which reads what this browser holds afresh.
@@ -22,7 +22,7 @@ export function LocalFrontDoor() {
         onFinished={finished}
         config={inference.status === 'confirmed' ? inference : undefined}
         notice={<InferenceBadge inference={inference} onRetry={retry} />}
-        heading={<h1 className={styles.name}>Mr. Pending</h1>}
+        heading="Mr. Pending"
       />
       <details className={styles.fold}>
         <summary className={styles.summary}>

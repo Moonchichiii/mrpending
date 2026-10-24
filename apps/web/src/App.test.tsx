@@ -49,14 +49,15 @@ test('the static front door is the local one screen with a recording behind its 
   const sheet = screen.getByRole('img', { name: 'The empty board' });
   expect(screen.queryByRole('form')).toBeNull();
   // The button waits for the recording, which this browser replays through the simulator before it is offered.
-  const play = screen.getByRole<HTMLButtonElement>('button', { name: 'Ask him to press it' });
+  const play = screen.getByRole<HTMLButtonElement>('button', { name: 'Press the button' });
   expect(play.disabled).toBe(true);
   const board = screen.getByRole('region', { name: 'The board' });
-  expect(await within(board).findByText('Gemma 4 E4B · Ollama · recorded')).toBeDefined();
+  expect(await within(board).findByText('Gemma 4 E4B · Ollama · Recorded')).toBeDefined();
   expect(play.disabled).toBe(false);
   await user.click(play);
-  // Reduced motion: the recording jumps to its ending on the same board, its verdict on top.
-  expect(await within(board).findByRole('region', { name: 'Verdict' })).toBeDefined();
+  // Reduced motion: the recording jumps to its ending on the same board, its result stamped PRESSED.
+  const result = within(board).getByRole('region', { name: 'Simulation result' });
+  await vi.waitFor(() => expect(result.querySelector('[data-stamp]')?.textContent).toBe('PRESSED'));
   expect(screen.getByRole('region', { name: 'The board' })).toBe(board);
   expect(within(board).getAllByRole('img')[0]).toBe(sheet);
   expect(screen.getByRole('heading', { level: 1, name: 'Mr. Pending' })).toBeDefined();
@@ -83,7 +84,7 @@ test('/r/<slug> opens that record page inside the static front door', async () =
   expect(within(record).getByText(/^Recorded local inference · /)).toBeDefined();
   expect(within(record).getByRole('link', { name: 'Back to the gallery' }).getAttribute('href')).toBe('/');
   // One playback at a time: the record plays, so the button on the screen above waits and says why.
-  const play = screen.getByRole<HTMLButtonElement>('button', { name: 'Ask him to press it' });
+  const play = screen.getByRole<HTMLButtonElement>('button', { name: 'Press the button' });
   expect(play.disabled).toBe(true);
   expect(play.getAttribute('aria-describedby')).toBe(
     screen.getByText('A recorded build is already playing in the gallery below.').id,

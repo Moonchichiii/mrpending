@@ -40,24 +40,46 @@ export function Voice({
 
   return (
     <section className={styles.voice} aria-label="Voice">
-      <p className={styles.bubble} data-mood={caption?.mood} aria-live="polite">
-        {caption?.source === 'model' && <span className={styles.memo}>Memo: </span>}
-        {caption?.text ?? idle}
-      </p>
+      <div className={styles.bubble} data-mood={caption?.mood}>
+        <p className={styles.line} aria-live="polite">
+          {caption?.source === 'model' && <span className={styles.memo}>Memo: </span>}
+          {caption?.text ?? idle}
+        </p>
+        {/* Decoration only: the bubble's text is the line, and the toggle under it says whether he speaks. */}
+        <svg className={styles.speaking} data-speaking={busy} viewBox="0 0 64 20" aria-hidden="true">
+          <path className={styles.speaker} d="M2 7h4l5-4v14l-5-4H2z" />
+          {[20, 27, 34, 41, 48].map((x, i) => (
+            <line key={x} className={styles.bar} x1={x} x2={x} y1={5 + (i % 2) * 3} y2={15 - (i % 2) * 3} />
+          ))}
+          <circle className={styles.dot} cx={56} cy={10} r={1.6} />
+          <circle className={styles.dot} cx={61} cy={10} r={1.6} />
+        </svg>
+      </div>
       <div className={styles.controls}>
         <button
           type="button"
           className={styles.control}
-          aria-pressed={muted}
+          aria-pressed={!muted}
           onClick={() => setMuted(!muted)}
         >
-          Mute
+          <svg className={styles.icon} viewBox="0 0 20 20" aria-hidden="true">
+            <path className={styles.fill} d="M2 7h4l5-4v14l-5-4H2z" />
+            {muted ? (
+              <path d="M14 7l5 6M19 7l-5 6" />
+            ) : (
+              <path d="M14 6.5a5 5 0 0 1 0 7M16.5 4a8.5 8.5 0 0 1 0 12" />
+            )}
+          </svg>
+          Voice on
         </button>
         <button type="button" className={styles.control} onClick={skip} aria-keyshortcuts="Escape">
+          <svg className={styles.icon} viewBox="0 0 20 20" aria-hidden="true">
+            <path className={styles.fill} d="M2 4l8 6-8 6zM10 4l8 6-8 6z" />
+          </svg>
           Skip voice
         </button>
-        <p className={styles.disclosure}>{voice === 'none' ? CAPTIONS_ONLY : ON_DEVICE}</p>
       </div>
+      <p className={styles.disclosure}>{voice === 'none' ? CAPTIONS_ONLY : ON_DEVICE}</p>
     </section>
   );
 }

@@ -75,7 +75,7 @@ test('a record page plays the recording back with the playback controls, its lin
   const last = budget.attempts.at(-1);
   expect(
     within(record)
-      .getByRole('button', { name: `Trial ${last?.n}` })
+      .getByRole('button', { name: new RegExp(`^Trial ${last?.n},`) })
       .getAttribute('aria-pressed'),
   ).toBe('true');
   expect(
