@@ -15,6 +15,12 @@
   padding-block-end: var(--space-5);
 }
 
+/* The motto stays small, and in the footer, well below the board's verdict. */
+.motto {
+  flex-basis: 100%;
+  font-size: var(--text-small);
+}
+
 /* Running-text links on the yellow page are ink, and at least 52 px tall (character sheet sections 5 and 8). */
 .footer a {
   display: inline-flex;

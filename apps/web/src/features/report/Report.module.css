@@ -66,6 +66,17 @@
   overflow-wrap: anywhere;
 }
 
+.roles {
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+/* Before the verdict the roles line holds its place without being seen or read. */
+.unsaid {
+  visibility: hidden;
+}
+
 .failed {
   color: var(--coral-text);
   font-size: var(--text-small);

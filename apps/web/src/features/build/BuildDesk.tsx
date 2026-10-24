@@ -10,7 +10,8 @@ import { BoardPanel } from './BoardPanel';
 import { Controls } from './Controls';
 import { ModelBadge } from './InferenceBadge';
 import { MinutesFold } from './MinutesFold';
-import { errorCopy } from './model/errors';
+import { ACTIONS, errorCopy } from './model/errors';
+import { currentStep } from './model/note';
 import { pressLine, pressVoiced, pressing } from './model/press';
 import { progress } from './model/progress';
 import { STEP_MS, failedOn, playhead, said } from './model/session';
@@ -22,27 +23,6 @@ import { usePress } from './usePress';
 import { useTrial } from './useTrial';
 import type { Playing } from './useTrial';
 import styles from './BuildDesk.module.css';
-
-// What the status region announces; it changes per phase and per trial, never per tick. Errors use their alert.
-function announcement(session: Session): string {
-  switch (session.status) {
-    case 'idle':
-      return 'Form 27B/6 awaits filing.';
-    case 'designing':
-      return 'Drafting. Please do not rush the Department.';
-    case 'running':
-      return `Trial ${playhead(session.attempts, session.step)?.attempt.n ?? 1} in progress.`;
-    case 'repairing':
-      return 'A correction is being drafted.';
-    case 'pressed':
-    case 'exhausted':
-      return session.build.report.verdict;
-    case 'error':
-      return '';
-    default:
-      return assertNever(session);
-  }
-}
 
 // The lines Mr. Pending has said by the playhead; none while the form waits or after a failure.
 function spoken(session: Session): Line[] {
@@ -95,6 +75,8 @@ function playing(session: Session): Playing | undefined {
 export const INTRODUCTION =
   'Chief Engineer of the Department of Unnecessary Engineering. One job: press one blue button.';
 const WAITING = 'Filing opens once the Department confirms where drafting happens.';
+const ABOUT =
+  'Just for fun: watch a small AI model design ridiculous machines to press one button. A simulator tests each machine, and the AI tries to fix whatever goes wrong.';
 
 // One stage in every phase: Mr. Pending, his bubble and the button in the yellow band, the one board under it, and the
 // Minutes and Form 27B/6 (Advanced settings) folded away under the board. The button files the form; while a build is
@@ -102,12 +84,14 @@ const WAITING = 'Filing opens once the Department confirms where drafting happen
 // however often it is replayed afterwards; onFinished says whether it was kept.
 export function BuildDesk({
   canFile,
+  connecting = false,
   onFinished,
   config,
   notice,
   heading,
 }: {
   canFile: boolean;
+  connecting?: boolean;
   onFinished?: ((build: Build) => boolean) | undefined;
   config?: Pick<Config, 'inference' | 'model'> | undefined;
   notice?: ReactNode;
@@ -162,15 +146,13 @@ export function BuildDesk({
         <p role="alert" className={styles.error}>
           {message}
         </p>
-        {action === 'retry' ? (
-          <button type="button" className={styles.action} onClick={() => fileForm(session.form)}>
-            Build again
-          </button>
-        ) : (
-          <button type="button" className={styles.action} onClick={then(reset)}>
-            Edit the form
-          </button>
-        )}
+        <button
+          type="button"
+          className={styles.action}
+          onClick={action === 'retry' ? () => fileForm(session.form) : then(reset)}
+        >
+          {ACTIONS[action]}
+        </button>
       </div>
     );
   };
@@ -178,6 +160,7 @@ export function BuildDesk({
   return (
     <Stage
       heading={heading}
+      about={ABOUT}
       notice={notice}
       // One element in every phase, so the rig is not remounted between phases and the cameo's looks play once.
       engineer={
@@ -202,11 +185,8 @@ export function BuildDesk({
           stepMs={session.status === 'running' ? STEP_MS[session.speed] : undefined}
           pressedAt={press.at}
           caption={session.status === 'designing' ? session.partial.title : undefined}
-          status={
-            <output ref={status} tabIndex={-1} className={styles.status}>
-              {announcement(session)}
-            </output>
-          }
+          note={currentStep(session, { revealed, replay: false, connecting })}
+          statusRef={status}
           // Playback controls stand on the board in every phase: Pause while a trial plays, Replay once there is one;
           // Withdraw beside them while a build is on the board, so the row keeps its size.
           controls={
@@ -230,7 +210,7 @@ export function BuildDesk({
             </>
           }
           result={
-            <Result stamp={now.stamp} text={now.result}>
+            <Result stamp={now.stamp} text={now.result} roles={revealed}>
               {revealed && unkept === ended.requestId && (
                 <p role="alert" className={styles.error}>
                   This browser would not keep the build; its storage is full or switched off. It is not in My

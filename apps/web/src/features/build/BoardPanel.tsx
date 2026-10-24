@@ -1,7 +1,8 @@
 import { MAX_ATTEMPTS } from '@pending/contract';
-import type { ReactNode } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import { useLayoutEffect, useRef } from 'react';
 import { BOARD, Board } from '../board';
+import type { Note } from './model/note';
 import type { Mark, Progress } from './model/progress';
 import type { Trial } from './useTrial';
 import styles from './BoardPanel.module.css';
@@ -51,7 +52,8 @@ export function BoardPanel({
   stepMs,
   pressedAt,
   caption = CAPTION,
-  status,
+  note,
+  statusRef,
   controls,
   result,
   overlay,
@@ -63,7 +65,8 @@ export function BoardPanel({
   stepMs?: number | undefined;
   pressedAt?: number | undefined;
   caption?: string | undefined;
-  status: ReactNode;
+  note: Note;
+  statusRef: RefObject<HTMLOutputElement | null>;
   controls: ReactNode;
   result: ReactNode;
   overlay?: ReactNode;
@@ -139,8 +142,23 @@ export function BoardPanel({
           </div>
           <div className={styles.foot}>
             <div className={styles.note}>
-              <p className={styles.noteTitle}>Current step</p>
-              {status}
+              <div className={styles.noteHead}>
+                <p className={styles.noteTitle}>Current step</p>
+                {/* While the model drafts, an indeterminate rule beside the title; under reduced motion still text. */}
+                {note.waiting && (
+                  <span className={styles.wait} aria-hidden="true">
+                    <span className={styles.bar} />
+                    <span className={styles.still}>Waiting for Gemma.</span>
+                  </span>
+                )}
+              </div>
+              {/* The status region changes per phase and per trial, never per tick; an error is said by its alert. */}
+              <output ref={statusRef} tabIndex={-1} className={styles.status}>
+                <span aria-hidden={note.alert || undefined}>
+                  <strong className={styles.label}>{note.label === undefined ? '' : `${note.label} `}</strong>
+                  <span className={styles.said}>{note.text}</span>
+                </span>
+              </output>
             </div>
             {controls}
           </div>

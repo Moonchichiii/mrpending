@@ -74,21 +74,32 @@ export const DEFAULT = { nature: 'Press the blue button. Scenic route, please.',
 export const FILE = 'Press the button';
 export const adjust = (page: Page) => page.getByText('Advanced settings').click();
 
+// What the board's Current step note says, label and sentence, in the phases the specs walk through.
+const CHECKING = 'The simulator is checking whether the ball reaches the blue button.';
+export const NOTE = {
+  idle: 'Form 27B/6 awaits filing.',
+  designing: 'GEMMA IS DESIGNING A small AI model is drawing a mechanical blueprint.',
+  testing: `TESTING THE MACHINE ${CHECKING}`,
+  failed: 'THE BUTTON WAS NOT PRESSED The simulator found where the attempt stopped.',
+  repairing: 'GEMMA IS TRYING A REPAIR The findings went back to Gemma for a correction.',
+  retesting: `TESTING THE REVISED MACHINE ${CHECKING}`,
+  worked: "IT WORKED Gemma's machine pressed the button. The simulator verified it.",
+};
+
 // The local front door with the agent mocked at the network boundary.
+export const CONFIG = {
+  inference: 'this-machine',
+  model: { mode: 'local', id: 'gemma4:e2b', host: 'ollama' },
+  voice: { elevenlabs: false },
+  telemetry: false,
+  repairs: 5,
+  contractVersion: 'c1',
+  rulesVersion: 'r2',
+};
+export const BADGE = 'Gemma runs on this machine. Your prompts stay here.';
+
 export async function open(page: Page) {
-  await page.route('**/api/config', (route) =>
-    route.fulfill({
-      json: {
-        inference: 'this-machine',
-        model: { mode: 'local', id: 'gemma4:e2b', host: 'ollama' },
-        voice: { elevenlabs: false },
-        telemetry: false,
-        repairs: 5,
-        contractVersion: 'c1',
-        rulesVersion: 'r2',
-      },
-    }),
-  );
+  await page.route('**/api/config', (route) => route.fulfill({ json: CONFIG }));
   await page.goto('/');
-  await expect(page.getByText('Gemma runs on this machine. Your prompts stay here.')).toBeVisible();
+  await expect(page.getByText(BADGE)).toBeVisible();
 }

@@ -16,11 +16,20 @@
   min-width: 0;
 }
 
+/* A stage that says what it is keeps those two lines in their own row under the name. */
+.told {
+  grid-template-areas: 'top' 'about' 'engineer' 'action' 'board';
+}
+
 @container stage (min-width: 48rem) {
   .stage {
     grid-template-columns: minmax(0, 1fr) minmax(13rem, 18rem);
     grid-template-areas: 'top top' 'engineer action' 'board board';
     column-gap: var(--space-4);
+  }
+
+  .told {
+    grid-template-areas: 'top top' 'about about' 'engineer action' 'board board';
   }
 
   /* A desktop screen tall enough is filled exactly: the board takes the height the top rows leave, and never pushes
@@ -29,6 +38,10 @@
     .stage:not(.embedded) {
       grid-template-rows: auto auto minmax(0, 1fr);
       min-height: calc(100svh - 2 * var(--space-3));
+    }
+
+    .told:not(.embedded) {
+      grid-template-rows: auto auto auto minmax(0, 1fr);
     }
 
     /* The board's machine (marked by the board panel) takes the height left instead of asking for its sheet's. */
@@ -59,6 +72,16 @@
   line-height: 1.3;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+/* What the page is, in the body type: compact and across the stage's width, so it takes as few lines as it can and
+   the button stays on the first screen. */
+.about {
+  grid-area: about;
+  min-width: 0;
+  margin-block-start: calc(-1 * var(--space-2));
+  font-size: 0.8125rem;
+  line-height: 1.35;
 }
 
 .desk {
@@ -98,6 +121,11 @@
   .stage {
     grid-template-columns: minmax(15rem, 19rem) minmax(0, 1fr) minmax(15rem, 18rem);
     grid-template-areas: 'top engineer action' 'desk engineer action' 'board board board';
+  }
+
+  /* The two lines run under the whole band, so they take two lines and leave the band's height alone. */
+  .told {
+    grid-template-areas: 'top engineer action' 'desk engineer action' 'about about about' 'board board board';
   }
 
   .desk {

@@ -252,10 +252,100 @@ button.trial {
   font-weight: 700;
 }
 
+/* The persistent status region: a bold label over one hand-lettered sentence. It holds a label line and two sentence
+   lines in every phase, even where there is no label, which fit every label and sentence, so the note never changes
+   size. */
+.status {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.label {
+  display: block;
+  min-height: 1lh;
+  font-family: var(--font-display);
+  font-size: var(--text-small);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.said {
+  display: block;
+  min-height: 2lh;
+  font-family: var(--font-note);
+  font-size: clamp(1.125rem, 1rem + 0.3vw, 1.3125rem);
+  line-height: 1.25;
+}
+
+/* The title's row also holds the wait, so the wait never changes the note's size. */
+.noteHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* The wait for the model, drawn like a dimension line on a blueprint: a dashed rule between two ticks, a solid run
+   sweeping along it. */
+.wait {
+  display: grid;
+  flex: 1 1 0;
+  align-items: center;
+  max-width: 10rem;
+  min-width: 0;
+  font-family: var(--font-note);
+  font-size: var(--text-small);
+  line-height: 1;
+}
+
+.bar {
+  position: relative;
+  height: 0.625rem;
+  overflow: hidden;
+  border-inline: 2px solid var(--blueprint);
+  background: repeating-linear-gradient(90deg, var(--blueprint) 0 6px, transparent 6px 10px) center / 100% 2px
+    no-repeat;
+}
+
+.bar::after {
+  content: '';
+  position: absolute;
+  inset-block: 3px;
+  inset-inline-start: 0;
+  width: 30%;
+  background: var(--blueprint);
+  animation: sweep 1.6s ease-in-out infinite;
+}
+
+@keyframes sweep {
+  from {
+    translate: -100% 0;
+  }
+
+  to {
+    translate: 340% 0;
+  }
+}
+
+.still {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    display: none;
+  }
+
+  .still {
+    display: block;
+  }
+}
+
+/* The steps and the pinned result: the gap between them is the room the result's closing line takes. */
 .rail {
   display: grid;
   align-content: start;
-  gap: var(--space-4);
+  gap: var(--space-3);
   min-width: 0;
 }
 
