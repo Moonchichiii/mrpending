@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
-import { ATTEMPTS, FORM, ndjson, open, recorded } from './build';
+import { ATTEMPTS, FORM, adjust, ndjson, open, recorded } from './build';
 import {
   PHONE,
   VIEWPORTS,
@@ -31,7 +31,10 @@ async function walk(page: Page, at: (state: State) => Promise<void>, longest = f
     await answered;
     await route.fulfill({ body: ndjson(recorded(route.request().headers()['x-request-id'] ?? '', longest)) });
   });
-  await page.getByLabel('1. Nature of the request').fill(longest ? 'W'.repeat(180) : FORM.nature);
+  if (longest) {
+    await adjust(page);
+    await page.getByLabel('1. Nature of the request').fill('W'.repeat(180));
+  }
   await page.getByRole('button', { name: 'File Form 27B/6' }).click();
   const status = page.getByRole('status');
   const pause = page.getByRole('button', { name: 'Pause' });
@@ -178,9 +181,19 @@ test('a build is filed, watched, paused, saved and filed again with the keyboard
   await page.route('**/api/build', (route) =>
     route.fulfill({ body: ndjson(recorded(route.request().headers()['x-request-id'] ?? '')) }),
   );
-  await tabTo(page, page.getByLabel('1. Nature of the request'));
+  // The button is the first stop under his card; the fold opens by keyboard and the request is rewritten in item 1.
+  const file = page.getByRole('button', { name: 'File Form 27B/6' });
+  await tabTo(page, file);
+  await page.keyboard.press('Tab');
+  await expect(page.getByText('Adjust the form')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Tab');
+  await expect(page.getByLabel('1. Nature of the request')).toBeFocused();
+  await page.keyboard.press('ControlOrMeta+a');
   await page.keyboard.type(FORM.nature);
-  await tabTo(page, page.getByRole('button', { name: 'File Form 27B/6' }));
+  await page.keyboard.press('Shift+Tab');
+  await page.keyboard.press('Shift+Tab');
+  await expect(file).toBeFocused();
   await page.keyboard.press('Enter');
 
   // Focus moves to the status; Space pauses the machine from there, and every control is then walked by Tab.

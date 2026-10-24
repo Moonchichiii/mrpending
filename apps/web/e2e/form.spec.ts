@@ -2,12 +2,12 @@ import { readFileSync } from 'node:fs';
 import { Line } from '@pending/contract';
 import type { StreamEvent } from '@pending/contract';
 import { expect, test } from '@playwright/test';
-import { ATTEMPTS, FORM, ndjson, open, recorded } from './build';
+import { ATTEMPTS, DEFAULT, adjust, ndjson, open, recorded } from './build';
 import { PHONE, VIEWPORTS, expectAxeClean, expectNoOverflow, expectTargets } from './layout';
 
 const ID = '00000000-0000-4000-8000-000000000001';
 
-test('Form 27B/6 is completed and filed with the keyboard alone', async ({ page }) => {
+test('Form 27B/6 is unfolded, completed and filed with the keyboard alone', async ({ page }) => {
   await open(page);
   const filed = page.waitForRequest('**/api/build');
   await page.route('**/api/build', (route) =>
@@ -16,7 +16,14 @@ test('Form 27B/6 is completed and filed with the keyboard alone', async ({ page 
       json: { code: 'MODEL_UNAVAILABLE', message: 'No model.', requestId: ID, retryable: true },
     }),
   );
-  await page.getByLabel('1. Nature of the request').focus();
+  const file = page.getByRole('button', { name: 'File Form 27B/6' });
+  await file.focus();
+  await page.keyboard.press('Tab');
+  await expect(page.getByText('Adjust the form')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Tab');
+  await expect(page.getByLabel('1. Nature of the request')).toBeFocused();
+  await page.keyboard.press('ControlOrMeta+a');
   await page.keyboard.type('A scenic route, please.');
   await page.keyboard.press('Tab');
   await page.keyboard.press('ControlOrMeta+a');
@@ -27,8 +34,10 @@ test('Form 27B/6 is completed and filed with the keyboard alone', async ({ page 
   await page.keyboard.press('Tab');
   await page.keyboard.press('ArrowDown');
   await page.keyboard.press('Tab');
-  await page.keyboard.press('Tab');
-  await expect(page.getByRole('button', { name: 'File Form 27B/6' })).toBeFocused();
+  await expect(page.getByLabel('5. Forbidden equipment')).toBeFocused();
+  // Back past the five items and the fold to the button above them.
+  for (let i = 0; i < 6; i += 1) await page.keyboard.press('Shift+Tab');
+  await expect(file).toBeFocused();
   await page.keyboard.press('Enter');
   expect((await filed).postDataJSON()).toEqual({
     nature: 'A scenic route, please.',
@@ -40,7 +49,7 @@ test('Form 27B/6 is completed and filed with the keyboard alone', async ({ page 
   await expectAxeClean(page, 'form after filing, model unavailable');
 });
 
-test('the front door shows Mr. Pending, three steps and an example request, and his rig carries on into the build', async ({
+test('the front door shows Mr. Pending and one button that files the folded, pre-filled form, and his rig carries on into the build', async ({
   page,
 }) => {
   for (const { width, shown } of [
@@ -55,34 +64,38 @@ test('the front door shows Mr. Pending, three steps and an example request, and 
     // The status line is on his card; the status region keeps the same words for assistive technology.
     await expect(page.locator('p', { hasText: 'Form 27B/6 awaits filing.' })).toBeVisible();
     await expect(page.getByRole('status')).toHaveText('Form 27B/6 awaits filing.');
-    const steps = page.getByRole('list', { name: 'How to file' }).getByRole('listitem');
-    await expect(steps).toHaveText([
-      /^Describe what the button needs\./,
-      /^File Form 27B\/6\./,
-      /^Watch him design/,
-    ]);
-    await expect(page.getByLabel('1. Nature of the request')).toHaveAttribute(
-      'placeholder',
-      'Press the blue button. Scenic route, please.',
-    );
-    await expect(page.getByText('0 of 180 characters')).toBeVisible();
+    // One large button directly under his card, the guide in one line under it, the five items folded away.
+    const file = page.getByRole('button', { name: 'File Form 27B/6' });
+    await expect(file).toBeVisible();
+    const card = rig.locator('xpath=../..');
+    const [cardBox, fileBox] = [await card.boundingBox(), await file.boundingBox()];
+    expect(fileBox && cardBox && fileBox.y - (cardBox.y + cardBox.height)).toBeGreaterThanOrEqual(0);
+    expect(fileBox && cardBox && fileBox.y - (cardBox.y + cardBox.height)).toBeLessThanOrEqual(64);
+    expect(fileBox?.height).toBeGreaterThanOrEqual(78);
+    await expect(page.getByText(/^File it as it stands or adjust it first/)).toBeVisible();
+    await expect(page.getByText('Adjust the form')).toBeVisible();
+    await expect(page.getByLabel('1. Nature of the request')).toBeHidden();
     await expectAxeClean(page, `front door with Mr. Pending at ${width}`);
   }
 
   // The rig on the front door is marked, and the drafting build shows that same element, not a second rig.
+  // One click files the default request as it stands.
+  const filed = page.waitForRequest('**/api/build');
   await page.route('**/api/build', () => {});
   await page.locator('svg[data-variant="desk"]').evaluate((el) => el.setAttribute('data-front-door', ''));
-  await page.getByLabel('1. Nature of the request').fill(FORM.nature);
   await page.getByRole('button', { name: 'File Form 27B/6' }).click();
+  expect((await filed).postDataJSON()).toEqual(DEFAULT);
   await expect(page.getByRole('status')).toHaveText('Drafting. Please do not rush the Department.');
   await expect(page.locator('svg[data-variant="desk"]')).toHaveCount(1);
   await expect(page.locator('svg[data-variant="desk"][data-front-door]')).toHaveCount(1);
-  await expect(page.getByRole('list', { name: 'How to file' })).toHaveCount(0);
+  await expect(page.getByText(/^File it as it stands/)).toHaveCount(0);
 });
 
-test('the form is axe clean empty, with field errors and with the rejection', async ({ page }) => {
+test('the form is axe clean folded, unfolded, with field errors and with the rejection', async ({ page }) => {
   await open(page);
-  await expectAxeClean(page, 'form empty');
+  await expectAxeClean(page, 'form folded');
+  await adjust(page);
+  await expectAxeClean(page, 'form unfolded');
   await page.getByLabel('2. Fewest parts').fill('');
   await page.getByLabel('4. Required equipment').selectOption('fan');
   await page.getByLabel('5. Forbidden equipment').selectOption('fan');
@@ -100,6 +113,7 @@ test('without a confirmed config the form is editable, files nothing and is axe 
   await page.route('**/api/config', (route) => route.fulfill({ status: 500 }));
   await page.goto('/');
   await expect(page.getByText(/The Department has not confirmed where drafting happens/)).toBeVisible();
+  await adjust(page);
   await page.getByLabel('1. Nature of the request').fill('A scenic route, please.');
   await page.getByLabel('1. Nature of the request').press('Tab');
   await page.keyboard.press('Enter');
@@ -117,7 +131,6 @@ test('the board is axe clean while a trial runs and beside the correction', asyn
     const requestId = route.request().headers()['x-request-id'] ?? '';
     return route.fulfill({ body: ndjson(recorded(requestId)) });
   });
-  await page.getByLabel('1. Nature of the request').fill(FORM.nature);
   await page.getByRole('button', { name: 'File Form 27B/6' }).click();
   const status = page.getByRole('status');
   const pause = page.getByRole('button', { name: 'Pause' });
@@ -146,7 +159,6 @@ test('a pressed build ends on the Engineering Report, saved as a 1200 x 630 PNG,
     const requestId = route.request().headers()['x-request-id'] ?? '';
     return route.fulfill({ body: ndjson(recorded(requestId)) });
   });
-  await page.getByLabel('1. Nature of the request').fill(FORM.nature);
   await page.getByRole('button', { name: 'File Form 27B/6' }).click();
 
   // Both trials at 120 ms a step, then the press clock's hard cut at 1.60 s.
@@ -195,7 +207,6 @@ test('Mr. Pending takes the mood of each line, beside the voice, and the desk is
     const requestId = route.request().headers()['x-request-id'] ?? '';
     return route.fulfill({ body: ndjson([...said(requestId), ...recorded(requestId)]) });
   });
-  await page.getByLabel('1. Nature of the request').fill(FORM.nature);
   // Time stands still from here, so only runFor moves the playhead and each mood holds for its picture.
   await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
   await page.getByRole('button', { name: 'File Form 27B/6' }).click();
@@ -230,9 +241,18 @@ test('Mr. Pending takes the mood of each line, beside the voice, and the desk is
 });
 
 for (const viewport of VIEWPORTS) {
+  test(`the one-button front door fits at ${viewport.name}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await open(page);
+    await expect(page.getByRole('button', { name: 'File Form 27B/6' })).toBeVisible();
+    await expectNoOverflow(page);
+    if (viewport.width <= PHONE) await expectTargets(page);
+  });
+
   test(`the form with its longest text and every message fits at ${viewport.name}`, async ({ page }) => {
     await page.setViewportSize(viewport);
     await open(page);
+    await adjust(page);
     await page.getByLabel('1. Nature of the request').fill('W'.repeat(180));
     await page.getByLabel('3. Most parts').fill('');
     await page.getByLabel('4. Required equipment').selectOption('conveyor');

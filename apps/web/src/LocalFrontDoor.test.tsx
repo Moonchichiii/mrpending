@@ -49,6 +49,7 @@ function countBuilds() {
 
 const fileButton = () => screen.getByRole<HTMLButtonElement>('button', { name: 'File Form 27B/6' });
 const nature = () => screen.getByLabelText<HTMLTextAreaElement>('1. Nature of the request');
+const adjust = (user: ReturnType<typeof userEvent.setup>) => user.click(screen.getByText('Adjust the form'));
 
 test('filing stays disabled while /api/config has not answered, and opens with the badge', async () => {
   let answer = () => {};
@@ -63,6 +64,8 @@ test('filing stays disabled while /api/config has not answered, and opens with t
   const user = userEvent.setup();
   render(<LocalFrontDoor />);
 
+  await adjust(user);
+  await user.clear(nature());
   await user.type(nature(), 'A scenic route, please.');
   expect(nature().value).toBe('A scenic route, please.');
   expect(fileButton().disabled).toBe(true);
@@ -90,6 +93,8 @@ test('a failed /api/config says so in character, keeps the form usable and can b
   render(<LocalFrontDoor />);
 
   expect(await screen.findByText(UNCONFIRMED)).toBeDefined();
+  await adjust(user);
+  await user.clear(nature());
   await user.type(nature(), 'Still typing.');
   expect(nature().value).toBe('Still typing.');
   await user.selectOptions(screen.getByLabelText('4. Required equipment'), 'fan');
