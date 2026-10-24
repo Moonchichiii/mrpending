@@ -75,7 +75,7 @@ test('the front door plays a recording, folds the gallery away, names its commit
 }) => {
   const strays = watch(page, new URL(baseURL ?? '').origin);
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Ask him to press it' })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Press the button' })).toBeEnabled();
   await page.getByText('The gallery', { exact: true }).click();
   await expect(page.getByRole('region', { name: 'The gallery' }).getByRole('listitem')).toHaveCount(5);
   const build = page.getByRole('contentinfo').getByRole('link', { name: /^[0-9a-f]{12}$/ });
@@ -126,11 +126,14 @@ test.describe('with reduced motion', () => {
     await page.goto('/r/budget');
     const article = page.getByRole('article', { name: title });
     await expect(article.getByRole('status')).toHaveText(report.verdict);
-    // The verdict's stamp comes first; the report card in its closed dialog carries the same word.
-    const verdict = article.getByRole('region', { name: 'Verdict' });
+    // The result pinned on the board is stamped, and the report card in the closed Minutes carries the outcome.
+    const result = article.getByRole('region', { name: 'Simulation result' });
+    await expect(result.getByText(report.pressed ? 'PRESSED' : 'PENDING', { exact: true })).toBeVisible();
     await expect(
-      verdict.getByText(report.pressed ? 'APPROVED' : 'PENDING', { exact: true }).first(),
-    ).toBeVisible();
+      article
+        .getByRole('region', { name: 'Engineering Report', includeHidden: true })
+        .locator('svg[data-shape="landscape"] [data-stamp]'),
+    ).toHaveAttribute('data-stamp', report.pressed ? 'APPROVED' : 'PENDING');
     await expect(
       article.getByText(new RegExp(`^${report.attempts} trials? · ${report.parts} parts?`)),
     ).toBeVisible();

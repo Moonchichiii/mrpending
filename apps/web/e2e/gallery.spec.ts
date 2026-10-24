@@ -4,7 +4,7 @@ import { VIEWPORTS, expectAxeClean, expectNoOverflow } from './layout';
 // The harness renders the front door with four gallery records at every schema maximum.
 test('the gallery with longest-legal records is axe clean', async ({ page }) => {
   await page.goto('/e2e/harness.html');
-  await expect(page.getByRole('listitem')).toHaveCount(4);
+  await expect(page.getByRole('region', { name: 'The gallery' }).getByRole('listitem')).toHaveCount(4);
   await expectAxeClean(page, 'gallery with longest-legal records');
 });
 

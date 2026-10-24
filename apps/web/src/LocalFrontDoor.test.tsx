@@ -47,7 +47,7 @@ function countBuilds() {
   return builds;
 }
 
-const fileButton = () => screen.getByRole<HTMLButtonElement>('button', { name: 'Ask him to press it' });
+const fileButton = () => screen.getByRole<HTMLButtonElement>('button', { name: 'Press the button' });
 const nature = () => screen.getByLabelText<HTMLTextAreaElement>('1. Nature of the request');
 const adjust = (user: ReturnType<typeof userEvent.setup>) =>
   user.click(screen.getByText('Advanced settings'));
@@ -77,10 +77,11 @@ test('filing stays disabled while /api/config has not answered, and opens with t
   // The board names no model until the config does.
   const board = screen.getByRole('region', { name: 'The board' });
   expect(within(board).queryByText(/Ollama/)).toBeNull();
+  expect(within(board).getByText('Model not confirmed')).toBeDefined();
 
   answer();
   expect(await screen.findByText(BADGE)).toBeDefined();
-  expect(within(board).getByText('Gemma 4 E2B · Ollama · this machine')).toBeDefined();
+  expect(within(board).getByText('Gemma 4 E2B · Ollama · Running locally')).toBeDefined();
   expect(fileButton().disabled).toBe(false);
   await user.click(fileButton());
   await vi.waitFor(() => expect(builds.count).toBe(1));

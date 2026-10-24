@@ -22,19 +22,37 @@ function Haloed({ children }: { children: ReactNode }) {
 // A small ink chevron pointing east at (x, y), so direction never rests on shape alone.
 const chevron = (x: number, y: number) => `M ${x - 4} ${y - 5} L ${x + 3} ${y} L ${x - 4} ${y + 5}`;
 
-// Sprites are drawn facing east around the anchor cell's centre; west mirrors them.
+// A steel post from (x, y) down `height`, with a foot plate and two rivets: what every part stands on.
+function Post({ x, y, height }: { x: number; y: number; height: number }) {
+  return (
+    <>
+      <rect className={styles.post} x={x - 5} y={y} width={10} height={height} />
+      <rect className={styles.post} x={x - 11} y={y + height - 2} width={22} height={6} rx={2} />
+      <circle className={styles.rivet} cx={x} cy={y + 7} r={2} />
+      <circle className={styles.rivet} cx={x} cy={y + height - 9} r={2} />
+    </>
+  );
+}
+
+// Sprites are drawn facing east around the anchor cell's centre; west mirrors them. Every one is a part the simulator
+// knows (MACHINE-RULES section 2), drawn as timber on steel: nothing is drawn that the blueprint does not hold.
 function Shape({ part, fallen }: { part: Part; fallen: number[] }) {
   switch (part.kind) {
     case 'conveyor': {
       const end = CELL * (part.length - 1);
       return (
         <>
-          <rect className={styles.belt} x={-26} y={10} width={end + 52} height={14} rx={7} />
+          <Post x={-12} y={16} height={20} />
+          <Post x={end + 12} y={16} height={20} />
+          <rect className={styles.belt} x={-26} y={4} width={end + 52} height={20} rx={10} />
           {Array.from({ length: part.length }, (_, i) => (
-            <circle key={i} className={styles.roller} cx={CELL * i} cy={17} r={4} />
+            <g key={i}>
+              <circle className={styles.roller} cx={CELL * i} cy={14} r={7} />
+              <circle className={styles.rivet} cx={CELL * i} cy={14} r={2} />
+            </g>
           ))}
           {Array.from({ length: part.length - 1 }, (_, i) => (
-            <path key={i} className={styles.arrow} data-direction d={chevron(CELL * i + CELL / 2, 17)} />
+            <path key={i} className={styles.arrow} data-direction d={chevron(CELL * i + CELL / 2, 14)} />
           ))}
         </>
       );
@@ -43,7 +61,13 @@ function Shape({ part, fallen }: { part: Part; fallen: number[] }) {
       const end = CELL * (part.length - 1) + 26;
       return (
         <>
-          <polygon className={styles.ramp} points={`-26,-14 ${end},${end + 12} ${end},${end + 22} -26,-4`} />
+          <Post x={-14} y={0} height={30} />
+          <Post x={end - 12} y={end + 20} height={20} />
+          <polygon className={styles.ramp} points={`-26,-16 ${end},${end + 10} ${end},${end + 26} -26,-1`} />
+          <path className={styles.grain} d={`M -18 -6 L ${end - 8} ${end + 17}`} />
+          {Array.from({ length: part.length }, (_, i) => (
+            <circle key={i} className={styles.rivet} cx={CELL * i + 18} cy={CELL * i + 26} r={2.2} />
+          ))}
           {Array.from({ length: part.length }, (_, i) => (
             <path
               key={i}
@@ -59,6 +83,14 @@ function Shape({ part, fallen }: { part: Part; fallen: number[] }) {
     case 'dominoes':
       return (
         <>
+          <rect
+            className={styles.plank}
+            x={-26}
+            y={24}
+            width={CELL * (part.length - 1) + 52}
+            height={8}
+            rx={2}
+          />
           {Array.from({ length: part.length }, (_, i) => (
             <rect
               key={i}
@@ -68,6 +100,7 @@ function Shape({ part, fallen }: { part: Part; fallen: number[] }) {
               y={-24}
               width={10}
               height={48}
+              rx={2}
             />
           ))}
         </>
@@ -76,16 +109,18 @@ function Shape({ part, fallen }: { part: Part; fallen: number[] }) {
     case 'seesaw':
       return (
         <>
-          <polygon className={styles.pivot} points="0,8 -12,26 12,26" />
+          <polygon className={styles.pivot} points="0,4 -16,28 16,28" />
+          <circle className={styles.rivet} cx={0} cy={11} r={2.5} />
           <rect
             className={styles.plank}
             x={-80}
-            y={-2}
+            y={-4}
             width={160}
-            height={10}
+            height={12}
             rx={3}
             transform="rotate(-10)"
           />
+          <path className={styles.grain} d="M -72 9 L 72 -16" />
           <path className={styles.end} data-end="load" d="M -64 -12 L -48 -12 L -56 -2 Z" />
           <path className={styles.end} data-end="launch" d="M 48 -26 L 64 -26 L 56 -36 Z" />
         </>
@@ -93,18 +128,21 @@ function Shape({ part, fallen }: { part: Part; fallen: number[] }) {
     case 'catapult':
       return (
         <>
+          <rect className={styles.frame} x={-22} y={12} width={44} height={14} rx={3} />
+          <circle className={styles.rivet} cx={-14} cy={19} r={2} />
+          <circle className={styles.rivet} cx={14} cy={19} r={2} />
           <polygon className={styles.arm} points="-3,16 15,-20 21,-17 3,18" />
-          <circle className={styles.arm} cx={18} cy={-20} r={7} />
-          <rect className={styles.frame} x={-20} y={12} width={40} height={14} rx={3} />
+          <circle className={styles.cup} cx={18} cy={-20} r={7} />
         </>
       );
     case 'fan':
       return (
         <>
-          <rect className={styles.frame} x={-5} y={10} width={10} height={16} />
-          <circle className={styles.fan} r={18} />
-          <ellipse className={styles.blade} rx={4} ry={14} />
-          <ellipse className={styles.blade} rx={14} ry={4} />
+          <Post x={0} y={12} height={16} />
+          <circle className={styles.fan} r={20} />
+          <ellipse className={styles.blade} rx={5} ry={15} transform="rotate(20)" />
+          <ellipse className={styles.blade} rx={15} ry={5} transform="rotate(20)" />
+          <circle className={styles.rivet} r={3} />
         </>
       );
   }
@@ -169,7 +207,9 @@ export function Hopper({ at }: { at: Point }) {
   return (
     <g className={styles.part} data-hopper transform={translate(at)}>
       <Haloed>
-        <polygon className={styles.hopper} points="-22,-22 22,-22 8,14 -8,14" />
+        <polygon className={styles.hopper} points="-22,-18 22,-18 8,10 -8,10" />
+        <rect className={styles.hopper} x={-26} y={-24} width={52} height={8} rx={3} />
+        <rect className={styles.post} x={-8} y={10} width={16} height={6} />
       </Haloed>
     </g>
   );
@@ -181,7 +221,8 @@ export function Ball({ at }: { at: Point }) {
   return (
     <g className={`${styles.part} ${styles.moving}`} data-ball style={style}>
       <Haloed>
-        <circle className={styles.ball} r={9} />
+        <circle className={styles.ball} r={10} />
+        <circle className={styles.shine} cx={-3} cy={-3.5} r={3} />
       </Haloed>
     </g>
   );
@@ -200,17 +241,9 @@ export function Button({ at, pressed }: { at: Point; pressed: boolean }) {
           transform={pressed ? 'translate(0 6)' : undefined}
         />
         <rect className={styles.base} x={-24} y={14} width={48} height={10} rx={2} />
+        <rect className={styles.post} x={-30} y={23} width={60} height={5} rx={2} />
       </Haloed>
     </g>
-  );
-}
-
-// The board's button alone, drawn by the same sprite, for a call to action off the board; the label is the caller's.
-export function BlueButton() {
-  return (
-    <svg className={styles.blueButton} viewBox="-30 -8 60 40" aria-hidden="true">
-      <Button at={{ x: 0, y: 0 }} pressed={false} />
-    </svg>
   );
 }
 
