@@ -30,7 +30,8 @@
 }
 
 /* Ink outline 3 px plus 2 px of paper on each side. */
-.board .halo * {
+.board .halo *,
+.blueButton .halo * {
   fill: #fff8e6;
   stroke: #fff8e6;
   stroke-width: 7;
@@ -130,6 +131,24 @@
 }
 
 [data-pressed='true'] > .baseShadow {
+  transform: scaleY(0);
+}
+
+/* The front door's button at hero size; held down, it sinks and darkens as on the board (character sheet section 6). */
+.blueButton {
+  display: block;
+  flex: none;
+  width: clamp(6rem, 4rem + 8vw, 11rem);
+  height: auto;
+  overflow: visible;
+}
+
+:active > .blueButton .dome {
+  fill: #1f4fd1;
+  transform: translateY(6px);
+}
+
+:active > .blueButton .baseShadow {
   transform: scaleY(0);
 }
 

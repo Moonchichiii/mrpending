@@ -10,6 +10,7 @@ import {
 } from './layout';
 
 const CLOSED = 'The Department is closed to new applications. The archive is open.';
+const HEADLINE = 'This archive replays recorded builds. It takes no requests.';
 // The stylesheet's phone width (40rem at the default 16 px) shows the head alone; wider viewports show the full rig.
 const PHONE_RIG = 640;
 
@@ -20,6 +21,7 @@ test('the static front door makes no API call', async ({ page }) => {
   });
   await page.goto('/');
   await expect(page.getByRole('link', { name: 'Watch Mr. Pending at work' })).toBeVisible();
+  await expect(page.getByText(HEADLINE)).toBeVisible();
   // Mr. Pending is at the closed counter from the first paint, in the slow mood.
   await expect(page.getByText(CLOSED)).toBeVisible();
   await expect(page.locator('svg[data-variant="desk"]')).toHaveClass(/slow/);
@@ -51,6 +53,9 @@ for (const viewport of VIEWPORTS) {
     await expect(page.locator(`svg[data-variant="${shown}"]`)).toBeVisible();
     await expect(page.locator(`svg[data-variant="${hidden}"]`)).toBeHidden();
     await expect(page.getByText(CLOSED)).toBeVisible();
+    await expect(page.getByText(HEADLINE)).toBeVisible();
+    // The gallery's cards lead with their recorded final attempts.
+    await expect(page.locator('[data-thumbnail]').first()).toBeVisible();
     await expectNoOverflow(page);
     if (viewport.width <= PHONE) await expectTargets(page);
   });

@@ -5,6 +5,25 @@
   max-width: 60rem;
 }
 
+/* The first screen: his card up to 40rem wide, which keeps the whole rig in a 1440 x 900 window, and the button
+   beside it; stacked on narrow screens. */
+.front {
+  align-items: center;
+  max-width: none;
+}
+
+@media (min-width: 48rem) {
+  .front {
+    grid-template-columns: minmax(0, 40rem) minmax(16rem, 1fr);
+  }
+}
+
+/* Level and small, in ink on the yellow page under the board: the Department's caption, not one of his lines. */
+.caption {
+  max-width: var(--measure);
+  font-size: var(--text-small);
+}
+
 /* The persistent status region: an output element, block so it keeps the measure. */
 .status {
   display: block;

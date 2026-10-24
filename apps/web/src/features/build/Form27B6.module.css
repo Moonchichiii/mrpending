@@ -1,4 +1,4 @@
-/* The button, its guide line and the folded form, in that order under Mr. Pending's card. */
+/* The button, its guide line and the folded form, in that order beside Mr. Pending's card (under it on a phone). */
 .form {
   display: grid;
   gap: var(--space-3);
@@ -108,32 +108,38 @@
   border-radius: 8px;
 }
 
-/* The one large primary action on the front door. */
+/* The one primary action on the front door: the board's own button at hero size with its label beside it, no box
+   around them; the dome sinks while it is held (Board.module.css). Ink on the yellow page. */
 .submit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-self: start;
+  gap: var(--space-2) var(--space-3);
   max-width: 100%;
   min-height: calc(var(--target) * 1.5);
-  padding: var(--space-3) var(--space-4);
-  background: var(--paper);
+  padding: var(--space-2);
+  background: none;
   color: var(--ink);
+  text-align: start;
+  border: 0;
+  cursor: pointer;
+}
+
+.label {
+  min-width: 0;
+  flex: 1 1 8rem;
   font-family: var(--font-display);
   font-size: var(--text-heading);
   font-weight: 700;
-  border: var(--border-paper);
-  border-radius: 10px 4px 12px 6px;
-  box-shadow: var(--shadow-primary);
-  rotate: -1deg;
-  cursor: pointer;
+  line-height: 1.2;
 }
 
 .submit:disabled {
   color: var(--copper-text);
-  box-shadow: none;
-  rotate: none;
   cursor: not-allowed;
 }
 
-.submit:enabled:active {
-  translate: 2px 2px;
-  box-shadow: 3px 3px 0 var(--copper);
+.submit:disabled svg {
+  opacity: 0.5;
 }

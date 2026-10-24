@@ -19,17 +19,11 @@
   box-shadow: var(--shadow-paper);
 }
 
-/* Title and stamp share a line when the card is wide enough; flex children may shrink below their text. */
-.head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: start;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-3);
-}
-
-.head > * {
-  min-width: 0;
+/* The recorded final attempt leads the card at its full width. */
+.thumb {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .card:nth-child(3n + 1) {
@@ -48,8 +42,14 @@
   font-size: var(--text-heading);
 }
 
+/* On a gallery card the title follows the stamp and the numbers as small text. */
+.name {
+  font-size: var(--text-small);
+  font-weight: 700;
+}
+
 /* The record's title is its link, so it is a 52 px target each way even when the title is one letter (character sheet section 8). */
-.title a {
+.name a {
   display: inline-flex;
   align-items: center;
   min-width: var(--target);

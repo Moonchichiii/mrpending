@@ -1,6 +1,7 @@
 import { Form, PartKind } from '@pending/contract';
 import type { SyntheticEvent } from 'react';
 import { useId, useRef, useState } from 'react';
+import { BlueButton } from '../board';
 import styles from './Form27B6.module.css';
 
 type Field = 'nature' | 'minParts' | 'maxParts' | 'required' | 'forbidden';
@@ -58,7 +59,7 @@ const contradiction = (c: ReturnType<typeof candidate>): 'forbidden' | 'minParts
   return undefined;
 };
 
-// The button files the pre-filled request at once; the five items stay folded away until a visitor adjusts them.
+// The board's blue button files the pre-filled request at once; the five items stay folded away until a visitor adjusts them.
 // canFile is false until the inference badge is shown: the fields stay editable, nothing leaves the browser.
 export function Form27B6({
   initial,
@@ -154,7 +155,8 @@ export function Form27B6({
         disabled={!canFile}
         aria-describedby={canFile ? undefined : `${id}-waiting`}
       >
-        File Form 27B/6
+        <BlueButton />
+        <span className={styles.label}>Ask Mr. Pending to press it</span>
       </button>
       {!canFile && (
         <p id={`${id}-waiting`} className={styles.guide}>

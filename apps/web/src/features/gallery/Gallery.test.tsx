@@ -5,7 +5,26 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, beforeEach, expect, test, vi } from 'vitest';
 import { Gallery } from './Gallery';
-import { MyDepartment } from './MyDepartment';
+import { MyDepartment, YourRecords, useDepartment } from './MyDepartment';
+
+// The filed builds and the folded records over one browser's storage, as the local front door lays them out.
+function Department() {
+  const department = useDepartment();
+  return (
+    <>
+      <section aria-label="Filed">
+        <MyDepartment builds={department.builds} />
+      </section>
+      <YourRecords builds={department.builds} onChange={department.refresh} />
+    </>
+  );
+}
+const filed = () => screen.getByRole('region', { name: 'Filed' });
+const recordsFold = () => {
+  const records = screen.getByText('Advanced: your records').closest('details');
+  if (records === null) throw new Error('the records are not a disclosure');
+  return records;
+};
 
 const files = import.meta.glob<unknown>('../../../public/gallery/*.json', { eager: true, import: 'default' });
 const raw = (slug: string) => files[`../../../public/gallery/${slug}.json`];
@@ -40,6 +59,20 @@ test('the gallery opens every recorded build with the agent unreachable, and nev
   render(<Gallery />);
   const cards = await screen.findAllByRole('listitem');
   expect(cards).toHaveLength(5);
+  // Each card leads with the recorded final attempt, then the stamp, the verdict and the trials; the title comes after.
+  const scenic = Build.parse(raw('scenic'));
+  const card = cards.find((li) => within(li).queryByText(scenic.title) !== null);
+  const final = scenic.attempts.at(-1);
+  expect(card?.firstElementChild?.querySelector('[data-thumbnail] [data-ball]')).not.toBeNull();
+  expect(card?.querySelectorAll('[data-thumbnail] [data-part]')).toHaveLength(
+    final?.blueprint.parts.length ?? -1,
+  );
+  expect([...(card?.children ?? [])].slice(1, 5).map((el) => el.textContent)).toEqual([
+    scenic.report.pressed ? 'APPROVED' : 'PENDING',
+    scenic.report.verdict,
+    `${scenic.report.attempts} ${scenic.report.attempts === 1 ? 'trial' : 'trials'} · ${scenic.report.parts} parts`,
+    scenic.title,
+  ]);
   const link = screen.getAllByRole('link')[0];
   expect(link?.getAttribute('href')).toMatch(/^\/r\/[a-z]+$/);
   expect(screen.queryByText(/live/i)).toBeNull();
@@ -97,22 +130,28 @@ test('My department imports a forged record as the rules tell it, with a DUE num
   if (typeof forged !== 'object' || forged === null || !('report' in forged))
     throw new Error('scenic is no build');
   forged.report = { attempts: 1, parts: 1, pressed: false, verdict: 'Forged.' };
-  render(<MyDepartment />);
-  await userEvent.upload(
-    screen.getByLabelText('Import a build (JSON, up to 512 KB)'),
+  const user = userEvent.setup();
+  render(<Department />);
+  const records = recordsFold();
+  expect(records.open).toBe(false);
+  await user.click(within(records).getByText('Advanced: your records'));
+  await user.upload(
+    within(records).getByLabelText('Import a build (JSON, up to 512 KB)'),
     new File([JSON.stringify(forged)], 'scenic.json', { type: 'application/json' }),
   );
-  const card = await screen.findByRole('listitem');
+  // The kept build is listed outside the closed records; its export lives inside them.
+  const card = await within(filed()).findByRole('listitem');
   expect(within(card).getByText('DUE-0001')).toBeDefined();
   expect(within(card).queryByText('Forged.')).toBeNull();
-  expect(within(card).getByRole('button', { name: 'Export DUE-0001 as JSON' })).toBeDefined();
+  expect(within(card).queryByRole('button')).toBeNull();
+  expect(within(records).getByRole('button', { name: 'Export DUE-0001 as JSON' })).toBeDefined();
   expect(screen.queryAllByRole('link')).toEqual([]);
 });
 
 test('My department refuses a record under other rules with a plain message', async () => {
   const other = structuredClone(raw('scenic'));
   if (typeof other !== 'object' || other === null) throw new Error('scenic is no build');
-  render(<MyDepartment />);
+  render(<Department />);
   await userEvent.upload(
     screen.getByLabelText('Import a build (JSON, up to 512 KB)'),
     new File([JSON.stringify({ ...other, rulesVersion: 'r1' })], 'old.json', { type: 'application/json' }),

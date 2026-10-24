@@ -30,6 +30,31 @@
   font-weight: 700;
 }
 
+/* The records disclosure: a summary at least 52 px tall (character sheet section 8), its contents level on the page. */
+.records {
+  min-width: 0;
+}
+
+.records[open] > .summary {
+  margin-block-end: var(--space-3);
+}
+
+.summary {
+  display: list-item;
+  min-height: var(--target);
+  padding-block: var(--space-3);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.exports {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: 0;
+  list-style: none;
+}
+
 /* A native file input is as wide as its button and filename; on a phone it shrinks to the column instead. */
 .file {
   max-width: 100%;

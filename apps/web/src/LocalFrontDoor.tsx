@@ -1,18 +1,16 @@
 import type { Build } from '@pending/contract';
-import { useState } from 'react';
 import { BuildDesk, InferenceBadge, useInference } from './features/build';
-import { Gallery, MyDepartment, keep } from './features/gallery';
+import { Gallery, MyDepartment, YourRecords, keep, useDepartment } from './features/gallery';
 import styles from './FrontDoor.module.css';
 
-// The local installation: Form 27B/6 is the primary action, this browser's department and the gallery follow.
-// No prompt leaves the browser before the badge says where it goes.
+// The local installation: Mr. Pending and the blue button first, then this browser's department and the gallery, with
+// import and export folded away below. No prompt leaves the browser before the badge says where it goes.
 export function LocalFrontDoor() {
   const { inference, retry } = useInference();
-  // Each build that ends is kept here; a kept one remounts the department, which reads what this browser holds afresh.
-  const [filed, setFiled] = useState(0);
+  const department = useDepartment();
   const finished = (build: Build) => {
     if (keep(build) === undefined) return false;
-    setFiled((n) => n + 1);
+    department.refresh();
     return true;
   };
   return (
@@ -30,12 +28,13 @@ export function LocalFrontDoor() {
       </section>
       <section className={styles.section} aria-labelledby="department-title">
         <h2 id="department-title">My department</h2>
-        <MyDepartment key={filed} />
+        <MyDepartment builds={department.builds} />
       </section>
       <section className={styles.section} aria-labelledby="gallery-title">
         <h2 id="gallery-title">The gallery</h2>
         <Gallery />
       </section>
+      <YourRecords builds={department.builds} onChange={department.refresh} />
     </main>
   );
 }

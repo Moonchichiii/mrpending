@@ -509,6 +509,27 @@
   stroke-width: 2;
 }
 
+/* The front door's hero, by the maintainer's decision on #12: the full rig fills the card's width under his line, at
+   least a third of a phone's height; the build that follows returns him to the corner. */
+.hero {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: none;
+}
+
+/* His line heads the card, so it stays on the first screen above the rig. */
+.hero .text {
+  order: -1;
+}
+
+.hero .rig.desk {
+  display: block;
+  width: 100%;
+}
+
+.hero .rig.phone {
+  display: none;
+}
+
 /* Phones (section 8): the 72 px head in the card's corner, and only the sloth's head peeking in at the edge. */
 @media (max-width: 40rem) {
   .desk,
@@ -545,5 +566,17 @@
   .sloth {
     top: -16px;
     right: calc(72px + var(--space-4));
+  }
+
+  /* The hero keeps the full rig under his line; thinner padding leaves him a third of a 390 x 844 screen. */
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--space-2);
+  }
+
+  .hero .portrait,
+  .hero .text {
+    grid-column: 1;
+    grid-row: auto;
   }
 }

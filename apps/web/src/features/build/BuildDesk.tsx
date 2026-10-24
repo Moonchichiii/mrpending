@@ -77,7 +77,8 @@ function held(session: Session): Attempt[] {
   }
 }
 
-// Mr. Pending and Form 27B/6 when nothing is in progress; the build's progress, ending or failure otherwise.
+// Mr. Pending large beside the blue button, Form 27B/6 folded under it, when nothing is in progress; the build's
+// progress, ending or failure otherwise.
 // A build that ends is reported once, however often it is replayed afterwards; onFinished says whether it was kept.
 export function BuildDesk({
   canFile,
@@ -122,6 +123,12 @@ export function BuildDesk({
       <Lines lines={lines} />
     </Engineer>
   );
+  // The Department's level caption under the running board: one sentence, never a line of his and never spoken.
+  const caption = (
+    <p key="caption" className={styles.caption}>
+      Gemma drafts the machine. The simulator decides what happens.
+    </p>
+  );
   const withdraw = (
     <button type="button" className={styles.action} onClick={then(cancel)}>
       Withdraw the form
@@ -134,7 +141,7 @@ export function BuildDesk({
         return (
           <>
             {/* The status line is his card here; the status region carries it to assistive technology. */}
-            <Engineer key="engineer" status="idle" line={undefined} failed={false}>
+            <Engineer key="engineer" status="idle" line={undefined} failed={false} hero>
               <p aria-hidden="true">{announcement(session)}</p>
             </Engineer>
             <Form27B6 initial={session.form} onFile={fileForm} canFile={canFile} />
@@ -168,6 +175,7 @@ export function BuildDesk({
               stepMs={STEP_MS[session.speed]}
               pressedAt={press.at}
             />
+            {caption}
             {engineer}
             {withdraw}
           </>
@@ -184,6 +192,7 @@ export function BuildDesk({
               onSpeed={setSpeed}
             />
             <Trial key="trial" take={take} attempts={session.attempts} attempt={session.attempts.at(-1)} />
+            {caption}
             {engineer}
             {withdraw}
           </>
@@ -245,7 +254,7 @@ export function BuildDesk({
   };
 
   return (
-    <div className={styles.desk}>
+    <div className={session.status === 'idle' ? `${styles.desk} ${styles.front}` : styles.desk}>
       <output
         ref={status}
         tabIndex={-1}

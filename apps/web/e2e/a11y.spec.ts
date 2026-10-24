@@ -35,7 +35,7 @@ async function walk(page: Page, at: (state: State) => Promise<void>, longest = f
     await adjust(page);
     await page.getByLabel('1. Nature of the request').fill('W'.repeat(180));
   }
-  await page.getByRole('button', { name: 'File Form 27B/6' }).click();
+  await page.getByRole('button', { name: 'Ask Mr. Pending to press it' }).click();
   const status = page.getByRole('status');
   const pause = page.getByRole('button', { name: 'Pause' });
   // The paused playback holds the state, so the page clock may run while `at` looks; it stops again before playback resumes.
@@ -182,7 +182,7 @@ test('a build is filed, watched, paused, saved and filed again with the keyboard
     route.fulfill({ body: ndjson(recorded(route.request().headers()['x-request-id'] ?? '')) }),
   );
   // The button is the first stop under his card; the fold opens by keyboard and the request is rewritten in item 1.
-  const file = page.getByRole('button', { name: 'File Form 27B/6' });
+  const file = page.getByRole('button', { name: 'Ask Mr. Pending to press it' });
   await tabTo(page, file);
   await page.keyboard.press('Tab');
   await expect(page.getByText('Adjust the form')).toBeFocused();

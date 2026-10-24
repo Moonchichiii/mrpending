@@ -47,7 +47,8 @@ function countBuilds() {
   return builds;
 }
 
-const fileButton = () => screen.getByRole<HTMLButtonElement>('button', { name: 'File Form 27B/6' });
+const fileButton = () =>
+  screen.getByRole<HTMLButtonElement>('button', { name: 'Ask Mr. Pending to press it' });
 const nature = () => screen.getByLabelText<HTMLTextAreaElement>('1. Nature of the request');
 const adjust = (user: ReturnType<typeof userEvent.setup>) => user.click(screen.getByText('Adjust the form'));
 
@@ -153,6 +154,13 @@ test('a build that ends is kept once in My department, with a DUE number and no 
   expect(within(card).getByText('DUE-0001')).toBeDefined();
   expect(within(card).getByText('The Scenic Route')).toBeDefined();
   expect(within(department()).queryAllByRole('link')).toEqual([]);
+  // Its export waits in the closed records disclosure below the gallery, not on the card.
+  expect(within(card).queryByRole('button')).toBeNull();
+  const records = screen.getByText('Advanced: your records').closest('details');
+  expect(records?.open).toBe(false);
+  expect(records?.querySelector('button')?.textContent).toBe('Export DUE-0001 as JSON');
+  const gallery = screen.getByRole('region', { name: 'The gallery' });
+  expect(records && gallery.compareDocumentPosition(records) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
   await user.click(screen.getByRole('button', { name: 'Replay from the start' }));
   await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(verdict));
