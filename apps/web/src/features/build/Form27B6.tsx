@@ -30,12 +30,15 @@ const REJECTED = {
 const isField = (key: PropertyKey | undefined): key is Field =>
   key === 'nature' || key === 'minParts' || key === 'maxParts' || key === 'required' || key === 'forbidden';
 
-const toDraft = (form: Form | undefined): Draft => ({
-  nature: form?.nature ?? '',
-  minParts: String(form?.minParts ?? 3),
-  maxParts: String(form?.maxParts ?? 8),
-  required: form?.required ?? '',
-  forbidden: form?.forbidden ?? '',
+// A valid request on its own, so the front door files in one click without the form being opened.
+const DEFAULT: Form = { nature: 'Press the blue button. Scenic route, please.', minParts: 3, maxParts: 8 };
+
+const toDraft = (form: Form): Draft => ({
+  nature: form.nature,
+  minParts: String(form.minParts),
+  maxParts: String(form.maxParts),
+  required: form.required ?? '',
+  forbidden: form.forbidden ?? '',
 });
 
 // Empty number boxes stay invalid instead of becoming zero; empty selects mean "none".
@@ -55,6 +58,7 @@ const contradiction = (c: ReturnType<typeof candidate>): 'forbidden' | 'minParts
   return undefined;
 };
 
+// The button files the pre-filled request at once; the five items stay folded away until a visitor adjusts them.
 // canFile is false until the inference badge is shown: the fields stay editable, nothing leaves the browser.
 export function Form27B6({
   initial,
@@ -66,9 +70,10 @@ export function Form27B6({
   canFile?: boolean;
 }) {
   const id = useId();
-  const [draft, setDraft] = useState(() => toDraft(initial));
+  const [draft, setDraft] = useState(() => toDraft(initial ?? DEFAULT));
   const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
   const [rejection, setRejection] = useState<string>();
+  const sheet = useRef<HTMLDetailsElement>(null);
   const fields = useRef<
     Partial<Record<Field, HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null>>
   >({});
@@ -101,7 +106,8 @@ export function Form27B6({
     paradox ??= contradiction(filed);
     setErrors(found);
     setRejection(paradox && REJECTED[paradox]);
-    // Focus goes to the first field to correct; the rejection is announced by its alert role.
+    // The fold opens first, so focus can reach the first field to correct; the rejection is announced by its alert role.
+    if (sheet.current) sheet.current.open = true;
     const first = (['nature', 'minParts', 'maxParts', 'required', 'forbidden'] as const).find(
       (f) => found[f],
     );
@@ -142,77 +148,6 @@ export function Form27B6({
 
   return (
     <form className={styles.form} noValidate onSubmit={submit} aria-labelledby={`${id}-title`}>
-      <h2 id={`${id}-title`} className={styles.title}>
-        Form 27B/6
-      </h2>
-      <p className={styles.lede}>Application for the pressing of one blue button.</p>
-      {rejection && (
-        <p role="alert" className={styles.rejection}>
-          {rejection}
-        </p>
-      )}
-      <div className={styles.field}>
-        <label htmlFor={`${id}-nature`}>1. Nature of the request</label>
-        <textarea
-          id={`${id}-nature`}
-          ref={(el) => {
-            fields.current.nature = el;
-          }}
-          value={draft.nature}
-          onChange={set('nature')}
-          maxLength={NATURE_MAX}
-          placeholder="Press the blue button. Scenic route, please."
-          rows={3}
-          aria-invalid={errors.nature ? true : undefined}
-          aria-describedby={describedBy('nature', `${id}-nature-count`)}
-        />
-        <p id={`${id}-nature-count`} className={styles.hint}>
-          {draft.nature.length} of {NATURE_MAX} characters
-        </p>
-        {error('nature')}
-      </div>
-      <div className={styles.pair}>
-        <div className={styles.field}>
-          <label htmlFor={`${id}-minParts`}>2. Fewest parts</label>
-          <input
-            id={`${id}-minParts`}
-            ref={(el) => {
-              fields.current.minParts = el;
-            }}
-            type="number"
-            inputMode="numeric"
-            min={MIN.lo}
-            max={MIN.hi}
-            value={draft.minParts}
-            onChange={set('minParts')}
-            aria-invalid={errors.minParts ? true : undefined}
-            aria-describedby={describedBy('minParts')}
-          />
-          {error('minParts')}
-        </div>
-        <div className={styles.field}>
-          <label htmlFor={`${id}-maxParts`}>3. Most parts</label>
-          <input
-            id={`${id}-maxParts`}
-            ref={(el) => {
-              fields.current.maxParts = el;
-            }}
-            type="number"
-            inputMode="numeric"
-            min={MAX.lo}
-            max={MAX.hi}
-            value={draft.maxParts}
-            onChange={set('maxParts')}
-            aria-invalid={errors.maxParts ? true : undefined}
-            aria-describedby={describedBy('maxParts')}
-          />
-          {error('maxParts')}
-        </div>
-      </div>
-      <div className={styles.pair}>
-        {kinds('required', '4. Required equipment')}
-        {kinds('forbidden', '5. Forbidden equipment')}
-      </div>
       <button
         type="submit"
         className={styles.submit}
@@ -222,10 +157,88 @@ export function Form27B6({
         File Form 27B/6
       </button>
       {!canFile && (
-        <p id={`${id}-waiting`} className={styles.hint}>
+        <p id={`${id}-waiting`} className={styles.guide}>
           Filing opens once the Department confirms where drafting happens.
         </p>
       )}
+      {/* The Department's guidance, never a line of Mr. Pending's. */}
+      <p className={styles.guide}>
+        File it as it stands or adjust it first, then watch him design, fail and repair.
+      </p>
+      {/* Outside the fold, so a rejection stays in view however the form was left. */}
+      {rejection && (
+        <p role="alert" className={styles.rejection}>
+          {rejection}
+        </p>
+      )}
+      <details ref={sheet} className={styles.sheet}>
+        <summary className={styles.adjust}>Adjust the form</summary>
+        <h2 id={`${id}-title`} className={styles.title}>
+          Form 27B/6
+        </h2>
+        <p className={styles.lede}>Application for the pressing of one blue button.</p>
+        <div className={styles.field}>
+          <label htmlFor={`${id}-nature`}>1. Nature of the request</label>
+          <textarea
+            id={`${id}-nature`}
+            ref={(el) => {
+              fields.current.nature = el;
+            }}
+            value={draft.nature}
+            onChange={set('nature')}
+            maxLength={NATURE_MAX}
+            rows={3}
+            aria-invalid={errors.nature ? true : undefined}
+            aria-describedby={describedBy('nature', `${id}-nature-count`)}
+          />
+          <p id={`${id}-nature-count`} className={styles.hint}>
+            {draft.nature.length} of {NATURE_MAX} characters
+          </p>
+          {error('nature')}
+        </div>
+        <div className={styles.pair}>
+          <div className={styles.field}>
+            <label htmlFor={`${id}-minParts`}>2. Fewest parts</label>
+            <input
+              id={`${id}-minParts`}
+              ref={(el) => {
+                fields.current.minParts = el;
+              }}
+              type="number"
+              inputMode="numeric"
+              min={MIN.lo}
+              max={MIN.hi}
+              value={draft.minParts}
+              onChange={set('minParts')}
+              aria-invalid={errors.minParts ? true : undefined}
+              aria-describedby={describedBy('minParts')}
+            />
+            {error('minParts')}
+          </div>
+          <div className={styles.field}>
+            <label htmlFor={`${id}-maxParts`}>3. Most parts</label>
+            <input
+              id={`${id}-maxParts`}
+              ref={(el) => {
+                fields.current.maxParts = el;
+              }}
+              type="number"
+              inputMode="numeric"
+              min={MAX.lo}
+              max={MAX.hi}
+              value={draft.maxParts}
+              onChange={set('maxParts')}
+              aria-invalid={errors.maxParts ? true : undefined}
+              aria-describedby={describedBy('maxParts')}
+            />
+            {error('maxParts')}
+          </div>
+        </div>
+        <div className={styles.pair}>
+          {kinds('required', '4. Required equipment')}
+          {kinds('forbidden', '5. Forbidden equipment')}
+        </div>
+      </details>
     </form>
   );
 }

@@ -22,7 +22,7 @@ afterAll(() => server.close());
 const prefersReduced = (matches: boolean) =>
   vi.stubGlobal('matchMedia', () => ({ matches, addEventListener() {}, removeEventListener() {} }));
 
-test('before filing Mr. Pending holds the status line in the slow mood above the steps, and the same rig drafts', async () => {
+test('before filing Mr. Pending holds the status line in the slow mood above one button, and the same rig drafts', async () => {
   prefersReduced(false);
   // The agent never answers, so the build stays in drafting until the desk is unmounted.
   server.use(
@@ -40,19 +40,18 @@ test('before filing Mr. Pending holds the status line in the slow mood above the
   const card = rig?.parentElement?.parentElement;
   expect(card?.textContent).toBe('Form 27B/6 awaits filing.');
   expect(screen.getByRole('status').textContent).toBe('Form 27B/6 awaits filing.');
-  // The three steps come before the form, in order.
-  const steps = within(screen.getByRole('list', { name: 'How to file' })).getAllByRole('listitem');
-  expect(steps.map((li) => li.querySelector('strong')?.textContent)).toEqual([
-    'Describe what the button needs.',
-    'File Form 27B/6.',
-    'Watch him design, fail and repair.',
-  ]);
+  // The button comes directly after his card, the one-line guide under it, and the five items folded away.
   const form = screen.getByRole('form', { name: 'Form 27B/6' });
-  expect(steps.every((li) => li.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+  const button = screen.getByRole('button', { name: 'File Form 27B/6' });
+  expect(card?.nextElementSibling).toBe(form);
+  expect(form.firstElementChild).toBe(button);
+  const guide = screen.getByText(/^File it as it stands or adjust it first/);
+  expect(button.nextElementSibling).toBe(guide);
+  expect(form.querySelector('details')?.open).toBe(false);
 
-  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  await user.click(button);
   expect(screen.getByRole('status').textContent).toBe('Drafting. Please do not rush the Department.');
-  expect(screen.queryByRole('list', { name: 'How to file' })).toBeNull();
+  expect(screen.queryByText(/^File it as it stands/)).toBeNull();
   // One rig, the very element that stood on the front door.
   expect(document.querySelectorAll('svg[data-variant="desk"]')).toHaveLength(1);
   expect(document.querySelector('svg[data-variant="desk"]')).toBe(rig);

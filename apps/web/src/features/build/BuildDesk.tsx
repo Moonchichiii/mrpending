@@ -11,7 +11,6 @@ import { STEP_MS, failedOn, playhead, said } from './model/session';
 import type { Session } from './model/session';
 import { Form27B6 } from './Form27B6';
 import { Lines } from './Lines';
-import { Steps } from './Steps';
 import { Trial } from './Trial';
 import { useBuild } from './useBuild';
 import { usePress } from './usePress';
@@ -78,7 +77,7 @@ function held(session: Session): Attempt[] {
   }
 }
 
-// Mr. Pending, the steps and Form 27B/6 when nothing is in progress; the build's progress, ending or failure otherwise.
+// Mr. Pending and Form 27B/6 when nothing is in progress; the build's progress, ending or failure otherwise.
 // A build that ends is reported once, however often it is replayed afterwards; onFinished says whether it was kept.
 export function BuildDesk({
   canFile,
@@ -138,7 +137,6 @@ export function BuildDesk({
             <Engineer key="engineer" status="idle" line={undefined} failed={false}>
               <p aria-hidden="true">{announcement(session)}</p>
             </Engineer>
-            <Steps />
             <Form27B6 initial={session.form} onFile={fileForm} canFile={canFile} />
           </>
         );

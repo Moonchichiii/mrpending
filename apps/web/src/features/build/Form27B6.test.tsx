@@ -12,12 +12,34 @@ const setup = (initial?: Form) => {
   return { onFile, user: userEvent.setup() };
 };
 
+const DEFAULT = { nature: 'Press the blue button. Scenic route, please.', minParts: 3, maxParts: 8 };
+const fileButton = () => screen.getByRole('button', { name: 'File Form 27B/6' });
+const sheet = () => screen.getByText('Adjust the form').closest('details');
+// The visitor opens the folded form, as they must before any item can be changed.
+const adjust = (user: ReturnType<typeof userEvent.setup>) => user.click(screen.getByText('Adjust the form'));
+
 describe('Form 27B/6', () => {
-  test('can be completed with the keyboard alone, field by field in reading order', async () => {
+  test('files the pre-filled default request in one click, with the five items folded away', async () => {
+    const { onFile, user } = setup();
+    expect(sheet()?.open).toBe(false);
+    expect(screen.getByText(/^File it as it stands or adjust it first/)).toBeDefined();
+    await user.click(fileButton());
+    expect(onFile).toHaveBeenCalledWith(DEFAULT);
+    expect(sheet()?.open).toBe(false);
+  });
+
+  test('can be completed with the keyboard alone, the button first and then the items in reading order', async () => {
     const { onFile, user } = setup();
     await user.tab();
+    expect(document.activeElement).toBe(fileButton());
+    await user.tab();
+    expect(document.activeElement).toBe(screen.getByText('Adjust the form'));
+    // jsdom does not open a summary by keyboard; the Playwright form spec presses Enter on it in a real browser.
+    await adjust(user);
+    expect(sheet()?.open).toBe(true);
+    await user.tab();
     expect(document.activeElement).toBe(screen.getByLabelText('1. Nature of the request'));
-    await user.keyboard('A scenic route, please.');
+    await user.keyboard('{Control>}a{/Control}A scenic route, please.');
     await user.tab();
     expect(document.activeElement).toBe(screen.getByLabelText('2. Fewest parts'));
     await user.keyboard('{Control>}a{/Control}4');
@@ -29,24 +51,39 @@ describe('Form 27B/6', () => {
     expect(document.activeElement).toBe(screen.getByLabelText('4. Required equipment'));
     await user.tab();
     expect(document.activeElement).toBe(screen.getByLabelText('5. Forbidden equipment'));
-    await user.tab();
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'File Form 27B/6' }));
+    // Back past the five items and the fold to the button above them.
+    for (let i = 0; i < 6; i += 1) await user.tab({ shift: true });
+    expect(document.activeElement).toBe(fileButton());
     await user.keyboard('{Enter}');
     expect(onFile).toHaveBeenCalledWith({ nature: 'A scenic route, please.', minParts: 4, maxParts: 9 });
   });
 
-  test('item 1 shows an example request that is not its value, and the counter counts only what is typed', async () => {
+  test('item 1 comes filled with the default request, and the counter counts it', async () => {
     const { user } = setup();
+    await adjust(user);
     const nature = screen.getByLabelText<HTMLTextAreaElement>('1. Nature of the request');
-    expect(nature.placeholder).toBe('Press the blue button. Scenic route, please.');
-    expect(nature.value).toBe('');
-    expect(screen.getByText('0 of 180 characters')).toBeDefined();
+    expect(nature.value).toBe(DEFAULT.nature);
+    expect(screen.getByText('44 of 180 characters')).toBeDefined();
+    await user.clear(nature);
     await user.type(nature, 'Ramp.');
     expect(screen.getByText('5 of 180 characters')).toBeDefined();
   });
 
+  test('a field left invalid behind a closed fold opens it again and receives focus', async () => {
+    const { onFile, user } = setup();
+    await adjust(user);
+    await user.clear(screen.getByLabelText('3. Most parts'));
+    await adjust(user);
+    expect(sheet()?.open).toBe(false);
+    await user.click(fileButton());
+    expect(sheet()?.open).toBe(true);
+    expect(document.activeElement).toBe(screen.getByLabelText('3. Most parts'));
+    expect(onFile).not.toHaveBeenCalled();
+  });
+
   test('the same equipment required and forbidden is rejected in character, and nothing is filed', async () => {
     const { onFile, user } = setup();
+    await adjust(user);
     await user.selectOptions(screen.getByLabelText('4. Required equipment'), 'fan');
     await user.selectOptions(screen.getByLabelText('5. Forbidden equipment'), 'fan');
     await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
@@ -68,6 +105,7 @@ describe('Form 27B/6', () => {
 
   test('an out-of-range or empty count is named on its own field and receives focus', async () => {
     const { onFile, user } = setup();
+    await adjust(user);
     await user.clear(screen.getByLabelText('2. Fewest parts'));
     await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
     const field = screen.getByLabelText('2. Fewest parts');
@@ -81,6 +119,7 @@ describe('Form 27B/6', () => {
 
   test('a contradiction beside a field error is still rejected in character', async () => {
     const { onFile, user } = setup();
+    await adjust(user);
     await user.clear(screen.getByLabelText('2. Fewest parts'));
     await user.selectOptions(screen.getByLabelText('4. Required equipment'), 'fan');
     await user.selectOptions(screen.getByLabelText('5. Forbidden equipment'), 'fan');
