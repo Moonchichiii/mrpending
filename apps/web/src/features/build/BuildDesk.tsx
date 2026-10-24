@@ -286,11 +286,18 @@ export function BuildDesk({
           {lines ? <Lines lines={lines} /> : <p>{INTRODUCTION}</p>}
         </Engineer>
       }
-      // Outside the phases, so the voice keeps its queue from drafting to the ending; a replay or a new build restarts it.
+      // Outside the phases, so the voice keeps its queue from drafting to the ending; a replay or a new build restarts it,
+      // and a failure stops it, so no line is spoken over the error or captioned beside it. Mute carries over.
       voice={
         <Voice
           lines={lines ? pressVoiced(lines, press.beat) : []}
-          playback={session.status === 'idle' ? 'idle' : `${session.requestId}:${take}`}
+          playback={
+            session.status === 'idle'
+              ? 'idle'
+              : session.status === 'error'
+                ? `${session.requestId}:error`
+                : `${session.requestId}:${take}`
+          }
         />
       }
       action={

@@ -538,6 +538,37 @@ test('Space pauses from anywhere but a control, which keeps its own Space, and E
   expect(cancel).toHaveBeenCalledTimes(1);
 });
 
+test('a failure stops the line being spoken and clears its caption, and Mute carries over to the retry', async () => {
+  prefersReduced(false);
+  const { spoken, cancel } = withSynth();
+  const send = held();
+  const user = userEvent.setup();
+  render(<BuildDesk canFile />);
+  await user.click(screen.getByRole('button', { name: 'Ask Mr. Pending to press it' }));
+  send(said('l1', 'designing', 'slow', 'The Department is drafting.'));
+  await vi.waitFor(() => expect(spoken.map((u) => u.text)).toEqual(['The Department is drafting.']));
+  const voice = screen.getByRole('region', { name: 'Voice' });
+  expect(voice.textContent).toContain('The Department is drafting.');
+  expect(cancel).not.toHaveBeenCalled();
+
+  send((requestId) => ({
+    type: 'error',
+    requestId,
+    code: 'TIMEOUT',
+    message: 'Gemma took too long to answer. Try again.',
+    retryable: true,
+  }));
+  await screen.findByRole('alert');
+  expect(cancel).toHaveBeenCalledTimes(1);
+  expect(voice.textContent).not.toContain('The Department is drafting.');
+
+  // Mute set beside the error holds for the build filed again.
+  await user.click(within(voice).getByRole('button', { name: 'Mute' }));
+  await user.click(screen.getByRole('button', { name: 'Build again' }));
+  await screen.findByText('Drafting. Please do not rush the Department.');
+  expect(within(voice).getByRole('button', { name: 'Mute' }).getAttribute('aria-pressed')).toBe('true');
+});
+
 test('the press clock starts on the tick that reaches button.pressed and runs once, however late done arrives', async () => {
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
   const send = held();
