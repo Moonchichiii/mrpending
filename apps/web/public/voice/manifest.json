@@ -1,0 +1,102 @@
+[
+  {
+    "id": "intake",
+    "text": "Form 27B/6 received. Stamped, filed, placed on top of the other forms. This will take some time.",
+    "sha256": "081524ab341f92db300e3cde628da526ca60cff1a87d06288cc15af9c153f8a2"
+  },
+  {
+    "id": "designing",
+    "text": "Drafting. Please do not rush the Department.",
+    "sha256": "6a57e54806ddd6de4f141ca068d88fba7032e29026fc328b23956d75af0d2f26"
+  },
+  {
+    "id": "handoff-1",
+    "text": "A successful descent! Alert the committee!",
+    "sha256": "a73098f2f247c0c4e711c81361a9f46aa3b2700af9ccf21fb77e86717610aab6"
+  },
+  {
+    "id": "handoff-2",
+    "text": "A handover! The parts are cooperating!",
+    "sha256": "ac7428bc51548059aa215f91dff2249d9b2408c5ffc53e797ab5cfefa828d57f"
+  },
+  {
+    "id": "handoff-3",
+    "text": "Contact! Enter it in the minutes at once!",
+    "sha256": "65c0c92e61aa7f1f36d9791aab25bada23869c9b3c0128ef76e67f6af7574f22"
+  },
+  {
+    "id": "catapult-lost",
+    "text": "The catapult has demonstrated considerable enthusiasm. Unfortunately, very little accuracy.",
+    "sha256": "e0cae640fa7cdecedb26a0c11f1f1c6689046b4503e262b9bf5e58e2e0d7eec1"
+  },
+  {
+    "id": "seesaw-lost",
+    "text": "The seesaw has launched the ball with great conviction and no destination.",
+    "sha256": "ebf066bc329e1ff1004e472c134491664693cfe92bd3773c775f05c2782d8955"
+  },
+  {
+    "id": "other-lost",
+    "text": "A minor setback. The ball has chosen an alternative career.",
+    "sha256": "496dbb5db6a7673e89631b9c0825759e0fda158b477a92aed9c4292904983dbd"
+  },
+  {
+    "id": "floor-stop",
+    "text": "The Department regrets to inform you that gravity has once again failed to cooperate.",
+    "sha256": "b67bc71d193990a65ab6d64094e56ee6814f370ed074d95738859857d9cacc0b"
+  },
+  {
+    "id": "fan-stop",
+    "text": "The fan appears committed to the process. The ball remains unconvinced.",
+    "sha256": "ead0986a89c92632634fdfc8a8404690b0a47880d1d5320d9687311d7d979387"
+  },
+  {
+    "id": "seesaw-stop",
+    "text": "The seesaw has received the ball and declined to act.",
+    "sha256": "4fb887dcacb0561491f5b77a0915d56fe424817e678561e2dfc7c2b30e58309b"
+  },
+  {
+    "id": "impulse-lost",
+    "text": "The dominoes fell with great ceremony and no consequence.",
+    "sha256": "c3af3f51a6a03b403205581b293c56f5f3e4e29c01814ab4133098643c30bf36"
+  },
+  {
+    "id": "step-cap",
+    "text": "The ball is still in transit. The Department has stopped counting.",
+    "sha256": "48bae1ec9b2b101c53835f32e6b11014cd875200970334b01188e5069cbd915a"
+  },
+  {
+    "id": "invalid",
+    "text": "Engineering has identified a problem. Engineering would prefer not to discuss it.",
+    "sha256": "5713cc1f71f8a3f3288296bdc572fb9c950779bd69921f880f396a88105fa223"
+  },
+  {
+    "id": "correction-due",
+    "text": "A correction will be issued.",
+    "sha256": "af235f5ef176430eb5f8cc134179f4a309524af1492a330b4124baf94c0266e6"
+  },
+  {
+    "id": "cameo",
+    "text": "This is why we employ snails.",
+    "sha256": "8485b7e5a738e87420d08f980b96ecc509099fe8d9b68d3c442aea38847ecbe0"
+  },
+  {
+    "id": "repair-sent",
+    "text": "A repair has been submitted. Optimism remains strictly provisional.",
+    "sha256": "8c450aff0a13e69014e6967ebc511c0a56793b5831b563a78529eef712463a40"
+  },
+  {
+    "id": "we-did-it",
+    "text": "WE DID IT! Please inform the entire Department.",
+    "sha256": "8328d01feddb83122b472fd77b8690adb22024a6887d1c0ac6c3499e26d8ac63"
+  },
+  {
+    "id": "acknowledged",
+    "text": "The Department acknowledges this development.",
+    "sha256": "2f12eb3e8a328bac48e361f4e5a1e53afd7f1bb10f4b3bbe4c63804a23061dd2"
+  },
+  {
+    "id": "verdict-pressed",
+    "text": "One button. An extraordinary amount of paperwork.",
+    "sha256": "8cb21400922e221af96fd8d9712be1bb5233a440844d9f8fb34095853167e817"
+  }
+]

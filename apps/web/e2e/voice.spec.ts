@@ -6,35 +6,14 @@ import { FILE, ndjson, open, recorded } from './build';
 const INTAKE =
   'Form 27B/6 received. Stamped, filed, placed on top of the other forms. This will take some time.';
 
-// Ten seconds of 8 kHz mono silence as a WAV: long enough to be skipped, served in place of the rendered clip.
-function silence(seconds = 10): Buffer {
-  const samples = 8000 * seconds;
-  const wav = Buffer.alloc(44 + samples, 0x80);
-  wav.write('RIFF', 0);
-  wav.writeUInt32LE(36 + samples, 4);
-  wav.write('WAVEfmt ', 8);
-  wav.writeUInt32LE(16, 16);
-  wav.writeUInt16LE(1, 20);
-  wav.writeUInt16LE(1, 22);
-  wav.writeUInt32LE(8000, 24);
-  wav.writeUInt32LE(8000, 28);
-  wav.writeUInt16LE(1, 32);
-  wav.writeUInt16LE(8, 34);
-  wav.write('data', 36);
-  wav.writeUInt32LE(samples, 40);
-  return wav;
-}
-
 test('a fixed line plays its clip after the press, the indicator moves, and Skip voice stops it', async ({
   page,
 }) => {
   const clips: string[] = [];
-  await page.route('**/voice/manifest.json', (route) =>
-    route.fulfill({ json: [{ id: 'intake', text: INTAKE, sha256: 'a'.repeat(64) }] }),
-  );
+  // The approved manifest and recordings are served as built; the clip requests are only observed.
   await page.route('**/voice/*.mp3', (route) => {
     clips.push(new URL(route.request().url()).pathname);
-    return route.fulfill({ body: silence(), contentType: 'audio/wav' });
+    return route.continue();
   });
   await open(page);
   await page.route('**/api/build', (route) => {

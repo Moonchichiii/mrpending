@@ -354,6 +354,18 @@ test('a clip that stalls after it started fails within the bound, and the queue 
   expect(played).toHaveLength(1);
 });
 
+test('a clip that will not load on a device without a voice leaves the line to the captions', async () => {
+  const synth = withSynth([]);
+  withClips(MANIFEST);
+  const { played } = withAudio('error');
+  const slow = line('s1', weDidIt.text, 'slow');
+  render(<Voice lines={[slow, verdict]} playback={0} />);
+  expect(await screen.findByText(verdict.text, {}, { timeout: WAIT_MS + 1000 })).toBeDefined();
+  expect(played.map((p) => p.src)).toEqual([expect.stringMatching(/\/voice\/we-did-it\.mp3$/)]);
+  expect(played[0]?.audio.playbackRate).toBe(0.75);
+  expect(synth.spoken).toEqual([]);
+});
+
 test.each([
   ['the visitor has not pressed anything yet', MANIFEST, false, 'playing', [weDidIt]],
   ['there is no manifest', undefined, true, 'playing', [weDidIt]],
