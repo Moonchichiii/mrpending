@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
-import { ATTEMPTS, FORM, adjust, ndjson, open, recorded } from './build';
+import { ATTEMPTS, FILE, FORM, adjust, ndjson, open, recorded } from './build';
 import {
   PHONE,
   VIEWPORTS,
@@ -35,7 +35,7 @@ async function walk(page: Page, at: (state: State) => Promise<void>, longest = f
     await adjust(page);
     await page.getByLabel('1. Nature of the request').fill('W'.repeat(180));
   }
-  await page.getByRole('button', { name: 'File Form 27B/6' }).click();
+  await page.getByRole('button', { name: FILE }).click();
   const status = page.getByRole('status');
   const pause = page.getByRole('button', { name: 'Pause' });
   // The paused playback holds the state, so the page clock may run while `at` looks; it stops again before playback resumes.
@@ -76,6 +76,7 @@ async function walk(page: Page, at: (state: State) => Promise<void>, longest = f
   // The card slides up; it is looked at once it has arrived, not halfway through its fade.
   await card.evaluate((el) => Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)));
   await at('report');
+  await page.getByText('My department').click();
   await page
     .getByRole('region', { name: 'My department' })
     .getByRole('heading', { level: 3 })
@@ -165,10 +166,10 @@ for (const layout of LAYOUTS) {
   });
 }
 
-// Tab forward from wherever focus is until the target has it; the page has far fewer than 100 stops.
-async function tabTo(page: Page, target: Locator) {
+// Tab (or Shift+Tab) from wherever focus is until the target has it; the page has far fewer than 100 stops.
+async function tabTo(page: Page, target: Locator, key = 'Tab') {
   for (let i = 0; i < 100 && !(await target.evaluate((el) => el === document.activeElement)); i += 1)
-    await page.keyboard.press('Tab');
+    await page.keyboard.press(key);
   await expect(target).toBeFocused();
 }
 
@@ -181,11 +182,12 @@ test('a build is filed, watched, paused, saved and filed again with the keyboard
   await page.route('**/api/build', (route) =>
     route.fulfill({ body: ndjson(recorded(route.request().headers()['x-request-id'] ?? '')) }),
   );
-  // The button is the first stop under his card; the fold opens by keyboard and the request is rewritten in item 1.
-  const file = page.getByRole('button', { name: 'File Form 27B/6' });
+  // After the voice the button is the next stop, then the fold under the board, which opens by keyboard; the request
+  // is rewritten in item 1.
+  const file = page.getByRole('button', { name: FILE });
   await tabTo(page, file);
   await page.keyboard.press('Tab');
-  await expect(page.getByText('Adjust the form')).toBeFocused();
+  await expect(page.getByText('Advanced settings')).toBeFocused();
   await page.keyboard.press('Enter');
   await page.keyboard.press('Tab');
   await expect(page.getByLabel('1. Nature of the request')).toBeFocused();
@@ -218,7 +220,8 @@ test('a build is filed, watched, paused, saved and filed again with the keyboard
   await tabTo(page, card.getByRole('button', { name: 'Save as image' }));
   const [download] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
   expect(download.suggestedFilename()).toBe('mr-pending-b1.png');
-  await tabTo(page, page.getByRole('button', { name: 'File another form' }));
+  // The ending's controls sit in the top row, above the report.
+  await tabTo(page, page.getByRole('button', { name: 'File another form' }), 'Shift+Tab');
   await page.keyboard.press('Enter');
   await expect(page.getByLabel('1. Nature of the request')).toHaveValue(FORM.nature);
   await expect(status).toBeFocused();

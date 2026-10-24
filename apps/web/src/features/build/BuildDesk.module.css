@@ -1,10 +1,3 @@
-.desk {
-  display: grid;
-  gap: var(--space-3);
-  min-width: 0;
-  max-width: 60rem;
-}
-
 /* The persistent status region: an output element, block so it keeps the measure. */
 .status {
   display: block;

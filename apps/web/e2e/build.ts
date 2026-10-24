@@ -68,9 +68,11 @@ export const recorded = (requestId: string, longest = false): StreamEvent[] => [
 
 export const ndjson = (events: StreamEvent[]) => events.map((e) => `${JSON.stringify(e)}\n`).join('');
 
-// The front door files a pre-filled request; a test that changes an item opens the fold first, as a visitor must.
+// The front door's one button files a pre-filled request; a test that changes an item opens the fold first, as a
+// visitor must.
 export const DEFAULT = { nature: 'Press the blue button. Scenic route, please.', minParts: 3, maxParts: 8 };
-export const adjust = (page: Page) => page.getByText('Adjust the form').click();
+export const FILE = 'Ask Mr. Pending to press it';
+export const adjust = (page: Page) => page.getByText('Advanced settings').click();
 
 // The local front door with the agent mocked at the network boundary.
 export async function open(page: Page) {

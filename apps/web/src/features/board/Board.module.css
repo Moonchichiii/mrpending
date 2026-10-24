@@ -29,8 +29,16 @@
   stroke-linejoin: round;
 }
 
+/* The button sprite on its own, at whatever size its container gives it. */
+.blueButton {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 /* Ink outline 3 px plus 2 px of paper on each side. */
-.board .halo * {
+.board .halo *,
+.blueButton .halo * {
   fill: #fff8e6;
   stroke: #fff8e6;
   stroke-width: 7;

@@ -6,7 +6,7 @@ import { delay, http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, expect, test, vi } from 'vitest';
 import engineer from '../engineer/Engineer.module.css';
-import { BuildDesk } from './BuildDesk';
+import { BuildDesk, INTRODUCTION } from './BuildDesk';
 import { header, lost, pressed } from './model/testBuild';
 
 const server = setupServer();
@@ -22,7 +22,7 @@ afterAll(() => server.close());
 const prefersReduced = (matches: boolean) =>
   vi.stubGlobal('matchMedia', () => ({ matches, addEventListener() {}, removeEventListener() {} }));
 
-test('before filing Mr. Pending holds the status line in the slow mood above one button, and the same rig drafts', async () => {
+test('before filing Mr. Pending, his voice, the board button and the idle board share one screen, and the same rig drafts', async () => {
   prefersReduced(false);
   // The agent never answers, so the build stays in drafting until the desk is unmounted.
   server.use(
@@ -32,26 +32,44 @@ test('before filing Mr. Pending holds the status line in the slow mood above one
     }),
   );
   const user = userEvent.setup();
-  render(<BuildDesk canFile />);
+  render(
+    <BuildDesk
+      canFile
+      config={{ inference: 'this-machine', model: { mode: 'local', id: 'gemma4:e2b', host: 'ollama' } }}
+    />,
+  );
 
   const rig = document.querySelector('svg[data-variant="desk"]');
   expect(rig?.classList.contains(engineer.slow ?? '')).toBe(true);
   expect(document.querySelectorAll('svg[data-variant="phone"]')).toHaveLength(1);
   const card = rig?.parentElement?.parentElement;
-  expect(card?.textContent).toBe('Form 27B/6 awaits filing.');
+  expect(card?.textContent).toBe(INTRODUCTION);
   expect(screen.getByRole('status').textContent).toBe('Form 27B/6 awaits filing.');
-  // The button comes directly after his card, the one-line guide under it, and the five items folded away.
+  // The voice and the one button, the board's own sprite, which files the form folded away under the board.
+  expect(
+    within(screen.getByRole('region', { name: 'Voice' }))
+      .getAllByRole('button')
+      .map((b) => b.textContent),
+  ).toEqual(['Mute', 'Skip voice']);
+  const button = screen.getByRole('button', { name: 'Ask Mr. Pending to press it' });
+  expect(button.querySelector('[data-button]')).not.toBeNull();
   const form = screen.getByRole('form', { name: 'Form 27B/6' });
-  const button = screen.getByRole('button', { name: 'File Form 27B/6' });
-  expect(card?.nextElementSibling).toBe(form);
-  expect(form.firstElementChild).toBe(button);
-  const guide = screen.getByText(/^File it as it stands or adjust it first/);
-  expect(button.nextElementSibling).toBe(guide);
+  expect(button.getAttribute('form')).toBe(form.id);
   expect(form.querySelector('details')?.open).toBe(false);
+  expect(within(form).queryByRole('button')).toBeNull();
+  // The idle board: the model from the config, the empty sheet, one caption and the level line, above the fold.
+  const board = screen.getByRole('region', { name: 'The board' });
+  expect(within(board).getByText('Gemma 4 E2B · Ollama · this machine')).toBeDefined();
+  expect(within(board).getByRole('img', { name: 'The empty board' })).toBeDefined();
+  expect(within(board).getByText('The ridiculous machinery appears here.')).toBeDefined();
+  expect(within(board).getByText('Gemma designs → Simulator tests → Gemma repairs')).toBeDefined();
+  expect(board.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
   await user.click(button);
   expect(screen.getByRole('status').textContent).toBe('Drafting. Please do not rush the Department.');
-  expect(screen.queryByText(/^File it as it stands/)).toBeNull();
+  expect(screen.queryByRole('form', { name: 'Form 27B/6' })).toBeNull();
+  // The drafting build waits on the same board.
+  expect(within(screen.getByRole('region', { name: 'The board' })).getByRole('img')).toBeDefined();
   // One rig, the very element that stood on the front door.
   expect(document.querySelectorAll('svg[data-variant="desk"]')).toHaveLength(1);
   expect(document.querySelector('svg[data-variant="desk"]')).toBe(rig);
@@ -75,7 +93,7 @@ test('filing moves focus to the status region, which announces progress and then
   );
   const user = userEvent.setup();
   render(<BuildDesk canFile />);
-  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Mr. Pending to press it' }));
 
   const status = screen.getByRole('status');
   expect(document.activeElement).toBe(status);
@@ -111,7 +129,7 @@ test('a build that ends is reported once with its build, however often it is rep
   const onFinished = vi.fn<(build: Build) => boolean>(() => true);
   const user = userEvent.setup();
   render(<BuildDesk canFile onFinished={onFinished} />);
-  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Mr. Pending to press it' }));
 
   const verdict = 'One button. An extraordinary amount of paperwork.';
   await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(verdict));
@@ -132,7 +150,7 @@ test('a build the callback did not keep says so at its ending instead of vanishi
   ]);
   const user = userEvent.setup();
   render(<BuildDesk canFile onFinished={() => false} />);
-  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Mr. Pending to press it' }));
 
   expect((await screen.findByRole('alert')).textContent).toMatch(/would not keep the build/);
   await user.click(screen.getByRole('button', { name: 'File another form' }));
@@ -154,7 +172,7 @@ test('every playback control is a button operated from the keyboard, and speed s
   );
   const user = userEvent.setup();
   render(<BuildDesk canFile />);
-  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Mr. Pending to press it' }));
   const playback = await screen.findByRole('group', { name: 'Playback' });
   const control = (name: string) => within(playback).getByRole('button', { name });
   const pace = () => screen.getByRole('img', { name: 'Pressed' }).getAttribute('data-pace');
@@ -215,7 +233,7 @@ test('reduced motion: final frames, the full minutes, the correction diff and th
   ]);
   const user = userEvent.setup();
   render(<BuildDesk canFile />);
-  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Mr. Pending to press it' }));
   await vi.waitFor(() =>
     expect(screen.getByRole('status').textContent).toBe('One button. An extraordinary amount of paperwork.'),
   );
@@ -273,7 +291,7 @@ test('a press keeps the rig, goes excited at 0.90 s and cuts to deadpan at 1.60 
   pressedBuild();
   const user = userEvent.setup();
   render(<BuildDesk canFile />);
-  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Mr. Pending to press it' }));
 
   await vi.waitFor(
     () =>
@@ -302,7 +320,7 @@ test('with reduced motion a press shows its final deadpan at once, with no timed
   pressedBuild();
   const user = userEvent.setup();
   render(<BuildDesk canFile />);
-  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Mr. Pending to press it' }));
 
   await vi.waitFor(() =>
     expect(screen.getByRole('status').textContent).toBe('One button. An extraordinary amount of paperwork.'),
@@ -323,7 +341,7 @@ test('reduced motion switched on during a press cuts to the final deadpan at onc
   pressedBuild();
   const user = userEvent.setup();
   render(<BuildDesk canFile />);
-  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Mr. Pending to press it' }));
 
   await vi.waitFor(
     () =>
@@ -353,7 +371,7 @@ test('the voice speaks "WE DID IT!" at the excited cue, not on the press tick, a
   pressedBuild();
   const user = userEvent.setup();
   render(<BuildDesk canFile />);
-  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Mr. Pending to press it' }));
   const texts = () => spoken.map((u) => u.text);
   // The first line ends before the press, so the queue is idle when the press tick arrives.
   await vi.waitFor(() => expect(texts()).toEqual(['Commencing trial 1.']));
@@ -414,7 +432,7 @@ test('markup in a model title or memo is shown as text, while streaming and once
   const send = held();
   const user = userEvent.setup();
   render(<BuildDesk canFile />);
-  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Mr. Pending to press it' }));
   send((requestId) => ({ type: 'partial', requestId, blueprint: { title } }));
   send((requestId) => ({
     type: 'line',
@@ -428,7 +446,8 @@ test('markup in a model title or memo is shown as text, while streaming and once
       at: { attempt: 1, step: 0 },
     },
   }));
-  expect((await screen.findByText(title)).tagName).toBe('P');
+  // The drafting title captions the board that waits for it.
+  expect((await screen.findByText(title)).tagName).toBe('FIGCAPTION');
   expect(screen.getByRole('list', { name: 'Mr. Pending' }).textContent).toBe(`Memo: ${memo}`);
   expect(injected()).toBeNull();
 
@@ -477,7 +496,7 @@ test('Space pauses from anywhere but a control, which keeps its own Space, and E
   const send = held();
   const user = userEvent.setup();
   render(<BuildDesk canFile />);
-  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Mr. Pending to press it' }));
   send((requestId) => ({
     type: 'line',
     requestId,
@@ -524,7 +543,7 @@ test('the press clock starts on the tick that reaches button.pressed and runs on
   const send = held();
   const user = userEvent.setup();
   render(<BuildDesk canFile />);
-  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Mr. Pending to press it' }));
   send(said('l1', 'running', 'slow', 'Commencing trial 1.'));
   send((requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }));
   await vi.waitFor(
@@ -560,7 +579,7 @@ test.each([
   const send = held();
   const user = userEvent.setup();
   render(<BuildDesk canFile />);
-  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Mr. Pending to press it' }));
   const text = 'This is why we employ snails.';
   const step = terminal(attempts[on - 1] ?? lost(1));
   send((requestId) => ({
@@ -579,7 +598,7 @@ test('each trial starts on a fresh board, never animating out of the previous on
   const send = held();
   const user = userEvent.setup();
   render(<BuildDesk canFile />);
-  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Mr. Pending to press it' }));
   send((requestId) => ({ type: 'attempt', requestId, attempt: lost(1) }));
   const board = (n: number) => screen.getByText(`Trial ${n}`).closest('figure')?.querySelector('svg');
   await screen.findByText('Trial 1');
@@ -597,7 +616,7 @@ test('a done that arrives after the press keeps the same rig, so its sequence is
   const send = held();
   const user = userEvent.setup();
   render(<BuildDesk canFile />);
-  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Mr. Pending to press it' }));
   send((requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }));
   // A pressed attempt played to its last step waits for done, its card on the running desk.
   await vi.waitFor(() =>
@@ -623,7 +642,7 @@ test('replay starts on a fresh board, never animating the same trial backward', 
   const send = held();
   const user = userEvent.setup();
   render(<BuildDesk canFile />);
-  await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+  await user.click(screen.getByRole('button', { name: 'Ask Mr. Pending to press it' }));
   send((requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }));
   const playback = await screen.findByRole('group', { name: 'Playback' });
   const board = () => screen.getByText('Trial 1').closest('figure')?.querySelector('svg');

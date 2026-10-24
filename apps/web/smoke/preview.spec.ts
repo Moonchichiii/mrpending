@@ -69,13 +69,14 @@ test('the static deployment has no agent behind it', async ({ request }) => {
     expect((await request.get(path)).status(), path).toBe(404);
 });
 
-test('the front door opens on the gallery, names the commit it was built from and asks nothing of anyone else', async ({
+test('the front door plays a recording, folds the gallery away, names its commit and asks nothing of anyone else', async ({
   page,
   baseURL,
 }) => {
   const strays = watch(page, new URL(baseURL ?? '').origin);
   await page.goto('/');
-  await expect(page.getByRole('link', { name: 'Watch Mr. Pending at work' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Ask Mr. Pending to press it' })).toBeEnabled();
+  await page.getByText('The gallery', { exact: true }).click();
   await expect(page.getByRole('region', { name: 'The gallery' }).getByRole('listitem')).toHaveCount(5);
   const build = page.getByRole('contentinfo').getByRole('link', { name: /^[0-9a-f]{12}$/ });
   await expect(build).toHaveAttribute(

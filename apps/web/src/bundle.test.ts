@@ -20,7 +20,7 @@ afterEach(() => vi.unstubAllEnvs());
 describe('site modes', () => {
   test('the static bundle contains no /api reference at all', { timeout: 60_000 }, async () => {
     const text = await bundle('static');
-    expect(text).toContain('Watch Mr. Pending at work');
+    expect(text).toContain('The button plays a recorded build');
     expect(text).not.toContain('/api');
     expect(text).not.toContain('Form 27B/6 rejected');
   });

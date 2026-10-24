@@ -29,7 +29,9 @@ export function Board({
 }) {
   const { parts, ball, trail, pressed, failure } = frame(blueprint, events, step);
   const description = [
-    `${parts.length} parts: ${parts.map(({ part }) => `${part.kind} at ${part.cell} facing ${part.dir}`).join(', ')}.`,
+    parts.length === 0
+      ? 'No parts yet; the ball waits in the hopper at A1.'
+      : `${parts.length} parts: ${parts.map(({ part }) => `${part.kind} at ${part.cell} facing ${part.dir}`).join(', ')}.`,
     failure ? `${failure.event} at ${failure.cell}.` : '',
     pressed ? 'The button is pressed.' : 'The button is not pressed.',
   ]

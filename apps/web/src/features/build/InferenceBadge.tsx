@@ -14,7 +14,7 @@ export const CONFIG_TIMEOUT_MS = 5000;
 
 export type Inference =
   | { status: 'asking' }
-  | { status: 'confirmed'; inference: Config['inference'] }
+  | { status: 'confirmed'; inference: Config['inference']; model: Config['model'] }
   | { status: 'unconfirmed' };
 
 // One fetch on mount and one per retry; a failed, invalid or late answer is unconfirmed, never a guess.
@@ -32,7 +32,7 @@ export function useInference(): { inference: Inference; retry: () => void } {
         if (live)
           setInference(
             parsed.success
-              ? { status: 'confirmed', inference: parsed.data.inference }
+              ? { status: 'confirmed', inference: parsed.data.inference, model: parsed.data.model }
               : { status: 'unconfirmed' },
           );
       })
