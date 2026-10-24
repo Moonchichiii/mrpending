@@ -3,14 +3,17 @@ import styles from './Report.module.css';
 
 // The paper pinned under the board's steps: a red PENDING stamp until the simulator's verdict is in, PRESSED in green
 // once the button is pressed, and one or two plain sentences under it. The board's status region announces the
-// phase, so this paper is not a live region; `children` holds an alert about the ending.
+// phase, so this paper is not a live region; `children` holds an alert about the ending. Once the verdict is in, the
+// paper ends by saying who did what; until then that line keeps its place unseen, so the paper never changes size.
 export function Result({
   stamp,
   text,
+  roles = false,
   children,
 }: {
   stamp: 'PENDING' | 'PRESSED';
   text: string;
+  roles?: boolean;
   children?: ReactNode;
 }) {
   return (
@@ -24,6 +27,9 @@ export function Result({
       </p>
       <p className={styles.text}>{text}</p>
       {children}
+      <p className={roles ? styles.roles : `${styles.roles} ${styles.unsaid}`}>
+        Gemma designed it and proposed the repairs. The simulator checked every attempt.
+      </p>
     </section>
   );
 }

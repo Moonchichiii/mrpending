@@ -107,7 +107,10 @@ for (const slug of REPLAYS) {
     const strays = watch(page, new URL(baseURL ?? '').origin);
     await page.goto(`/r/${slug}`);
     const article = page.getByRole('article', { name: title });
-    await expect(article.getByRole('status')).toHaveText('Trial 1 in progress.');
+    // A record's first trial plays, or was refused before the ball moved.
+    await expect(article.getByRole('status')).toHaveText(
+      /^(TESTING THE MACHINE|THE BUTTON WAS NOT PRESSED) /,
+    );
     const pause = article.getByRole('button', { name: 'Pause' });
     await pause.click();
     await expect(pause).toHaveAttribute('aria-pressed', 'true');
@@ -139,9 +142,11 @@ test.describe('with reduced motion', () => {
     const { title, report } = await record(request, 'budget');
     await page.goto('/r/budget');
     const article = page.getByRole('article', { name: title });
-    await expect(article.getByRole('status')).toHaveText(report.verdict);
-    // The result pinned on the board is stamped, and the report card in the closed Minutes carries the outcome.
+    await expect(article.getByRole('status')).toHaveText(report.pressed ? /^IT WORKED / : /^STILL PENDING /);
+    // The result pinned on the board is stamped with the verdict, and the report card in the closed Minutes carries
+    // the outcome.
     const result = article.getByRole('region', { name: 'Simulation result' });
+    await expect(result).toContainText(report.verdict);
     await expect(result.getByText(report.pressed ? 'PRESSED' : 'PENDING', { exact: true })).toBeVisible();
     await expect(
       article

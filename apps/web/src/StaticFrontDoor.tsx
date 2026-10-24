@@ -11,6 +11,9 @@ const GUIDE = `${REPO}#readme`;
 const COMMIT = import.meta.env.VITE_COMMIT;
 // The record the button plays: a failure, a correction and a press, re-run through the simulator before it is shown.
 const DEMO = 'scenic';
+const RECORDED =
+  'These machines were designed by Gemma running locally. You are watching a recording of the experiment, replayed and checked by the simulator.';
+export const MOTTO = 'Even small things can do great things.';
 export const CLOSED =
   'The Department is closed to new applications. The button plays a recorded build, which this browser checks again with the simulator before it is shown.';
 
@@ -46,6 +49,7 @@ export function StaticFrontDoor({ records }: { records?: BuildHeader[] | undefin
         <Playback
           build={demo?.ok ? demo.build : undefined}
           heading="Mr. Pending"
+          about={RECORDED}
           intro={CLOSED}
           note={note}
           blocked={record}
@@ -63,6 +67,7 @@ export function StaticFrontDoor({ records }: { records?: BuildHeader[] | undefin
         />
       </main>
       <footer className={styles.footer}>
+        <p className={styles.motto}>{MOTTO}</p>
         <p>
           <a href={GUIDE}>Run it on your machine</a>
         </p>

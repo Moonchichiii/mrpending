@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
-import { ATTEMPTS, FILE, FORM, adjust, ndjson, open, recorded } from './build';
+import { ATTEMPTS, FILE, FORM, NOTE, adjust, ndjson, open, recorded } from './build';
 import {
   PHONE,
   VIEWPORTS,
@@ -48,18 +48,18 @@ async function walk(page: Page, at: (state: State) => Promise<void>, longest = f
     await pause.click();
   };
 
-  await expect(status).toHaveText('Drafting. Please do not rush the Department.');
+  await expect(status).toHaveText(NOTE.designing);
   await at('drawing');
   await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
   release();
-  await expect(status).toHaveText('Trial 1 in progress.');
+  await expect(status).toHaveText(NOTE.testing);
   await page.clock.runFor(STEP * 2);
   await hold('running');
   await page.clock.runFor(STEP * (LOST_AT - 2));
   await expect(page.locator('[data-failure][data-cell="L3"]')).toHaveCount(1);
   await hold('failure');
   await page.clock.runFor(STEP * 2);
-  await expect(status).toHaveText('Trial 2 in progress.');
+  await expect(status).toHaveText(NOTE.retesting);
   await expect(page.locator('[data-change="removed"]')).toHaveCount(1);
   await hold('diff');
   // Into the press clock's excited beat, 0.90 s after the tick that reaches the button; the press is the last step,
@@ -211,7 +211,7 @@ test('a build is filed, watched, paused, saved and filed again with the keyboard
   // Focus moves to the status; Space pauses the machine from there, and every control is then walked by Tab.
   const status = page.getByRole('status');
   const pause = page.getByRole('button', { name: 'Pause' });
-  await expect(status).toHaveText('Trial 1 in progress.');
+  await expect(status).toHaveText(NOTE.testing);
   await expect(status).toBeFocused();
   await page.keyboard.press(' ');
   await expect(pause).toHaveAttribute('aria-pressed', 'true');

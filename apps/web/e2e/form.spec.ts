@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { Line } from '@pending/contract';
 import type { StreamEvent } from '@pending/contract';
 import { expect, test } from '@playwright/test';
-import { ATTEMPTS, DEFAULT, FILE, adjust, ndjson, open, recorded } from './build';
+import { ATTEMPTS, DEFAULT, FILE, NOTE, adjust, ndjson, open, recorded } from './build';
 import { PHONE, VIEWPORTS, expectAxeClean, expectNoOverflow, expectTargets } from './layout';
 
 const ID = '00000000-0000-4000-8000-000000000001';
@@ -80,7 +80,7 @@ test('the front door is one screen: Mr. Pending, the blue button and the idle bo
     const voice = page.getByRole('region', { name: 'Voice' });
     await expect(card.getByRole('region', { name: 'Voice' })).toHaveCount(1);
     await expect(voice.locator('[aria-live="polite"]')).toHaveText(INTRODUCTION);
-    await expect(page.getByRole('status')).toHaveText('Form 27B/6 awaits filing.');
+    await expect(page.getByRole('status')).toHaveText(NOTE.idle);
     await expect(voice.getByRole('button', { name: 'Voice on' })).toHaveAttribute('aria-pressed', 'true');
     await expect(voice.getByRole('button', { name: 'Skip voice' })).toBeVisible();
 
@@ -139,7 +139,7 @@ test('the front door is one screen: Mr. Pending, the blue button and the idle bo
   const address = page.url();
   await page.getByRole('button', { name: FILE }).click();
   expect((await filed).postDataJSON()).toEqual(DEFAULT);
-  await expect(page.getByRole('status')).toHaveText('Drafting. Please do not rush the Department.');
+  await expect(page.getByRole('status')).toHaveText(NOTE.designing);
   await expect(page.locator('svg[data-variant="desk"]')).toHaveCount(1);
   await expect(page.locator('svg[data-variant="desk"][data-front-door]')).toHaveCount(1);
   await expect(
@@ -192,7 +192,7 @@ test('the board is axe clean while a trial runs and beside the correction', asyn
   const status = page.getByRole('status');
   const pause = page.getByRole('button', { name: 'Pause' });
 
-  await expect(status).toHaveText('Trial 1 in progress.');
+  await expect(status).toHaveText(NOTE.testing);
   await page.clock.runFor(120 * 4);
   await pause.click();
   await expect(pause).toHaveAttribute('aria-pressed', 'true');
@@ -202,7 +202,7 @@ test('the board is axe clean while a trial runs and beside the correction', asyn
 
   await pause.click();
   await page.clock.runFor(120 * (ATTEMPTS[0]?.events.at(-1)?.step ?? 0));
-  await expect(status).toHaveText('Trial 2 in progress.');
+  await expect(status).toHaveText(NOTE.retesting);
   await pause.click();
   await expect(page.locator('[data-change="removed"]')).toHaveCount(1);
   await expectAxeClean(page, 'board running, trial 2 with the correction diff');
@@ -274,7 +274,7 @@ test('Mr. Pending takes the mood of each line, beside his bubble, and the stage 
   // Time stands still from here, so only runFor moves the playhead and each mood holds for its picture.
   await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
   await page.getByRole('button', { name: FILE }).click();
-  await expect(page.getByRole('status')).toHaveText('Trial 1 in progress.');
+  await expect(page.getByRole('status')).toHaveText(NOTE.testing);
   // The lines said are kept in the board's closed fold; the rig and his bubble stand side by side above it.
   const lines = page.getByRole('list', { name: 'Mr. Pending', includeHidden: true });
   const rig = page.locator('svg[data-variant="desk"]');

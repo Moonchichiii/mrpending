@@ -6,6 +6,7 @@ import { delay, http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, expect, test, vi } from 'vitest';
 import engineer from '../engineer/Engineer.module.css';
+import panel from './BoardPanel.module.css';
 import { BuildDesk, INTRODUCTION } from './BuildDesk';
 import { header, lost, pressed } from './model/testBuild';
 
@@ -19,6 +20,14 @@ afterEach(() => {
 afterAll(() => server.close());
 
 // A media query list the rig can subscribe to, as the build clock and the engineer read it.
+// What the Current step note says while Gemma designs, while a trial is tested, and once a press is revealed.
+const DESIGNING = 'GEMMA IS DESIGNING A small AI model is drawing a mechanical blueprint.';
+const TESTING = 'TESTING THE MACHINE The simulator is checking whether the ball reaches the blue button.';
+const WORKED = "IT WORKED Gemma's machine pressed the button. The simulator verified it.";
+
+// The Current step note's indeterminate rule, drawn only while the stage waits for the model.
+const waiting = () => document.querySelector(`.${panel.bar}`) !== null;
+
 const prefersReduced = (matches: boolean) =>
   vi.stubGlobal('matchMedia', () => ({ matches, addEventListener() {}, removeEventListener() {} }));
 
@@ -47,6 +56,7 @@ test('before filing Mr. Pending, his bubble, the one button and the idle board s
   expect(rig?.parentElement?.parentElement?.contains(voice)).toBe(true);
   expect(within(voice).getByText(INTRODUCTION).getAttribute('aria-live')).toBe('polite');
   expect(screen.getByRole('status').textContent).toBe('Form 27B/6 awaits filing.');
+  expect(waiting()).toBe(false);
   // Voice on and Skip voice under the bubble, and the one button, which files the folded form.
   expect(
     within(voice)
@@ -89,7 +99,8 @@ test('before filing Mr. Pending, his bubble, the one button and the idle board s
   expect(minutes.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
   await user.click(button);
-  expect(screen.getByRole('status').textContent).toBe('Drafting. Please do not rush the Department.');
+  expect(screen.getByRole('status').textContent).toBe(DESIGNING);
+  expect(waiting()).toBe(true);
   // The button waits and the form stays folded; the drafting build waits on the very same board, its first step and
   // first trial current.
   expect(button.disabled).toBe(true);
@@ -100,6 +111,10 @@ test('before filing Mr. Pending, his bubble, the one button and the idle board s
   // One rig, the very element that stood on the front door.
   expect(document.querySelectorAll('svg[data-variant="desk"]')).toHaveLength(1);
   expect(document.querySelector('svg[data-variant="desk"]')).toBe(rig);
+
+  // Withdrawing stops the wait at once.
+  await user.click(screen.getByRole('button', { name: 'Withdraw the form' }));
+  expect(waiting()).toBe(false);
 });
 
 test('filing moves focus to the status region, which announces progress and then the verdict', async () => {
@@ -126,12 +141,10 @@ test('filing moves focus to the status region, which announces progress and then
 
   const status = screen.getByRole('status');
   expect(document.activeElement).toBe(status);
-  expect(status.textContent).toBe('Drafting. Please do not rush the Department.');
+  expect(status.textContent).toBe(DESIGNING);
 
   release();
-  await vi.waitFor(() =>
-    expect(screen.getByRole('status').textContent).toBe('One button. An extraordinary amount of paperwork.'),
-  );
+  await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(WORKED));
   // The result pinned on the board says PRESSED and the verdict; the one button files the form once more and focus
   // returns to the status.
   const result = within(screen.getByRole('region', { name: 'The board' })).getByRole('region', {
@@ -164,14 +177,13 @@ test('a build that ends is reported once with its build, however often it is rep
   render(<BuildDesk canFile onFinished={onFinished} />);
   await user.click(screen.getByRole('button', { name: 'Press the button' }));
 
-  const verdict = 'One button. An extraordinary amount of paperwork.';
-  await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(verdict));
+  await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(WORKED));
   await vi.waitFor(() => expect(onFinished).toHaveBeenCalledTimes(1));
   expect(onFinished.mock.calls[0]?.[0].title).toBe('The Scenic Route');
   expect(screen.queryByRole('alert')).toBeNull();
 
   await user.click(screen.getByRole('button', { name: 'Replay' }));
-  await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(verdict));
+  await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(WORKED));
   expect(onFinished).toHaveBeenCalledTimes(1);
 });
 
@@ -267,9 +279,7 @@ test('reduced motion: final frames, the full minutes, the correction diff and th
   const user = userEvent.setup();
   render(<BuildDesk canFile />);
   await user.click(screen.getByRole('button', { name: 'Press the button' }));
-  await vi.waitFor(() =>
-    expect(screen.getByRole('status').textContent).toBe('One button. An extraordinary amount of paperwork.'),
-  );
+  await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(WORKED));
 
   // The diff for trial 2 is marked from its patch on trial 2's own board in symbols, and in words in the fold.
   const board = screen.getByRole('img', { name: 'Pressed' });
@@ -317,7 +327,7 @@ test('reduced motion: final frames, the full minutes, the correction diff and th
   replay.focus();
   await user.keyboard('{Enter}');
   expect(document.activeElement).toBe(replay);
-  expect(screen.getByRole('status').textContent).toBe('Trial 1 in progress.');
+  expect(screen.getByRole('status').textContent).toBe(TESTING);
   expect(trial(1).getAttribute('aria-pressed')).toBe('true');
 });
 
@@ -351,13 +361,11 @@ test('a press keeps the rig, goes excited at 0.90 s and cuts to deadpan at 1.60 
   render(<BuildDesk canFile />);
   await user.click(screen.getByRole('button', { name: 'Press the button' }));
 
-  await vi.waitFor(
-    () =>
-      expect(screen.getByRole('status').textContent).toBe(
-        'One button. An extraordinary amount of paperwork.',
-      ),
-    { timeout: 3000 },
-  );
+  // The build has ended on the press tick; the note keeps the trial until the hard cut reveals the outcome.
+  await vi.waitFor(() => expect(boardButton()?.closest('svg')?.getAttribute('data-press')).toBe('sequence'), {
+    timeout: 3000,
+  });
+  expect(screen.getByRole('status').textContent).toBe(TESTING);
   // The pressed lines are all said, but the rig, the board and the report wait for the press clock.
   expect(screen.getByRole('list', { name: 'Mr. Pending' }).textContent).toContain('WE DID IT!');
   expect(mood()).toBe('slow');
@@ -368,6 +376,7 @@ test('a press keeps the rig, goes excited at 0.90 s and cuts to deadpan at 1.60 
   expect(stamp()).toBe('PENDING');
   await vi.waitFor(() => expect(mood()).toBe('deadpan'), { timeout: 1500 });
   expect(stamp()).toBe('PRESSED');
+  expect(screen.getByRole('status').textContent).toBe(WORKED);
   // Its beats are over by the cut, so the board is left at rest.
   expect(boardButton()?.closest('svg')?.getAttribute('data-press')).toBe('still');
 });
@@ -379,9 +388,7 @@ test('with reduced motion a press shows its final deadpan at once, with no timed
   render(<BuildDesk canFile />);
   await user.click(screen.getByRole('button', { name: 'Press the button' }));
 
-  await vi.waitFor(() =>
-    expect(screen.getByRole('status').textContent).toBe('One button. An extraordinary amount of paperwork.'),
-  );
+  await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(WORKED));
   expect(mood()).toBe('deadpan');
   await new Promise((resolve) => setTimeout(resolve, 1000));
   expect(mood()).toBe('deadpan');
@@ -400,13 +407,11 @@ test('reduced motion switched on during a press cuts to the final deadpan at onc
   render(<BuildDesk canFile />);
   await user.click(screen.getByRole('button', { name: 'Press the button' }));
 
-  await vi.waitFor(
-    () =>
-      expect(screen.getByRole('status').textContent).toBe(
-        'One button. An extraordinary amount of paperwork.',
-      ),
-    { timeout: 3000 },
-  );
+  // The build has ended on the press tick; the note keeps the trial until the hard cut reveals the outcome.
+  await vi.waitFor(() => expect(boardButton()?.closest('svg')?.getAttribute('data-press')).toBe('sequence'), {
+    timeout: 3000,
+  });
+  expect(screen.getByRole('status').textContent).toBe(TESTING);
   expect(mood()).toBe('slow');
   const press = () => boardButton()?.closest('svg')?.getAttribute('data-press');
   expect(press()).toBe('sequence');
@@ -434,13 +439,11 @@ test('the voice speaks "WE DID IT!" at the excited cue, not on the press tick, a
   await vi.waitFor(() => expect(texts()).toEqual(['Commencing trial 1.']));
   spoken[0]?.onend?.();
 
-  await vi.waitFor(
-    () =>
-      expect(screen.getByRole('status').textContent).toBe(
-        'One button. An extraordinary amount of paperwork.',
-      ),
-    { timeout: 3000 },
-  );
+  // The build has ended on the press tick; the note keeps the trial until the hard cut reveals the outcome.
+  await vi.waitFor(() => expect(boardButton()?.closest('svg')?.getAttribute('data-press')).toBe('sequence'), {
+    timeout: 3000,
+  });
+  expect(screen.getByRole('status').textContent).toBe(TESTING);
   const voice = screen.getByRole('region', { name: 'Voice' });
   expect(mood()).toBe('slow');
   expect(texts()).toEqual(['Commencing trial 1.']);
@@ -512,9 +515,7 @@ test('markup in a model title or memo is shown as text, while streaming and once
 
   send((requestId) => ({ type: 'attempt', requestId, attempt }));
   send((requestId) => ({ type: 'done', requestId, header: { ...header([attempt]), title } }));
-  await vi.waitFor(() =>
-    expect(screen.getByRole('status').textContent).toBe('One button. An extraordinary amount of paperwork.'),
-  );
+  await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(WORKED));
   expect(screen.getByRole('img', { name: title })).toBeTruthy();
   expect(screen.getByRole('list', { name: 'Mr. Pending' }).textContent).toBe(`Memo: ${memo}`);
   expect(injected()).toBeNull();
@@ -616,6 +617,11 @@ test('a failure stops the line being spoken and clears its caption, and Mute car
     retryable: true,
   }));
   await screen.findByRole('alert');
+  // The note shows the real message and the next step, hidden from the status region that the alert already speaks.
+  expect(waiting()).toBe(false);
+  const status = screen.getByRole('status');
+  expect(status.textContent).toBe('Gemma took too long to answer. Try again. Next: Build again.');
+  expect(status.firstElementChild?.getAttribute('aria-hidden')).toBe('true');
   // The voice stops in the effect that follows the error's render.
   await vi.waitFor(() => expect(cancel).toHaveBeenCalledTimes(1));
   expect(voice.textContent).not.toContain('The Department is drafting.');
@@ -623,7 +629,7 @@ test('a failure stops the line being spoken and clears its caption, and Mute car
   // The voice switched off beside the error stays off for the build filed again.
   await user.click(within(voice).getByRole('button', { name: 'Voice on' }));
   await user.click(screen.getByRole('button', { name: 'Build again' }));
-  await screen.findByText('Drafting. Please do not rush the Department.');
+  await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(DESIGNING));
   expect(within(voice).getByRole('button', { name: 'Voice on' }).getAttribute('aria-pressed')).toBe('false');
 });
 
@@ -647,12 +653,10 @@ test('the press clock starts on the tick that reaches button.pressed and runs on
   // The header has not come, so playback waits at the press while the rig runs its sequence.
   await vi.waitFor(() => expect(mood()).toBe('excited'), { timeout: 1500 });
   await vi.waitFor(() => expect(mood()).toBe('deadpan'), { timeout: 1500 });
-  expect(screen.getByRole('status').textContent).toBe('Trial 1 in progress.');
+  expect(screen.getByRole('status').textContent).toBe(TESTING);
 
   send((requestId) => ({ type: 'done', requestId, header: header([pressed(1)]) }));
-  await vi.waitFor(() =>
-    expect(screen.getByRole('status').textContent).toBe('One button. An extraordinary amount of paperwork.'),
-  );
+  await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(WORKED));
   expect(mood()).toBe('deadpan');
 });
 
@@ -726,9 +730,7 @@ test('a done that arrives after the press keeps the same rig, so its sequence is
   expect(rig).toBeTruthy();
 
   send((requestId) => ({ type: 'done', requestId, header: header([pressed(1)]) }));
-  await vi.waitFor(() =>
-    expect(screen.getByRole('status').textContent).toBe('One button. An extraordinary amount of paperwork.'),
-  );
+  await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(WORKED));
   expect(rig?.isConnected).toBe(true);
 });
 

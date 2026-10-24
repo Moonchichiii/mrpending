@@ -10,6 +10,7 @@ import { Controls } from './Controls';
 import { ModelBadge } from './InferenceBadge';
 import { MinutesFold } from './MinutesFold';
 import { pressLine, pressVoiced, pressing } from './model/press';
+import { currentStep } from './model/note';
 import { progress } from './model/progress';
 import { IDLE, STEP_MS, failedOn, playhead, reduce, said } from './model/session';
 import type { Session, SessionEvent } from './model/session';
@@ -17,7 +18,6 @@ import { Hero, Stage } from './Stage';
 import { usePress } from './usePress';
 import { useTicks } from './useTicks';
 import { useTrial } from './useTrial';
-import styles from './BuildDesk.module.css';
 
 // A finished build is replayed by the build session itself: REPLAY turns its ending into playback from step 0.
 const start = (build: Build): Session =>
@@ -32,9 +32,11 @@ const play = (session: Session, event: SessionEvent | { type: 'START'; build: Bu
 // stands idle until its button is pressed; a record page (`autoplay`) plays at once and has no button of its own, so a
 // page never offers two. `build` is undefined while the recording is fetched, and `blocked` keeps the button waiting
 // with `note` saying why. The button and Replay play the recording again from the start; `folds` follow the Minutes.
+// `about`, under the heading, says what the visitor is watching.
 export function Playback({
   build,
   heading,
+  about,
   intro,
   note,
   blocked = false,
@@ -43,6 +45,7 @@ export function Playback({
 }: {
   build: Build | undefined;
   heading?: string | undefined;
+  about?: string | undefined;
   intro?: string | undefined;
   note?: string | undefined;
   blocked?: boolean;
@@ -86,6 +89,7 @@ export function Playback({
   return (
     <Stage
       heading={heading}
+      about={about}
       engineer={
         <Engineer status={session.status} line={line} failed={failedOn(build?.attempts ?? [], line)}>
           {/* As on the desk, the voice keeps its queue from playback to the ending; a replay restarts it. */}
@@ -113,13 +117,8 @@ export function Playback({
           run={run}
           stepMs={session.status === 'running' ? STEP_MS[session.speed] : undefined}
           pressedAt={press.at}
-          status={
-            <output ref={status} tabIndex={-1} className={styles.status}>
-              {session.status === 'running'
-                ? `Trial ${head?.attempt.n ?? 1} in progress.`
-                : (ended?.build.report.verdict ?? 'The recording waits for the button.')}
-            </output>
-          }
+          note={currentStep(session, { revealed, replay: true })}
+          statusRef={status}
           // As on the desk, the controls stand on the board in every phase.
           controls={
             <Controls
@@ -134,7 +133,7 @@ export function Playback({
               }
             />
           }
-          result={<Result stamp={now.stamp} text={now.result} />}
+          result={<Result stamp={now.stamp} text={now.result} roles={revealed} />}
         />
       }
       folds={

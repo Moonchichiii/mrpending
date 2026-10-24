@@ -1,20 +1,3 @@
-/* The persistent status region, hand-lettered in the Current step note: two lines tall in every phase on a narrow
-   board, one on a wide one, which holds the longest phase text and either verdict, so the note never changes size. */
-.status {
-  display: block;
-  min-height: 2lh;
-  font-family: var(--font-note);
-  font-size: clamp(1.125rem, 1rem + 0.3vw, 1.3125rem);
-  line-height: 1.25;
-  overflow-wrap: anywhere;
-}
-
-@container board (min-width: 50rem) {
-  .status {
-    min-height: 1lh;
-  }
-}
-
 /* An error over the machine: a level paper panel, the alert in its coral text token. */
 .notice {
   display: grid;

@@ -5,6 +5,9 @@ export type AppError = Omit<ApiError, 'code'> & { code: ApiError['code'] | 'INTE
 
 type Action = 'edit' | 'retry';
 
+// The control that offers each next step, named the same on the error panel and in the Current step note.
+export const ACTIONS: Record<Action, string> = { retry: 'Build again', edit: 'Edit the form' };
+
 // The one copy table: every code's message and the next step offered.
 const COPY: Record<AppError['code'], { message: string; action: Action }> = {
   INPUT_INVALID: {
