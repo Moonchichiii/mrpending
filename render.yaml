@@ -19,6 +19,7 @@ services:
       - path: /*
         name: Content-Security-Policy
         value: "default-src 'self'; connect-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; frame-ancestors 'none'"
+      # The host may send a stronger policy on onrender.com; the smoke test requires a max-age of at least this.
       - path: /*
         name: Strict-Transport-Security
         value: max-age=31536000

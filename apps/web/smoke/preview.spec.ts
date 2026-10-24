@@ -8,16 +8,26 @@ import { expectAxeClean } from '../e2e/layout';
 const HEADERS = {
   'content-security-policy':
     "default-src 'self'; connect-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; frame-ancestors 'none'",
-  'strict-transport-security': 'max-age=31536000',
   'x-content-type-options': 'nosniff',
   'referrer-policy': 'strict-origin-when-cross-origin',
   'permissions-policy': 'microphone=()',
   'x-robots-tag': 'noindex',
 };
+// The host may send a stronger HSTS policy than ours; its max-age must still be at least a year.
+const HSTS_MIN_AGE = 31536000;
 const REPLAYS = ['budget', 'scenic', 'windless'];
 
 const record = async (request: APIRequestContext, slug: string) =>
   Build.parse(await (await request.get(`/gallery/${slug}.json`)).json());
+
+const maxAge = (hsts: string | undefined) => {
+  const directive = hsts
+    ?.split(';')
+    .map((part) => part.trim())
+    .find((part) => /^max-age=/i.test(part));
+  const match = /^max-age="?(\d+)"?$/i.exec(directive ?? '');
+  return match ? Number(match[1]) : Number.NaN;
+};
 
 // Every request the page makes leaves this origin or reaches /api, or the CSP refuses something: each is a failure.
 function watch(page: Page, origin: string) {
@@ -38,6 +48,10 @@ test('the host answers every kind of path with the contract headers and noindex'
     expect(response.status(), path).toBe(200);
     for (const [name, value] of Object.entries(HEADERS))
       expect(response.headers()[name], `${path} ${name}`).toBe(value);
+    expect(
+      maxAge(response.headers()['strict-transport-security']),
+      `${path} strict-transport-security`,
+    ).toBeGreaterThanOrEqual(HSTS_MIN_AGE);
   }
 });
 
