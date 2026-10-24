@@ -6,7 +6,7 @@ import { APP_REPAIRS } from '../build/loop';
 import type { Env } from '../env';
 
 // An address, not a name prefix: a hostname such as 127.example.com may resolve anywhere.
-function loopback(host: string): boolean {
+export function loopback(host: string): boolean {
   const bare = host.replace(/^\[(.*)\]$/, '$1').replace(/^::ffff:/i, '');
   return bare === 'localhost' || bare === '::1' || (isIPv4(bare) && bare.startsWith('127.'));
 }

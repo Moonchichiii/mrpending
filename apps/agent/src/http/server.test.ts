@@ -11,13 +11,14 @@ import type { Line } from '@pending/contract';
 import { RULES_VERSION } from '@pending/machine';
 import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
+import { request } from 'node:http';
 import { inspect } from 'node:util';
 import { expect, onTestFinished, test, vi } from 'vitest';
 import lostBlueprint from '../../../../packages/machine/fixtures/lost/blueprint.json';
 import lostForm from '../../../../packages/machine/fixtures/lost/form.json';
 import pressedBlueprint from '../../../../packages/machine/fixtures/pressed/blueprint.json';
 import repairedPatch from '../../../../packages/machine/fixtures/repaired/patch.json';
-import { REJECTED, cloudEligible } from '../build/beats';
+import { REFUSED, REJECTED, cloudEligible } from '../build/beats';
 import { parseEnv } from '../env';
 import type { Call, Infer } from '../models/ollama';
 import { inference } from './config';
@@ -69,6 +70,20 @@ const post = (
     body: typeof body === 'string' ? body : JSON.stringify(body),
     ...(init.signal === undefined ? {} : { signal: init.signal }),
   });
+
+// fetch cannot set Host, so a forged one goes through node:http with exactly the headers given.
+function raw(url: string, headers: Record<string, string>, body = JSON.stringify(lostForm)) {
+  return new Promise<{ status: number; body: string }>((resolve, reject) => {
+    const req = request(`${url}/api/build`, { method: 'POST', headers }, (res) => {
+      res.setEncoding('utf8');
+      let text = '';
+      res.on('data', (chunk: string) => (text += chunk));
+      res.on('end', () => resolve({ status: res.statusCode ?? 0, body: text }));
+    });
+    req.on('error', reject);
+    req.end(body);
+  });
+}
 
 const read = async (res: Response) =>
   (await res.text())
@@ -441,6 +456,71 @@ test('CORS answers WEB_ORIGIN only, never a wildcard or credentials', async () =
   const build = await post(url, lostForm, { headers: { origin: LOCAL.WEB_ORIGIN } });
   expect(build.headers.get('access-control-expose-headers')).toContain('x-request-id');
   await build.text();
+});
+
+test.each([
+  ['another origin', { origin: 'https://elsewhere.example' }],
+  ['an opaque origin', { origin: 'null' }],
+  ['a rebound host name', { host: 'attacker.example:4111' }],
+  ['localhost instead of the bound address', { host: 'localhost' }],
+  ['a form post', { 'content-type': 'application/x-www-form-urlencoded' }],
+  ['plain text', { 'content-type': 'text/plain' }],
+  ['no content type', { 'content-type': '' }],
+])('a build from %s is 403 in character before the body, a slot or a model call', async (_, forged) => {
+  let calls = 0;
+  const url = await start((onPartial) => {
+    const infer = pressing(onPartial);
+    return (call, signal) => {
+      calls += 1;
+      return infer(call, signal);
+    };
+  });
+  const host = new URL(url).host;
+  const id = randomUUID();
+  const legitimate = { host, 'content-type': 'application/json', 'x-request-id': id };
+  const headers = Object.fromEntries(
+    Object.entries({ ...legitimate, ...forged }).filter(([, value]) => value !== ''),
+  );
+  const oversized = JSON.stringify({ ...lostForm, padding: 'x'.repeat(5000) });
+  // A full window of valid forms, then one over the body limit: no model call, no 413, no slot or window place taken.
+  for (const body of [
+    ...Array.from({ length: LIMITS.buildsPerWindow }, () => JSON.stringify(lostForm)),
+    oversized,
+  ]) {
+    const res = await raw(url, headers, body);
+    expect(res.status).toBe(403);
+    expect(ApiError.parse(JSON.parse(res.body))).toEqual({
+      code: 'INPUT_INVALID',
+      message: REFUSED,
+      requestId: id,
+      retryable: false,
+    });
+  }
+  expect(calls).toBe(0);
+  expect((await raw(url, legitimate)).status).toBe(200);
+  expect(calls).toBe(1);
+});
+
+test('the proxied build from WEB_ORIGIN to the bound host still streams, as does curl with no Origin', async () => {
+  const url = await start(pressing);
+  const host = new URL(url).host;
+  for (const origin of [{ origin: LOCAL.WEB_ORIGIN }, {}]) {
+    const res = await raw(url, {
+      host,
+      ...origin,
+      'content-type': 'application/json; charset=utf-8',
+      'x-request-id': randomUUID(),
+    });
+    expect(res.status).toBe(200);
+    expect(
+      transcript(
+        res.body
+          .split('\n')
+          .filter((l) => l !== '')
+          .map((l) => StreamEvent.parse(JSON.parse(l))),
+      ).at(-1),
+    ).toBe('done pressed=true attempts=1');
+  }
 });
 
 test('inference is this-machine only for a loopback Ollama asked from a loopback caller', () => {
