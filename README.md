@@ -23,6 +23,10 @@ cd apps/web && VITE_SITE_MODE=local bunx vp dev --host 127.0.0.1
 
 Open `http://127.0.0.1:5173`: the form is the front door and every build is designed live by your Ollama. Only a loopback browser reaches the agent through the proxy.
 
+- **Keep Ollama on loopback.** Ollama listens on `127.0.0.1:11434` by default and its API has no authentication. Do not set `OLLAMA_HOST` to `0.0.0.0` or any other non-loopback address: that offers the model to every machine on your network. The agent's `OLLAMA_URL` defaults to `http://127.0.0.1:11434`.
+- **E4B needs more memory.** `gemma4:e4b` runs, but on the 16 GB eval laptop it left 393 MiB of RAM free at the lowest (n 97 samples, see How we measured), against 2253 MiB for the shipping `gemma4:e2b`. Close other programs before trying it.
+- **Model terms.** The Gemma 4 weights are not part of this repository; Ollama downloads them from their publisher under the publisher's terms. See [`NOTICES.md`](NOTICES.md).
+
 Without an agent, build the static site (`bun run build`, which defaults to `VITE_SITE_MODE=static`) or run step 3 without `VITE_SITE_MODE=local`. That is the public site: it opens on the gallery and replays recorded builds with zero inference. It has no form, no build client and no `/api` call in its bundle, so it never needs a model.
 
 ## How we measured
@@ -115,4 +119,4 @@ The maintainer performs and dates this checklist before the production release i
 
 ## Licence
 
-MIT, in [`LICENSE`](LICENSE). Font licences are listed in [`NOTICES.md`](NOTICES.md).
+MIT, in [`LICENSE`](LICENSE). Font licences and the pointer to the Gemma terms are in [`NOTICES.md`](NOTICES.md).

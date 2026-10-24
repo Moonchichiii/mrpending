@@ -15,5 +15,3 @@ playwright-report/
 *.log
 apps/web/e2e/__screenshots__/
 apps/web/e2e/reference/
-apps/web/e2e/__screenshots__/
-apps/web/e2e/reference/

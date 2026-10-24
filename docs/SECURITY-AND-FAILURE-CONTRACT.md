@@ -76,6 +76,7 @@ Limits are tuned for a person watching a machine, not a script; scripts are stop
 ## 7. Origins, transport, headers
 
 - CORS allowlist from `WEB_ORIGIN`; no wildcard, no credentials.
+- Wrong-window refusal: `POST /api/build` is refused with `403` and `INPUT_INVALID` ("Form 27B/6 refused unread: it arrived at the wrong window.") when an `Origin` header is present and is not `WEB_ORIGIN` (an opaque `null` included), when the socket was not accepted on a loopback address or the `Host` header is not exactly that bound address and port (a rebound name or `localhost` included), or when the content type is not `application/json`. The refusal comes before the body is read, a slot or a rate-limit place is taken, or the model is called.
 - HTTPS enforced; `Strict-Transport-Security` set.
 - Static site: `Content-Security-Policy` (`default-src 'self'; connect-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; frame-ancestors 'none'`; fonts are self-hosted, so the static site requests nothing from any third party; the local installation adds the agent and, if enabled, Sentry to `connect-src` and `media-src`), `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: microphone=()`. CSP is verified in the browser console before the first public deploy. Agent: `nosniff`, `Cache-Control: no-store` on `/api/build`.
 
