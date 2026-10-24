@@ -1,4 +1,4 @@
-import type { BuildHeader } from '@pending/contract';
+import type { Build } from '@pending/contract';
 import { Engineer } from './features/engineer';
 import { Gallery, GalleryShelf } from './features/gallery';
 import styles from './FrontDoor.module.css';
@@ -9,13 +9,14 @@ const GUIDE = `${REPO}#readme`;
 const COMMIT = import.meta.env.VITE_COMMIT;
 
 // The public site: no form, no build client, no API; it opens on the gallery replayed from the static archive.
-// Headers handed in are shelved as they are, so the layout harness can show records at every schema maximum.
-export function StaticFrontDoor({ records }: { records?: BuildHeader[] | undefined }) {
+// Builds handed in are shelved as they are, so the layout harness can show records at every schema maximum.
+export function StaticFrontDoor({ records }: { records?: Build[] | undefined }) {
   return (
     <>
       <main className={styles.page}>
         <header className={styles.intro}>
           <h1 className={styles.name}>Mr. Pending</h1>
+          <p className={styles.headline}>This archive replays recorded builds. It takes no requests.</p>
           <p className={styles.lede}>
             Chief Engineer of the Department of Unnecessary Engineering. One job: press one blue button.
             Recorded local inference.

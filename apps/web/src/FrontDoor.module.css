@@ -27,6 +27,14 @@
   max-width: var(--measure);
 }
 
+/* The static door's headline: what the archive is, before anything else is read. */
+.headline {
+  max-width: var(--measure);
+  font-family: var(--font-display);
+  font-size: var(--text-heading);
+  font-weight: 700;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;

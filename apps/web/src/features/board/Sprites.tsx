@@ -205,6 +205,15 @@ export function Button({ at, pressed }: { at: Point; pressed: boolean }) {
   );
 }
 
+// The same button off the board, for the front door; it sinks while the control around it is held down.
+export function BlueButton() {
+  return (
+    <svg className={styles.blueButton} viewBox="-30 -10 60 42" aria-hidden="true" data-blue-button>
+      <Button at={{ x: 0, y: 0 }} pressed={false} />
+    </svg>
+  );
+}
+
 const SPARKS = [-150, -110, -70, -30, 10] as const;
 
 // The press at rest (character sheet section 6): cracks across the sunk dome, sparks, PRESSED beside the button and

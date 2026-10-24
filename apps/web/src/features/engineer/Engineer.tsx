@@ -40,20 +40,24 @@ class Boundary extends Component<{ fallback: ReactNode; children: ReactNode }, {
 
 // Mr. Pending's line card: the rig in the corner, the line beside it, and on the cameo line the sloth on its top edge.
 // failed is the simulator's word that the line's attempt failed; a forged cameo line alone never brings the sloth.
+// hero draws the full rig large under the line on every width, for the front door before anything is filed.
 export function Engineer({
   status,
   line,
   failed,
+  hero = false,
   children,
 }: {
   status: Phase;
   line: Line | undefined;
   failed: boolean;
+  hero?: boolean;
   children: ReactNode;
 }) {
   const cameo = line?.beat === 'cameo' && failed;
+  const classes = [styles.card, cameo && styles.withSloth, hero && styles.hero].filter(Boolean).join(' ');
   return (
-    <div className={cameo ? `${styles.card} ${styles.withSloth}` : styles.card}>
+    <div className={classes}>
       {cameo && (
         <Boundary fallback={null}>
           <Sloth />

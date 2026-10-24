@@ -34,6 +34,7 @@ afterAll(() => server.close());
 test('the static front door opens on the gallery with the two actions and no form', async () => {
   render(<App />);
   expect(screen.getByRole('heading', { level: 1, name: 'Mr. Pending' })).toBeDefined();
+  expect(screen.getByText('This archive replays recorded builds. It takes no requests.')).toBeDefined();
   expect(screen.getByRole('link', { name: 'Watch Mr. Pending at work' }).getAttribute('href')).toBe(
     '#gallery',
   );
