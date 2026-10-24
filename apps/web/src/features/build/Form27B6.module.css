@@ -51,6 +51,12 @@
   resize: vertical;
 }
 
+/* The example request keeps the hint's contrast on paper; browsers otherwise fade a placeholder below it. */
+.field textarea::placeholder {
+  color: var(--copper-text);
+  opacity: 1;
+}
+
 .field [aria-invalid='true'] {
   border-color: var(--coral-text);
   border-width: 3px;

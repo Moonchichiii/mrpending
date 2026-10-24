@@ -9,6 +9,10 @@ import {
   expectTargets,
 } from './layout';
 
+const CLOSED = 'The Department is closed to new applications. The archive is open.';
+// The stylesheet's phone width (40rem at the default 16 px) shows the head alone; wider viewports show the full rig.
+const PHONE_RIG = 640;
+
 test('the static front door makes no API call', async ({ page }) => {
   const api: string[] = [];
   page.on('request', (request) => {
@@ -16,6 +20,9 @@ test('the static front door makes no API call', async ({ page }) => {
   });
   await page.goto('/');
   await expect(page.getByRole('link', { name: 'Watch Mr. Pending at work' })).toBeVisible();
+  // Mr. Pending is at the closed counter from the first paint, in the slow mood.
+  await expect(page.getByText(CLOSED)).toBeVisible();
+  await expect(page.locator('svg[data-variant="desk"]')).toHaveClass(/slow/);
   expect(api).toEqual([]);
   await expectAxeClean(page, 'static front door');
   await expectFocusVisible(page, 'static front door');
@@ -39,6 +46,11 @@ for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport);
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    const shown = viewport.width <= PHONE_RIG ? 'phone' : 'desk';
+    const hidden = shown === 'phone' ? 'desk' : 'phone';
+    await expect(page.locator(`svg[data-variant="${shown}"]`)).toBeVisible();
+    await expect(page.locator(`svg[data-variant="${hidden}"]`)).toBeHidden();
+    await expect(page.getByText(CLOSED)).toBeVisible();
     await expectNoOverflow(page);
     if (viewport.width <= PHONE) await expectTargets(page);
   });
