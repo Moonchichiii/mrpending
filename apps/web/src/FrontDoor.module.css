@@ -1,63 +1,52 @@
 .page {
   display: grid;
-  gap: var(--space-5);
+  gap: var(--space-4);
   width: min(100% - 2 * var(--space-3), 72rem);
   margin-inline: auto;
-  padding-block: var(--space-5);
+  padding-block: var(--space-3) var(--space-5);
 }
 
 .footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
   width: min(100% - 2 * var(--space-3), 72rem);
   margin-inline: auto;
   padding-block-end: var(--space-5);
 }
 
-.intro,
+/* Running-text links on the yellow page are ink, and at least 52 px tall (character sheet sections 5 and 8). */
+.footer a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target);
+  color: var(--ink);
+}
+
+.name {
+  font-size: var(--text-heading);
+  line-height: 1.2;
+}
+
+/* Everything past the first screen is a closed section; its summary keeps the disclosure triangle and 52 px. */
+.fold {
+  min-width: 0;
+}
+
+.summary {
+  min-height: var(--target);
+  padding-block: var(--space-2);
+  cursor: pointer;
+}
+
+.summary > h2 {
+  display: inline;
+  font-size: var(--text-heading);
+}
+
 .section {
   display: grid;
   gap: var(--space-3);
   min-width: 0;
-}
-
-.name {
-  font-size: var(--text-title);
-}
-
-.lede {
-  max-width: var(--measure);
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-}
-
-.primary,
-.secondary {
-  display: inline-flex;
-  align-items: center;
-  min-width: 0;
-  min-height: var(--target);
-  padding: var(--space-2) var(--space-4);
-  font-weight: 700;
-  text-decoration: none;
-  border: var(--border-paper);
-  border-radius: 10px 4px 12px 6px;
-}
-
-/* The primary button: ink on cream, copper shadow, a -1 degree tilt (character sheet section 5). */
-.primary {
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--font-display);
-  box-shadow: var(--shadow-primary);
-  rotate: -1deg;
-}
-
-.secondary {
-  background: transparent;
-  color: var(--ink);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
+  padding-block-start: var(--space-3);
 }

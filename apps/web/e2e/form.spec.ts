@@ -2,12 +2,16 @@ import { readFileSync } from 'node:fs';
 import { Line } from '@pending/contract';
 import type { StreamEvent } from '@pending/contract';
 import { expect, test } from '@playwright/test';
-import { ATTEMPTS, DEFAULT, adjust, ndjson, open, recorded } from './build';
+import { ATTEMPTS, DEFAULT, FILE, adjust, ndjson, open, recorded } from './build';
 import { PHONE, VIEWPORTS, expectAxeClean, expectNoOverflow, expectTargets } from './layout';
 
 const ID = '00000000-0000-4000-8000-000000000001';
+const INTRODUCTION =
+  'Chief Engineer of the Department of Unnecessary Engineering. One job: press one blue button.';
 
-test('Form 27B/6 is unfolded, completed and filed with the keyboard alone', async ({ page }) => {
+test('Form 27B/6 is unfolded under the board, completed and filed with the keyboard alone', async ({
+  page,
+}) => {
   await open(page);
   const filed = page.waitForRequest('**/api/build');
   await page.route('**/api/build', (route) =>
@@ -16,10 +20,10 @@ test('Form 27B/6 is unfolded, completed and filed with the keyboard alone', asyn
       json: { code: 'MODEL_UNAVAILABLE', message: 'No model.', requestId: ID, retryable: true },
     }),
   );
-  const file = page.getByRole('button', { name: 'File Form 27B/6' });
+  const file = page.getByRole('button', { name: FILE });
   await file.focus();
   await page.keyboard.press('Tab');
-  await expect(page.getByText('Adjust the form')).toBeFocused();
+  await expect(page.getByText('Advanced settings')).toBeFocused();
   await page.keyboard.press('Enter');
   await page.keyboard.press('Tab');
   await expect(page.getByLabel('1. Nature of the request')).toBeFocused();
@@ -35,7 +39,7 @@ test('Form 27B/6 is unfolded, completed and filed with the keyboard alone', asyn
   await page.keyboard.press('ArrowDown');
   await page.keyboard.press('Tab');
   await expect(page.getByLabel('5. Forbidden equipment')).toBeFocused();
-  // Back past the five items and the fold to the button above them.
+  // Back past the five items and the fold to the button in the top row.
   for (let i = 0; i < 6; i += 1) await page.keyboard.press('Shift+Tab');
   await expect(file).toBeFocused();
   await page.keyboard.press('Enter');
@@ -49,46 +53,89 @@ test('Form 27B/6 is unfolded, completed and filed with the keyboard alone', asyn
   await expectAxeClean(page, 'form after filing, model unavailable');
 });
 
-test('the front door shows Mr. Pending and one button that files the folded, pre-filled form, and his rig carries on into the build', async ({
+// The maintainer's layout: one screen. Mr. Pending, his voice and the board's button in the top row, the idle board
+// under it with the model it will use, everything else folded away; at 1440 the board fits, at 390 the button does.
+const SCREENS = [
+  { width: 1440, height: 900, shown: 'desk' },
+  { width: PHONE, height: 844, shown: 'phone' },
+] as const;
+
+test('the front door is one screen: Mr. Pending, the blue button and the idle board, the rest folded away', async ({
   page,
-}) => {
-  for (const { width, shown } of [
-    { width: 1440, shown: 'desk' },
-    { width: PHONE, shown: 'phone' },
-  ]) {
-    await page.setViewportSize({ width, height: 900 });
+}, testInfo) => {
+  for (const { width, height, shown } of SCREENS) {
+    await page.setViewportSize({ width, height });
     await open(page);
+    await expect(page.getByRole('heading', { level: 1, name: 'Mr. Pending' })).toBeVisible();
     const rig = page.locator(`svg[data-variant="${shown}"]`);
     await expect(rig).toBeVisible();
     await expect(rig).toHaveClass(/slow/);
-    // The status line is on his card; the status region keeps the same words for assistive technology.
-    await expect(page.locator('p', { hasText: 'Form 27B/6 awaits filing.' })).toBeVisible();
-    await expect(page.getByRole('status')).toHaveText('Form 27B/6 awaits filing.');
-    // One large button directly under his card, the guide in one line under it, the five items folded away.
-    const file = page.getByRole('button', { name: 'File Form 27B/6' });
-    await expect(file).toBeVisible();
     const card = rig.locator('xpath=../..');
-    const [cardBox, fileBox] = [await card.boundingBox(), await file.boundingBox()];
-    expect(fileBox && cardBox && fileBox.y - (cardBox.y + cardBox.height)).toBeGreaterThanOrEqual(0);
-    expect(fileBox && cardBox && fileBox.y - (cardBox.y + cardBox.height)).toBeLessThanOrEqual(64);
+    await expect(card).toHaveText(INTRODUCTION);
+    // The status region keeps the phase for assistive technology without showing it.
+    await expect(page.getByRole('status')).toHaveText('Form 27B/6 awaits filing.');
+    const voice = page.getByRole('region', { name: 'Voice' });
+    await expect(voice.getByRole('button', { name: 'Mute' })).toBeVisible();
+    await expect(voice.getByRole('button', { name: 'Skip voice' })).toBeVisible();
+
+    // The one call to action is the board's own button sprite, inside the first screen at both widths.
+    const file = page.getByRole('button', { name: FILE });
+    await expect(file).toBeVisible();
+    await expect(file.locator('[data-button]')).toHaveCount(1);
+    await expect(page.getByRole('button')).toHaveText(['Mute', 'Skip voice', FILE]);
+    const fileBox = await file.boundingBox();
+    expect(fileBox && fileBox.y + fileBox.height).toBeLessThanOrEqual(height);
     expect(fileBox?.height).toBeGreaterThanOrEqual(78);
-    await expect(page.getByText(/^File it as it stands or adjust it first/)).toBeVisible();
-    await expect(page.getByText('Adjust the form')).toBeVisible();
+
+    // The idle board from the first paint: its header from /api/config, one caption, the level line.
+    const board = page.getByRole('region', { name: 'The board' });
+    await expect(board.getByText('Gemma 4 E2B · Ollama · this machine', { exact: true })).toBeVisible();
+    await expect(board.getByRole('img', { name: 'The empty board' })).toBeVisible();
+    await expect(board.locator('[data-hopper]')).toHaveCount(1);
+    await expect(board.locator('[data-button]')).toHaveCount(1);
+    await expect(board.getByText('The ridiculous machinery appears here.', { exact: true })).toBeVisible();
+    const level = board.getByText('Gemma designs → Simulator tests → Gemma repairs', { exact: true });
+    await expect(level).toBeVisible();
+    // The issue's evidence: the first screen as a visitor sees it, kept as a report attachment, never compared.
+    const path = testInfo.outputPath(`first-screen-${width}.png`);
+    await page.screenshot({ path, animations: 'disabled' });
+    await testInfo.attach(`first-screen-${width}`, { path, contentType: 'image/png' });
+    if (width === 1440) {
+      // The top row, then the board down to its level line, without scrolling.
+      const cardBox = await card.boundingBox();
+      const boardBox = await board.boundingBox();
+      const levelBox = await level.boundingBox();
+      expect(fileBox && cardBox && fileBox.x - (cardBox.x + cardBox.width)).toBeGreaterThan(0);
+      expect(boardBox && cardBox && boardBox.y - (cardBox.y + cardBox.height)).toBeGreaterThan(0);
+      expect(levelBox && levelBox.y + levelBox.height).toBeLessThanOrEqual(height);
+    }
+
+    // Everything else is folded: the five items, the department and the gallery; no guide, no steps.
+    await expect(page.getByText('Advanced settings', { exact: true })).toBeAttached();
     await expect(page.getByLabel('1. Nature of the request')).toBeHidden();
-    await expectAxeClean(page, `front door with Mr. Pending at ${width}`);
+    await expect(page.getByRole('region', { name: 'My department' })).toBeHidden();
+    await expect(page.getByRole('region', { name: 'The gallery' })).toBeHidden();
+    await expect(page.getByText(/^File it as it stands/)).toHaveCount(0);
+    await expect(page.getByRole('list', { name: 'How to file' })).toHaveCount(0);
+    await expectNoOverflow(page);
+    await expectAxeClean(page, `one-screen front door at ${width}`);
   }
 
-  // The rig on the front door is marked, and the drafting build shows that same element, not a second rig.
-  // One click files the default request as it stands.
+  // One click files the default request as it stands; the build streams into the same board with the same rig, on the
+  // same page.
   const filed = page.waitForRequest('**/api/build');
   await page.route('**/api/build', () => {});
   await page.locator('svg[data-variant="desk"]').evaluate((el) => el.setAttribute('data-front-door', ''));
-  await page.getByRole('button', { name: 'File Form 27B/6' }).click();
+  const address = page.url();
+  await page.getByRole('button', { name: FILE }).click();
   expect((await filed).postDataJSON()).toEqual(DEFAULT);
   await expect(page.getByRole('status')).toHaveText('Drafting. Please do not rush the Department.');
   await expect(page.locator('svg[data-variant="desk"]')).toHaveCount(1);
   await expect(page.locator('svg[data-variant="desk"][data-front-door]')).toHaveCount(1);
-  await expect(page.getByText(/^File it as it stands/)).toHaveCount(0);
+  await expect(
+    page.getByRole('region', { name: 'The board' }).getByRole('img', { name: 'The empty board' }),
+  ).toBeVisible();
+  expect(page.url()).toBe(address);
 });
 
 test('the form is axe clean folded, unfolded, with field errors and with the rejection', async ({ page }) => {
@@ -99,7 +146,7 @@ test('the form is axe clean folded, unfolded, with field errors and with the rej
   await page.getByLabel('2. Fewest parts').fill('');
   await page.getByLabel('4. Required equipment').selectOption('fan');
   await page.getByLabel('5. Forbidden equipment').selectOption('fan');
-  await page.getByRole('button', { name: 'File Form 27B/6' }).click();
+  await page.getByRole('button', { name: FILE }).click();
   await expect(page.getByRole('alert')).toContainText('Form 27B/6 rejected');
   await expect(page.getByText('Item 2 must be a whole number from 2 to 8.')).toBeVisible();
   await expectAxeClean(page, 'form with field errors and rejection');
@@ -117,7 +164,7 @@ test('without a confirmed config the form is editable, files nothing and is axe 
   await page.getByLabel('1. Nature of the request').fill('A scenic route, please.');
   await page.getByLabel('1. Nature of the request').press('Tab');
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('button', { name: 'File Form 27B/6' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: FILE })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Ask the Department again' })).toBeVisible();
   await expectAxeClean(page, 'form with unconfirmed config');
   expect(builds).toEqual([]);
@@ -131,7 +178,7 @@ test('the board is axe clean while a trial runs and beside the correction', asyn
     const requestId = route.request().headers()['x-request-id'] ?? '';
     return route.fulfill({ body: ndjson(recorded(requestId)) });
   });
-  await page.getByRole('button', { name: 'File Form 27B/6' }).click();
+  await page.getByRole('button', { name: FILE }).click();
   const status = page.getByRole('status');
   const pause = page.getByRole('button', { name: 'Pause' });
 
@@ -159,7 +206,7 @@ test('a pressed build ends on the Engineering Report, saved as a 1200 x 630 PNG,
     const requestId = route.request().headers()['x-request-id'] ?? '';
     return route.fulfill({ body: ndjson(recorded(requestId)) });
   });
-  await page.getByRole('button', { name: 'File Form 27B/6' }).click();
+  await page.getByRole('button', { name: FILE }).click();
 
   // Both trials at 120 ms a step, then the press clock's hard cut at 1.60 s.
   const card = page.getByRole('region', { name: 'Engineering Report' });
@@ -209,7 +256,7 @@ test('Mr. Pending takes the mood of each line, beside the voice, and the desk is
   });
   // Time stands still from here, so only runFor moves the playhead and each mood holds for its picture.
   await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
-  await page.getByRole('button', { name: 'File Form 27B/6' }).click();
+  await page.getByRole('button', { name: FILE }).click();
   await expect(page.getByRole('status')).toHaveText('Trial 1 in progress.');
   const lines = page.getByRole('list', { name: 'Mr. Pending' });
   // The card holds the portrait and the lines; the desk figure is the rig itself.
@@ -241,10 +288,10 @@ test('Mr. Pending takes the mood of each line, beside the voice, and the desk is
 });
 
 for (const viewport of VIEWPORTS) {
-  test(`the one-button front door fits at ${viewport.name}`, async ({ page }) => {
+  test(`the one-screen front door fits at ${viewport.name}`, async ({ page }) => {
     await page.setViewportSize(viewport);
     await open(page);
-    await expect(page.getByRole('button', { name: 'File Form 27B/6' })).toBeVisible();
+    await expect(page.getByRole('button', { name: FILE })).toBeVisible();
     await expectNoOverflow(page);
     if (viewport.width <= PHONE) await expectTargets(page);
   });
@@ -257,7 +304,7 @@ for (const viewport of VIEWPORTS) {
     await page.getByLabel('3. Most parts').fill('');
     await page.getByLabel('4. Required equipment').selectOption('conveyor');
     await page.getByLabel('5. Forbidden equipment').selectOption('conveyor');
-    await page.getByRole('button', { name: 'File Form 27B/6' }).click();
+    await page.getByRole('button', { name: FILE }).click();
     await expect(page.getByRole('alert')).toBeVisible();
     await expectNoOverflow(page);
     if (viewport.width <= PHONE) await expectTargets(page);

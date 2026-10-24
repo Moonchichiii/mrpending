@@ -1,6 +1,6 @@
 import { Form, PartKind } from '@pending/contract';
 import type { SyntheticEvent } from 'react';
-import { useId, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import styles from './Form27B6.module.css';
 
 type Field = 'nature' | 'minParts' | 'maxParts' | 'required' | 'forbidden';
@@ -58,18 +58,20 @@ const contradiction = (c: ReturnType<typeof candidate>): 'forbidden' | 'minParts
   return undefined;
 };
 
-// The button files the pre-filled request at once; the five items stay folded away until a visitor adjusts them.
-// canFile is false until the inference badge is shown: the fields stay editable, nothing leaves the browser.
+// A submit button elsewhere on the page names this form by `id` and files the pre-filled request at once; the five
+// items stay folded away until a visitor adjusts them. canFile is false until the inference badge is shown: the
+// fields stay editable, nothing leaves the browser.
 export function Form27B6({
+  id,
   initial,
   onFile,
   canFile = true,
 }: {
+  id: string;
   initial?: Form | undefined;
   onFile: (form: Form) => void;
   canFile?: boolean;
 }) {
-  const id = useId();
   const [draft, setDraft] = useState(() => toDraft(initial ?? DEFAULT));
   const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
   const [rejection, setRejection] = useState<string>();
@@ -147,24 +149,7 @@ export function Form27B6({
   );
 
   return (
-    <form className={styles.form} noValidate onSubmit={submit} aria-labelledby={`${id}-title`}>
-      <button
-        type="submit"
-        className={styles.submit}
-        disabled={!canFile}
-        aria-describedby={canFile ? undefined : `${id}-waiting`}
-      >
-        File Form 27B/6
-      </button>
-      {!canFile && (
-        <p id={`${id}-waiting`} className={styles.guide}>
-          Filing opens once the Department confirms where drafting happens.
-        </p>
-      )}
-      {/* The Department's guidance, never a line of Mr. Pending's. */}
-      <p className={styles.guide}>
-        File it as it stands or adjust it first, then watch him design, fail and repair.
-      </p>
+    <form id={id} className={styles.form} noValidate onSubmit={submit} aria-labelledby={`${id}-title`}>
       {/* Outside the fold, so a rejection stays in view however the form was left. */}
       {rejection && (
         <p role="alert" className={styles.rejection}>
@@ -172,7 +157,7 @@ export function Form27B6({
         </p>
       )}
       <details ref={sheet} className={styles.sheet}>
-        <summary className={styles.adjust}>Adjust the form</summary>
+        <summary className={styles.adjust}>Advanced settings</summary>
         <h2 id={`${id}-title`} className={styles.title}>
           Form 27B/6
         </h2>

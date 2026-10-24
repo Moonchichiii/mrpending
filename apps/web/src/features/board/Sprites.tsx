@@ -205,6 +205,15 @@ export function Button({ at, pressed }: { at: Point; pressed: boolean }) {
   );
 }
 
+// The board's button alone, drawn by the same sprite, for a call to action off the board; the label is the caller's.
+export function BlueButton() {
+  return (
+    <svg className={styles.blueButton} viewBox="-30 -8 60 40" aria-hidden="true">
+      <Button at={{ x: 0, y: 0 }} pressed={false} />
+    </svg>
+  );
+}
+
 const SPARKS = [-150, -110, -70, -30, 10] as const;
 
 // The press at rest (character sheet section 6): cracks across the sunk dome, sparks, PRESSED beside the button and

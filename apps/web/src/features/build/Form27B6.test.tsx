@@ -6,23 +6,32 @@ import { Form27B6 } from './Form27B6';
 
 afterEach(cleanup);
 
+// The front door's button stands elsewhere on the page and names the form it files, as it does here.
 const setup = (initial?: Form) => {
   const onFile = vi.fn<(form: Form) => void>();
-  render(<Form27B6 initial={initial} onFile={onFile} />);
+  render(
+    <>
+      <button type="submit" form="form-27b6">
+        Ask Mr. Pending to press it
+      </button>
+      <Form27B6 id="form-27b6" initial={initial} onFile={onFile} />
+    </>,
+  );
   return { onFile, user: userEvent.setup() };
 };
 
 const DEFAULT = { nature: 'Press the blue button. Scenic route, please.', minParts: 3, maxParts: 8 };
-const fileButton = () => screen.getByRole('button', { name: 'File Form 27B/6' });
-const sheet = () => screen.getByText('Adjust the form').closest('details');
+const fileButton = () => screen.getByRole('button', { name: 'Ask Mr. Pending to press it' });
+const sheet = () => screen.getByText('Advanced settings').closest('details');
 // The visitor opens the folded form, as they must before any item can be changed.
-const adjust = (user: ReturnType<typeof userEvent.setup>) => user.click(screen.getByText('Adjust the form'));
+const adjust = (user: ReturnType<typeof userEvent.setup>) =>
+  user.click(screen.getByText('Advanced settings'));
 
 describe('Form 27B/6', () => {
   test('files the pre-filled default request in one click, with the five items folded away', async () => {
     const { onFile, user } = setup();
     expect(sheet()?.open).toBe(false);
-    expect(screen.getByText(/^File it as it stands or adjust it first/)).toBeDefined();
+    expect(screen.queryByText(/^File it as it stands/)).toBeNull();
     await user.click(fileButton());
     expect(onFile).toHaveBeenCalledWith(DEFAULT);
     expect(sheet()?.open).toBe(false);
@@ -33,7 +42,7 @@ describe('Form 27B/6', () => {
     await user.tab();
     expect(document.activeElement).toBe(fileButton());
     await user.tab();
-    expect(document.activeElement).toBe(screen.getByText('Adjust the form'));
+    expect(document.activeElement).toBe(screen.getByText('Advanced settings'));
     // jsdom does not open a summary by keyboard; the Playwright form spec presses Enter on it in a real browser.
     await adjust(user);
     expect(sheet()?.open).toBe(true);
@@ -86,7 +95,7 @@ describe('Form 27B/6', () => {
     await adjust(user);
     await user.selectOptions(screen.getByLabelText('4. Required equipment'), 'fan');
     await user.selectOptions(screen.getByLabelText('5. Forbidden equipment'), 'fan');
-    await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+    await user.click(fileButton());
     expect(screen.getByRole('alert').textContent).toBe(
       'Form 27B/6 rejected: items 4 and 5 name the same equipment. The Department does not do paradoxes before lunch.',
     );
@@ -96,7 +105,7 @@ describe('Form 27B/6', () => {
 
   test('more parts asked for than allowed is rejected in character', async () => {
     const { onFile, user } = setup({ nature: '', minParts: 8, maxParts: 4 });
-    await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+    await user.click(fileButton());
     expect(screen.getByRole('alert').textContent).toMatch(
       /^Form 27B\/6 rejected: item 2 asks for more parts than item 3/,
     );
@@ -107,7 +116,7 @@ describe('Form 27B/6', () => {
     const { onFile, user } = setup();
     await adjust(user);
     await user.clear(screen.getByLabelText('2. Fewest parts'));
-    await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+    await user.click(fileButton());
     const field = screen.getByLabelText('2. Fewest parts');
     expect(field.getAttribute('aria-invalid')).toBe('true');
     expect(screen.getByText('Item 2 must be a whole number from 2 to 8.').id).toBe(
@@ -123,7 +132,7 @@ describe('Form 27B/6', () => {
     await user.clear(screen.getByLabelText('2. Fewest parts'));
     await user.selectOptions(screen.getByLabelText('4. Required equipment'), 'fan');
     await user.selectOptions(screen.getByLabelText('5. Forbidden equipment'), 'fan');
-    await user.click(screen.getByRole('button', { name: 'File Form 27B/6' }));
+    await user.click(fileButton());
     expect(screen.getByRole('alert').textContent).toMatch(/^Form 27B\/6 rejected: items 4 and 5/);
     expect(screen.getByText('Item 2 must be a whole number from 2 to 8.')).toBeDefined();
     expect(document.activeElement).toBe(screen.getByLabelText('2. Fewest parts'));

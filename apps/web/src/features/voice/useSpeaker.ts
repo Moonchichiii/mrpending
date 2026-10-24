@@ -13,12 +13,18 @@ export type Speaker = {
   skip: () => void;
 };
 
+// A Mute setting held by the caller, for a voice that is replaced by another during a visit.
+export type Mute = { muted: boolean; setMuted: (muted: boolean) => void };
+
 // Speaks the lines said so far, one at a time and in order; the player owns the AbortController of the line it plays.
-// A new `playback` (a replay, a new build) stops the line being spoken and hears every line again; Mute carries over.
-export function useSpeaker(lines: readonly Line[], playback: number | string): Speaker {
+// A new `playback` (a replay, a new build) stops the line being spoken and hears every line again; Mute carries over,
+// and is the caller's when `mute` is given.
+export function useSpeaker(lines: readonly Line[], playback: number | string, mute?: Mute): Speaker {
   const [state, dispatch] = useReducer(voiceReducer, initialVoice);
   const [voice, setVoice] = useState<SpeechSynthesisVoice | null | undefined>(undefined);
-  const [muted, setMutedState] = useState(false);
+  const [own, setOwn] = useState(false);
+  const muted = mute?.muted ?? own;
+  const setMutedState = mute?.setMuted ?? setOwn;
   const [heard, setHeard] = useState(playback);
   const playing = useRef<{ id: string; controller: AbortController } | undefined>(undefined);
 

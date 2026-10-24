@@ -1,0 +1,141 @@
+/* One screen: on a phone everything stacks with the button before the voice; wider, Mr. Pending and the button share
+   the top row and the board spans the width under it. The container is the stage's own, so a record page reflows too. */
+.frame {
+  min-width: 0;
+  container-type: inline-size;
+}
+
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'heading' 'card' 'action' 'voice' 'board' 'after';
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+@container (min-width: 44rem) {
+  .stage {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    grid-template-areas: 'heading action' 'card action' 'voice action' 'board board' 'after after';
+    column-gap: var(--space-5);
+  }
+}
+
+.heading {
+  grid-area: heading;
+  min-width: 0;
+}
+
+.card {
+  grid-area: card;
+  min-width: 0;
+}
+
+.voice {
+  grid-area: voice;
+  min-width: 0;
+}
+
+.action {
+  grid-area: action;
+  display: grid;
+  gap: var(--space-2);
+  align-content: center;
+  justify-items: start;
+  min-width: 0;
+}
+
+.after {
+  grid-area: after;
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* The board's height follows the viewport's, so the top row and the whole board fit one desktop screen. */
+.board {
+  grid-area: board;
+  display: grid;
+  gap: var(--space-2);
+  justify-self: center;
+  width: 100%;
+  max-width: max(20rem, calc((100svh - 33rem) * 720 / 440));
+  min-width: 0;
+}
+
+.header,
+.level {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.header {
+  font-family: var(--font-display);
+}
+
+/* The idle caption sits in the empty middle of the board, between the hopper and the button; paper on navy is 7.5:1. */
+.figure {
+  position: relative;
+  min-width: 0;
+}
+
+.caption {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-5) var(--space-4);
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-size: var(--text-heading);
+  line-height: 1.2;
+  text-align: center;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+
+/* The board's own button at hero size on a paper card: ink on cream, copper shadow, a -1 degree tilt. */
+.hero {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  width: min(100%, 20rem);
+  padding: var(--space-3) var(--space-4);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: var(--text-heading);
+  font-weight: 700;
+  line-height: 1.2;
+  border: var(--border-paper);
+  border-radius: 10px 4px 12px 6px;
+  box-shadow: var(--shadow-primary);
+  rotate: -1deg;
+  cursor: pointer;
+}
+
+.hero > svg {
+  width: min(100%, 12rem);
+}
+
+.label {
+  text-align: center;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.hero:disabled {
+  color: var(--copper-text);
+  box-shadow: none;
+  rotate: none;
+  cursor: not-allowed;
+}
+
+.hero:enabled:active {
+  translate: 2px 2px;
+  box-shadow: 3px 3px 0 var(--copper);
+}
+
+.note {
+  max-width: var(--measure);
+}

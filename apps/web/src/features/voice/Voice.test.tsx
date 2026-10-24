@@ -1,6 +1,7 @@
 import { Line } from '@pending/contract';
 import { act, cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import { afterEach, expect, test, vi } from 'vitest';
 import { Voice } from './Voice';
 
@@ -150,6 +151,41 @@ test('Esc skips the line being spoken and the next one follows', async () => {
   await userEvent.setup().keyboard('{Escape}');
   expect(synth.cancel).toHaveBeenCalledTimes(1);
   await vi.waitFor(() => expect(synth.spoken.map((u) => u.text)).toEqual([weDidIt.text, verdict.text]));
+});
+
+test('a silent voice on the same page leaves Esc to the voice that is speaking', async () => {
+  const synth = withSynth([voice('en-GB', true)]);
+  render(
+    <>
+      <Voice lines={[]} playback="idle" />
+      <Voice lines={[weDidIt, verdict]} playback={0} />
+    </>,
+  );
+  await vi.waitFor(() => expect(synth.spoken).toHaveLength(1));
+  await userEvent.setup().keyboard('{Escape}');
+  expect(synth.cancel).toHaveBeenCalledTimes(1);
+  await vi.waitFor(() => expect(synth.spoken.map((u) => u.text)).toEqual([weDidIt.text, verdict.text]));
+});
+
+test('a Mute held above carries over to the voice that replaces this one', async () => {
+  const synth = withSynth([voice('en-GB', true)]);
+  const user = userEvent.setup();
+  function Screen({ playing }: { playing: boolean }) {
+    const [muted, setMuted] = useState(false);
+    const mute = { muted, setMuted };
+    return playing ? (
+      <Voice key="recording" lines={[weDidIt]} playback="recording" mute={mute} />
+    ) : (
+      <Voice key="idle" lines={[]} playback="idle" mute={mute} />
+    );
+  }
+  const { rerender } = render(<Screen playing={false} />);
+  await user.click(screen.getByRole('button', { name: 'Mute' }));
+
+  rerender(<Screen playing />);
+  expect(screen.getByRole('button', { name: 'Mute' }).getAttribute('aria-pressed')).toBe('true');
+  expect(await screen.findByText(weDidIt.text)).toBeDefined();
+  expect(synth.spoken).toHaveLength(0);
 });
 
 test('a replay stops the line being spoken and hears every line again from the start', async () => {

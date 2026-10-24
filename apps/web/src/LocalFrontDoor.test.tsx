@@ -47,9 +47,11 @@ function countBuilds() {
   return builds;
 }
 
-const fileButton = () => screen.getByRole<HTMLButtonElement>('button', { name: 'File Form 27B/6' });
+const fileButton = () =>
+  screen.getByRole<HTMLButtonElement>('button', { name: 'Ask Mr. Pending to press it' });
 const nature = () => screen.getByLabelText<HTMLTextAreaElement>('1. Nature of the request');
-const adjust = (user: ReturnType<typeof userEvent.setup>) => user.click(screen.getByText('Adjust the form'));
+const adjust = (user: ReturnType<typeof userEvent.setup>) =>
+  user.click(screen.getByText('Advanced settings'));
 
 test('filing stays disabled while /api/config has not answered, and opens with the badge', async () => {
   let answer = () => {};
@@ -73,9 +75,13 @@ test('filing stays disabled while /api/config has not answered, and opens with t
   await user.type(screen.getByLabelText('2. Fewest parts'), '{Enter}');
   expect(screen.queryByText(BADGE)).toBeNull();
   expect(builds.count).toBe(0);
+  // The board names no model until the config does.
+  const board = screen.getByRole('region', { name: 'The board' });
+  expect(within(board).queryByText(/Ollama/)).toBeNull();
 
   answer();
   expect(await screen.findByText(BADGE)).toBeDefined();
+  expect(within(board).getByText('Gemma 4 E2B · Ollama · this machine')).toBeDefined();
   expect(fileButton().disabled).toBe(false);
   await user.click(fileButton());
   await vi.waitFor(() => expect(builds.count).toBe(1));
