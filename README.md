@@ -21,7 +21,7 @@ INFERENCE_MODE=local WEB_ORIGIN=http://127.0.0.1:5173 bun apps/agent/src/main.ts
 cd apps/web && VITE_SITE_MODE=local bunx vp dev --host 127.0.0.1
 ```
 
-Open `http://127.0.0.1:5173`: the form is the front door and every build is designed live by your Ollama. Only a loopback browser reaches the agent through the proxy.
+Open `http://127.0.0.1:5173`: Mr. Pending, the button and the board are the front door, with Form 27B/6 behind the Settings cog on the board and the Minutes folded under it, and every build is designed live by your Ollama. The gallery is on the static site only. Only a loopback browser reaches the agent through the proxy.
 
 - **Keep Ollama on loopback.** Ollama listens on `127.0.0.1:11434` by default and its API has no authentication. Do not set `OLLAMA_HOST` to `0.0.0.0` or any other non-loopback address: that offers the model to every machine on your network. The agent's `OLLAMA_URL` defaults to `http://127.0.0.1:11434`.
 - **E4B needs more memory.** `gemma4:e4b` runs, but on the 16 GB eval laptop it left 393 MiB of RAM free at the lowest (n 97 samples, see How we measured), against 2253 MiB for the shipping `gemma4:e2b`. Close other programs before trying it.
@@ -83,7 +83,7 @@ The target is WCAG 2.2 AA in full plus every applicable AAA criterion. No AAA co
   - static front door, with the gallery and longest-legal gallery records
   - Form 27B/6: empty, with field errors and the rejection, with the config unconfirmed, and after filing with the model unavailable
   - drawing, a running trial, the failure frame, the correction diff, the press (its excited beat) and the Engineering Report, each on desktop and at 390 px
-  - a gallery record page at 1440 and 390 px
+  - a gallery record page on the static site at 1440 and 390 px
 - axe leaves `color-contrast` and `color-contrast-enhanced` *incomplete* on board and card nodes it cannot resolve (SVG text and text over graphics). Those nodes are not tested by axe; see the manual items.
 - Keyboard: a build is filed, paused with Space, sped up, its report saved as an image and a new form filed with the keyboard alone. Tab walks every stop of the form, the paused board, the report and the static front door, and each stop shows an outline of at least 2 px.
 - Layout: every state above, filled with the longest legal text, is checked at 320, 375, 390, 768, 1024 and 1440 CSS px, each in portrait and landscape. The checks are no horizontal page overflow and no element wider than the viewport; up to 390 px they also require every link, button and field to be at least 52 × 52 px.

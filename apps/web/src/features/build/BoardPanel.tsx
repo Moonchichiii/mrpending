@@ -41,7 +41,7 @@ function useGridUnder() {
 
 // The one engineering board, mounted idle and kept through drafting, every trial, its failure, the repair, every retry
 // and the ending. Its header names the model, the trial and a dot per trial (a reached trial's dot shows it on the
-// board); the machine fills its middle with the current step and the playback controls under it; the steps and the
+// board), with `settings` after the dots; the machine fills its middle with the current step and the playback controls under it; the steps and the
 // pinned result stand on its right. The repair is marked on the board of the trial it produced, and `overlay` (an
 // error) sits on top of the machine.
 export function BoardPanel({
@@ -57,10 +57,12 @@ export function BoardPanel({
   controls,
   result,
   overlay,
+  settings,
 }: {
   trial: Trial;
   progress: Progress;
   badge: ReactNode;
+  settings?: ReactNode;
   run: string;
   stepMs?: number | undefined;
   pressedAt?: number | undefined;
@@ -118,6 +120,7 @@ export function BoardPanel({
             );
           })}
         </fieldset>
+        {settings}
       </div>
       <div className={styles.body}>
         <div className={styles.main}>

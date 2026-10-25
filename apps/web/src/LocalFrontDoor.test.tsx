@@ -47,7 +47,7 @@ function countBuilds() {
 const fileButton = () => screen.getByRole<HTMLButtonElement>('button', { name: 'Press the button' });
 const nature = () => screen.getByLabelText<HTMLTextAreaElement>('1. Nature of the request');
 const adjust = (user: ReturnType<typeof userEvent.setup>) =>
-  user.click(screen.getByText(/^Advanced settings - /));
+  user.click(screen.getByRole('button', { name: 'Advanced settings, Form 27B/6' }));
 
 test('filing stays disabled while /api/config has not answered, and opens with the badge', async () => {
   let answer = () => {};
@@ -75,6 +75,14 @@ test('filing stays disabled while /api/config has not answered, and opens with t
   const board = screen.getByRole('region', { name: 'The board' });
   expect(within(board).queryByText(/Ollama/)).toBeNull();
   expect(within(board).getByText('Model not confirmed')).toBeDefined();
+  // One slim footer: the motto, the board's badge in words and the source; the gallery is not on the local door.
+  const footer = screen.getByRole('contentinfo');
+  expect(within(footer).getByText('Even small things can do great things.')).toBeDefined();
+  expect(within(footer).getByText('Model not confirmed')).toBeDefined();
+  expect(within(footer).getByRole('link', { name: 'Source' }).getAttribute('href')).toBe(
+    'https://github.com/Moonchichiii/mrpending',
+  );
+  expect(screen.queryByText('The gallery')).toBeNull();
   // Until the config answers, the note says the Department's equipment is being checked.
   expect(screen.getByRole('status').textContent).toBe(
     "Checking the Department's equipment Confirming the model on this machine.",
@@ -84,6 +92,7 @@ test('filing stays disabled while /api/config has not answered, and opens with t
   expect(await screen.findByText(BADGE)).toBeDefined();
   expect(screen.getByRole('status').textContent).toBe('Form 27B/6 awaits filing.');
   expect(within(board).getByText('Gemma 4 E2B · Ollama · Running locally')).toBeDefined();
+  expect(within(footer).getByText('Gemma 4 E2B · Ollama · Running locally')).toBeDefined();
   expect(fileButton().disabled).toBe(false);
   await user.click(fileButton());
   await vi.waitFor(() => expect(builds.count).toBe(1));

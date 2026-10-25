@@ -92,10 +92,18 @@ test('the front door plays a recording, folds the gallery away, names its commit
   await expect(page.getByRole('button', { name: 'Press the button' })).toBeEnabled();
   await page.getByText('The gallery', { exact: true }).click();
   await expect(page.getByRole('region', { name: 'The gallery' }).getByRole('listitem')).toHaveCount(5);
-  const build = page.getByRole('contentinfo').getByRole('link', { name: /^[0-9a-f]{12}$/ });
+  // The one-line footer: the motto, the board's badge in words, the short commit and the source.
+  const footer = page.getByRole('contentinfo');
+  await expect(footer.getByText('Even small things can do great things.', { exact: true })).toBeVisible();
+  await expect(footer.getByText(/ · Ollama · Recorded$/)).toBeVisible();
+  const build = footer.getByRole('link', { name: /^[0-9a-f]{12}$/ });
   await expect(build).toHaveAttribute(
     'href',
     new RegExp(`/commit/${env['SMOKE_COMMIT'] ?? '[0-9a-f]{40}'}$`),
+  );
+  await expect(footer.getByRole('link', { name: 'Source', exact: true })).toHaveAttribute(
+    'href',
+    'https://github.com/Moonchichiii/mrpending',
   );
   await expectAxeClean(page, 'preview front door');
   expect(strays).toEqual([]);

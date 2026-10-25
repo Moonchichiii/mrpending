@@ -20,7 +20,7 @@ One code, one meaning, one recovery. User-facing wording lives only in `features
 | `TIMEOUT` | a model call exceeded its time limit | 504 | yes | retry |
 | `MODEL_INVALID` | reply failed the schema twice, or stream bounds exceeded | stream `error` | yes | rebuild |
 | `INTERRUPTED` | stream ended without a terminal event | client only | yes | rebuild; finished attempts stay on screen |
-| `NETWORK` | server unreachable | client only | yes | retry; the gallery still works |
+| `NETWORK` | server unreachable | client only | yes | retry |
 | `VOICE_UNAVAILABLE` | TTS failed or quota reached | 502 / 429 on `/api/tts` | yes | switch to browser voice |
 | `UNKNOWN` | anything else; carries `requestId` | 500 | yes | retry |
 
@@ -61,7 +61,7 @@ Limits are tuned for a person watching a machine, not a script; scripts are stop
 - In-memory limiters are acceptable for a single instance only; scaling out requires shared enforcement.
 - An invisible honeypot field on Form 27B/6, enforced by the server (filled → 400 before any inference), is optional, hidden from keyboard and assistive technology, and never a substitute for the limits above.
 - Hard caps live at the providers: OpenRouter key credit limit; ElevenLabs quota. On 402/429 from ElevenLabs the server returns `VOICE_UNAVAILABLE` and the client switches to browser voice. Nothing retries into a cap.
-- A record opened from the gallery or imported into "My department" is untrusted data: schema, `rulesVersion === RULES_VERSION` (else refused with a plain message; there is one simulator), then `simulate` of every attempt (≤ 6 attempts × ≤ 200 steps, bounded work), `applyPatch` checked between attempts, then `report` recomputed, before anything is shown. A file over 512 KB is refused. Gallery provenance is documented, not proven: each record carries the Ollama model digest and version, is produced by `eval/run.ts --gallery`, and the README states the procedure; CI checks the records are consistent with it.
+- A record opened from the gallery or imported is untrusted data: schema, `rulesVersion === RULES_VERSION` (else refused with a plain message; there is one simulator), then `simulate` of every attempt (≤ 6 attempts × ≤ 200 steps, bounded work), `applyPatch` checked between attempts, then `report` recomputed, before anything is shown. A file over 512 KB is refused. Gallery provenance is documented, not proven: each record carries the Ollama model digest and version, is produced by `eval/run.ts --gallery`, and the README states the procedure; CI checks the records are consistent with it.
 - Private replay links are not in v1. If built: ids 128-bit random, 7-day expiry, no listing endpoint, 5 creations per 10 min per identity. The cosmetic `DUE-nnnn` number is never an address.
 
 ## 6. Secrets, logs, telemetry

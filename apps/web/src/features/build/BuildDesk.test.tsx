@@ -67,7 +67,6 @@ test('before filing Mr. Pending, his bubble, the one button and the idle board s
   const button = screen.getByRole<HTMLButtonElement>('button', { name: 'Press the button' });
   const form = screen.getByRole('form', { name: 'Form 27B/6' });
   expect(button.getAttribute('form')).toBe(form.id);
-  expect(form.querySelector('details')?.open).toBe(false);
   expect(within(form).queryByRole('button')).toBeNull();
   // The idle board: the model from the config, nothing attempted, every step to do, the result pending, the empty
   // sheet with its caption and the current step in its status; the Minutes and the form folded under it.
@@ -95,9 +94,21 @@ test('before filing Mr. Pending, his bubble, the one button and the idle board s
   const minutes = screen.getByText('Minutes').closest('details');
   if (minutes === null) throw new Error('no Minutes fold');
   expect(minutes.open).toBe(false);
-  // Advanced settings is the first section under the board, the Minutes after it.
+  // The form is the first section under the board, the Minutes after it.
   expect(board.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   expect(form.compareDocumentPosition(minutes) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  // The cog after the trial dots on the board's header opens the form's items under the board and closes them again.
+  const cog = within(board).getByRole('button', { name: 'Advanced settings, Form 27B/6' });
+  expect(cog.textContent).toBe('Settings');
+  const trials = within(board).getByRole('group', { name: 'Trials' });
+  expect(trials.compareDocumentPosition(cog) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  const items = document.getElementById(cog.getAttribute('aria-controls') ?? '');
+  expect(items !== null && form.contains(items)).toBe(true);
+  expect([cog.getAttribute('aria-expanded'), items?.hidden]).toEqual(['false', true]);
+  await user.click(cog);
+  expect([cog.getAttribute('aria-expanded'), items?.hidden]).toEqual(['true', false]);
+  await user.click(cog);
+  expect([cog.getAttribute('aria-expanded'), items?.hidden]).toEqual(['false', true]);
 
   await user.click(button);
   expect(screen.getByRole('status').textContent).toBe(DESIGNING);
@@ -105,7 +116,7 @@ test('before filing Mr. Pending, his bubble, the one button and the idle board s
   // The button waits and the form stays folded; the drafting build waits on the very same board, its first step and
   // first trial current.
   expect(button.disabled).toBe(true);
-  expect(form.querySelector('details')?.open).toBe(false);
+  expect(items?.hidden).toBe(true);
   expect(within(screen.getByRole('region', { name: 'The board' })).getByRole('img')).toBe(sheet);
   expect(steps.querySelector('[aria-current="step"]')?.textContent).toBe('Designing machine, in progress');
   expect(within(board).getByText('Attempt 1 / 6')).toBeDefined();

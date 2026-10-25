@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { Line } from '@pending/contract';
 import type { StreamEvent } from '@pending/contract';
 import { expect, test } from '@playwright/test';
-import { ADVANCED, ATTEMPTS, DEFAULT, FILE, NOTE, adjust, ndjson, open, recorded } from './build';
+import { ATTEMPTS, DEFAULT, FILE, NOTE, adjust, ndjson, open, recorded, settings } from './build';
 import { PHONE, VIEWPORTS, expectAxeClean, expectNoOverflow, expectTargets } from './layout';
 
 const ID = '00000000-0000-4000-8000-000000000001';
@@ -22,10 +22,13 @@ test('Form 27B/6 is unfolded under the board, completed and filed with the keybo
   );
   const file = page.getByRole('button', { name: FILE });
   await file.focus();
-  // Past the board's controls, waiting, to Advanced settings, the first closed section under the board.
+  // On to the cog on the board's header, which opens the form under the board.
   await page.keyboard.press('Tab');
-  await expect(page.getByText(ADVANCED, { exact: true })).toBeFocused();
+  await expect(settings(page)).toBeFocused();
+  await expect(settings(page)).toHaveText('Settings');
+  await expect(settings(page)).toHaveAttribute('aria-expanded', 'false');
   await page.keyboard.press('Enter');
+  await expect(settings(page)).toHaveAttribute('aria-expanded', 'true');
   await page.keyboard.press('Tab');
   await expect(page.getByLabel('1. Nature of the request')).toBeFocused();
   await page.keyboard.press('ControlOrMeta+a');
@@ -83,10 +86,16 @@ test('the front door is one screen: Mr. Pending, the blue button and the idle bo
     await expect(voice.getByRole('button', { name: 'Skip voice' })).toBeVisible();
 
     // The one call to action is the lettered blue button, inside the first screen at both widths; the playback
-    // controls already stand on the board, waiting.
+    // controls already stand on the board, waiting, after the cog on its header.
     const file = page.getByRole('button', { name: FILE });
     await expect(file).toBeVisible();
-    await expect(page.getByRole('button')).toHaveText(['Voice on', 'Skip voice', FILE, ...CONTROLS]);
+    await expect(page.getByRole('button')).toHaveText([
+      'Voice on',
+      'Skip voice',
+      FILE,
+      'Settings',
+      ...CONTROLS,
+    ]);
     for (const control of CONTROLS) await expect(page.getByRole('button', { name: control })).toBeDisabled();
     const fileBox = await file.boundingBox();
     expect(fileBox && fileBox.y + fileBox.height).toBeLessThanOrEqual(height);
@@ -118,10 +127,10 @@ test('the front door is one screen: Mr. Pending, the blue button and the idle bo
       expect(resultBox && resultBox.y + resultBox.height).toBeLessThanOrEqual(height);
     }
 
-    // Everything else is folded: the five items and the gallery; no guide.
-    await expect(page.getByText(ADVANCED, { exact: true })).toBeAttached();
+    // Everything else is folded: the five items behind the cog; no gallery, no guide.
+    await expect(settings(page)).toHaveAttribute('aria-expanded', 'false');
     await expect(page.getByLabel('1. Nature of the request')).toBeHidden();
-    await expect(page.getByRole('region', { name: 'The gallery' })).toBeHidden();
+    await expect(page.getByText('The gallery')).toHaveCount(0);
     await expect(page.getByText(/^File it as it stands/)).toHaveCount(0);
     await expect(page.getByRole('list', { name: 'How to file' })).toHaveCount(0);
     await expectNoOverflow(page);

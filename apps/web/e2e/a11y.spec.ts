@@ -1,9 +1,9 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
-import { ADVANCED, ATTEMPTS, FILE, FORM, NOTE, adjust, ndjson, open, recorded } from './build';
+import { ATTEMPTS, FILE, FORM, NOTE, adjust, ndjson, open, recorded, settings } from './build';
 import {
+  LAYOUTS,
   PHONE,
-  VIEWPORTS,
   expectAxeClean,
   expectFocusVisible,
   expectNoOverflow,
@@ -104,26 +104,7 @@ test('every state of a build is axe clean on a phone', async ({ page }) => {
   await walk(page, axeAt(page, 'phone'));
 });
 
-test('a gallery record page is axe clean on desktop and on a phone', async ({ page }) => {
-  for (const width of [1440, PHONE]) {
-    await page.setViewportSize({ width, height: 900 });
-    await page.goto('/r/scenic');
-    await expect(
-      page.getByRole('heading', { level: 3, name: 'Button Pressing Apparatus Design' }),
-    ).toBeVisible();
-    await expectAxeClean(page, `record page at ${width}`);
-  }
-});
-
-// The six widths in both orientations, 400 percent zoom (1280 x 1024 at 400 percent is 320 x 256 CSS px) and 200
-// percent text (the browser's default font size doubled), each with the longest legal text on every state.
-const LAYOUTS = [
-  ...VIEWPORTS.map((v) => ({ ...v, text: 16 })),
-  { name: '400 percent zoom', width: 320, height: 256, text: 16 },
-  { name: '200 percent text at 1440', width: 1440, height: 900, text: 32 },
-  { name: '200 percent text at 390', width: PHONE, height: 844, text: 32 },
-];
-
+// Every layout, each with the longest legal text on every state.
 for (const layout of LAYOUTS) {
   test(`every state of a build with its longest text fits at ${layout.name}`, async ({
     page,
@@ -155,21 +136,6 @@ for (const layout of LAYOUTS) {
       true,
     );
   });
-
-  test(`a gallery record page fits at ${layout.name}`, async ({ page, browserName }) => {
-    await page.setViewportSize(layout);
-    if (layout.text !== 16) {
-      test.skip(browserName !== 'chromium', 'the default font size is set through the Chromium protocol');
-      const cdp = await page.context().newCDPSession(page);
-      await cdp.send('Page.setFontSizes', { fontSizes: { standard: layout.text, fixed: layout.text } });
-    }
-    await page.goto('/r/scenic');
-    await expect(
-      page.getByRole('heading', { level: 3, name: 'Button Pressing Apparatus Design' }),
-    ).toBeVisible();
-    await expectNoOverflow(page);
-    if (layout.width <= PHONE) await expectTargets(page);
-  });
 }
 
 // Tab (or Shift+Tab) from wherever focus is until the target has it; the page has far fewer than 100 stops.
@@ -188,11 +154,11 @@ test('a build is filed, watched, paused, saved and filed again with the keyboard
   await page.route('**/api/build', (route) =>
     route.fulfill({ body: ndjson(recorded(route.request().headers()['x-request-id'] ?? '')) }),
   );
-  // After the voice the button is the next stop, then past the board the form's fold, which opens by keyboard; the
-  // request is rewritten in item 1.
+  // After the voice the button is the next stop, then the cog on the board's header, which opens the form by
+  // keyboard; the request is rewritten in item 1.
   const file = page.getByRole('button', { name: FILE });
   await tabTo(page, file);
-  await tabTo(page, page.getByText(ADVANCED, { exact: true }));
+  await tabTo(page, settings(page));
   await page.keyboard.press('Enter');
   await page.keyboard.press('Tab');
   await expect(page.getByLabel('1. Nature of the request')).toBeFocused();

@@ -28,10 +28,7 @@ const COPY: Record<AppError['code'], { message: string; action: Action }> = {
     message: 'The build stopped before it finished. Finished trials stay on screen; build again.',
     action: 'retry',
   },
-  NETWORK: {
-    message: 'The Department cannot be reached. Try again; the gallery still works.',
-    action: 'retry',
-  },
+  NETWORK: { message: 'The Department cannot be reached. Try again.', action: 'retry' },
   VOICE_UNAVAILABLE: { message: 'The voice is unavailable. Captions continue.', action: 'retry' },
   UNKNOWN: { message: 'Something went wrong. Try again.', action: 'retry' },
 };

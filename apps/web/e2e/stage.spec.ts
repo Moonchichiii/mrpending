@@ -119,19 +119,48 @@ for (const { width, height } of SCREENS) {
     await expect(result.locator('[data-stamp]')).toHaveText('PENDING');
     await expect(result.getByText(ROLES)).toBeHidden();
     await look('idle');
-    // Under the board, closed and as wide as it: Advanced settings, then the Minutes and the gallery.
+    // Under the board, closed and as wide as it, only the Minutes; the form waits behind the cog on the board's header,
+    // right of the trial dots, and the cog opens it between the board and the Minutes, as wide as the board.
     const boardBox = await board.boundingBox();
-    const sections = ['Advanced settings - ', 'Minutes', 'The gallery'];
-    let below = boardBox ? boardBox.y + boardBox.height : 0;
-    for (const name of sections) {
-      const fold = page.locator('details', { has: page.locator('summary', { hasText: name }) });
-      await expect(fold, name).not.toHaveAttribute('open');
-      const box = await fold.boundingBox();
-      expect(box && box.y, name).toBeGreaterThanOrEqual(below);
-      expect(box && Math.abs(box.x - (boardBox?.x ?? 0)), name).toBeLessThanOrEqual(1);
-      expect(box && Math.abs(box.width - (boardBox?.width ?? 0)), name).toBeLessThanOrEqual(1);
-      below = box ? box.y + box.height : below;
+    const minutes = page.locator('details', { has: page.locator('summary', { hasText: /^Minutes$/ }) });
+    await expect(page.locator('summary')).toHaveCount(1);
+    await expect(page.getByText('The gallery')).toHaveCount(0);
+    await expect(minutes).not.toHaveAttribute('open');
+    const settings = board.getByRole('button', { name: 'Advanced settings, Form 27B/6' });
+    await expect(settings).toHaveText('Settings');
+    await expect(settings).toHaveAttribute('aria-expanded', 'false');
+    const items = page.getByRole('form', { name: 'Form 27B/6' }).locator(':scope > div');
+    await expect(items).toBeHidden();
+    const dotsBox = await board.getByRole('group', { name: 'Trials' }).boundingBox();
+    const cogBox = await settings.boundingBox();
+    const sameRow =
+      dotsBox && cogBox && cogBox.y < dotsBox.y + dotsBox.height && dotsBox.y < cogBox.y + cogBox.height;
+    if (sameRow) expect(cogBox.x).toBeGreaterThanOrEqual(dotsBox.x + dotsBox.width);
+    else
+      expect(cogBox && dotsBox && cogBox.y).toBeGreaterThanOrEqual(dotsBox ? dotsBox.y + dotsBox.height : 0);
+    const closedBox = await minutes.boundingBox();
+    expect(closedBox && closedBox.y).toBeGreaterThanOrEqual(boardBox ? boardBox.y + boardBox.height : 0);
+    await settings.click();
+    await expect(settings).toHaveAttribute('aria-expanded', 'true');
+    await expect(items).toBeVisible();
+    // Measured again together: the click may have scrolled the page, and boxes are relative to the viewport.
+    const [openBoardBox, itemsBox, minutesBox] = await Promise.all(
+      [board, items, minutes].map((l) => l.boundingBox()),
+    );
+    expect(itemsBox && itemsBox.y).toBeGreaterThanOrEqual(
+      openBoardBox ? openBoardBox.y + openBoardBox.height : 0,
+    );
+    expect(itemsBox && minutesBox && minutesBox.y).toBeGreaterThanOrEqual(
+      itemsBox ? itemsBox.y + itemsBox.height : 0,
+    );
+    for (const box of [itemsBox, minutesBox]) {
+      expect(box && Math.abs(box.x - (openBoardBox?.x ?? 0))).toBeLessThanOrEqual(1);
+      expect(box && Math.abs(box.width - (openBoardBox?.width ?? 0))).toBeLessThanOrEqual(1);
     }
+    await settings.click();
+    await expect(settings).toHaveAttribute('aria-expanded', 'false');
+    await expect(items).toBeHidden();
+    await page.evaluate(() => window.scrollTo(0, 0));
     if (width === 1440) {
       // The stage fills the desktop screen: the board's steps and result inside it, the sheet a good size.
       const resultBox = await result.boundingBox();
