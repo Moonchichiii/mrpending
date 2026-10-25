@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
-import { ATTEMPTS, FILE, FORM, NOTE, adjust, ndjson, open, recorded } from './build';
+import { ADVANCED, ATTEMPTS, FILE, FORM, NOTE, adjust, ndjson, open, recorded } from './build';
 import {
   PHONE,
   VIEWPORTS,
@@ -195,11 +195,11 @@ test('a build is filed, watched, paused, saved and filed again with the keyboard
   await page.route('**/api/build', (route) =>
     route.fulfill({ body: ndjson(recorded(route.request().headers()['x-request-id'] ?? '')) }),
   );
-  // After the voice the button is the next stop, then past the board and the Minutes the form's fold, which opens by
-  // keyboard; the request is rewritten in item 1.
+  // After the voice the button is the next stop, then past the board the form's fold, which opens by keyboard; the
+  // request is rewritten in item 1.
   const file = page.getByRole('button', { name: FILE });
   await tabTo(page, file);
-  await tabTo(page, page.getByText('Advanced settings'));
+  await tabTo(page, page.getByText(ADVANCED, { exact: true }));
   await page.keyboard.press('Enter');
   await page.keyboard.press('Tab');
   await expect(page.getByLabel('1. Nature of the request')).toBeFocused();

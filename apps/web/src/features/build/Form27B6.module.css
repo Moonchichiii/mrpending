@@ -1,8 +1,7 @@
-/* The rejection and the folded form, the first closed section under the stage. */
+/* The rejection and the folded form, the first closed section under the board and as wide as it. */
 .form {
   display: grid;
   gap: var(--space-3);
-  max-width: var(--measure);
   min-width: 0;
 }
 

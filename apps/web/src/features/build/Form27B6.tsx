@@ -157,7 +157,9 @@ export function Form27B6({
         </p>
       )}
       <details ref={sheet} className={styles.sheet}>
-        <summary className={styles.adjust}>Advanced settings</summary>
+        <summary className={styles.adjust}>
+          Advanced settings - shape the next request: parts, required and forbidden equipment
+        </summary>
         <h2 id={`${id}-title`} className={styles.title}>
           Form 27B/6
         </h2>

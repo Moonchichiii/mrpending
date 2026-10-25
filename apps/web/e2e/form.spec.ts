@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { Line } from '@pending/contract';
 import type { StreamEvent } from '@pending/contract';
 import { expect, test } from '@playwright/test';
-import { ATTEMPTS, DEFAULT, FILE, NOTE, adjust, ndjson, open, recorded } from './build';
+import { ADVANCED, ATTEMPTS, DEFAULT, FILE, NOTE, adjust, ndjson, open, recorded } from './build';
 import { PHONE, VIEWPORTS, expectAxeClean, expectNoOverflow, expectTargets } from './layout';
 
 const ID = '00000000-0000-4000-8000-000000000001';
@@ -22,11 +22,9 @@ test('Form 27B/6 is unfolded under the board, completed and filed with the keybo
   );
   const file = page.getByRole('button', { name: FILE });
   await file.focus();
-  // Past the board's controls, waiting, and the folded Minutes, the first closed section under the board.
+  // Past the board's controls, waiting, to Advanced settings, the first closed section under the board.
   await page.keyboard.press('Tab');
-  await expect(page.locator('summary', { hasText: /^Minutes$/ })).toBeFocused();
-  await page.keyboard.press('Tab');
-  await expect(page.getByText('Advanced settings')).toBeFocused();
+  await expect(page.getByText(ADVANCED, { exact: true })).toBeFocused();
   await page.keyboard.press('Enter');
   await page.keyboard.press('Tab');
   await expect(page.getByLabel('1. Nature of the request')).toBeFocused();
@@ -42,8 +40,8 @@ test('Form 27B/6 is unfolded under the board, completed and filed with the keybo
   await page.keyboard.press('ArrowDown');
   await page.keyboard.press('Tab');
   await expect(page.getByLabel('5. Forbidden equipment')).toBeFocused();
-  // Back past the five items, the fold and the board's minutes to the button beside Mr. Pending.
-  for (let i = 0; i < 7; i += 1) await page.keyboard.press('Shift+Tab');
+  // Back past the five items and the fold to the button beside Mr. Pending.
+  for (let i = 0; i < 6; i += 1) await page.keyboard.press('Shift+Tab');
   await expect(file).toBeFocused();
   await page.keyboard.press('Enter');
   expect((await filed).postDataJSON()).toEqual({
@@ -121,7 +119,7 @@ test('the front door is one screen: Mr. Pending, the blue button and the idle bo
     }
 
     // Everything else is folded: the five items, the department and the gallery; no guide.
-    await expect(page.getByText('Advanced settings', { exact: true })).toBeAttached();
+    await expect(page.getByText(ADVANCED, { exact: true })).toBeAttached();
     await expect(page.getByLabel('1. Nature of the request')).toBeHidden();
     await expect(page.getByRole('region', { name: 'My department' })).toBeHidden();
     await expect(page.getByRole('region', { name: 'The gallery' })).toBeHidden();

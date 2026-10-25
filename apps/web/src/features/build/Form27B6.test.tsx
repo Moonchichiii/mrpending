@@ -22,10 +22,10 @@ const setup = (initial?: Form) => {
 
 const DEFAULT = { nature: 'Press the blue button. Scenic route, please.', minParts: 3, maxParts: 8 };
 const fileButton = () => screen.getByRole('button', { name: 'Ask him to press it' });
-const sheet = () => screen.getByText('Advanced settings').closest('details');
+const SUMMARY = 'Advanced settings - shape the next request: parts, required and forbidden equipment';
+const sheet = () => screen.getByText(SUMMARY).closest('details');
 // The visitor opens the folded form, as they must before any item can be changed.
-const adjust = (user: ReturnType<typeof userEvent.setup>) =>
-  user.click(screen.getByText('Advanced settings'));
+const adjust = (user: ReturnType<typeof userEvent.setup>) => user.click(screen.getByText(SUMMARY));
 
 describe('Form 27B/6', () => {
   test('files the pre-filled default request in one click, with the five items folded away', async () => {
@@ -42,7 +42,7 @@ describe('Form 27B/6', () => {
     await user.tab();
     expect(document.activeElement).toBe(fileButton());
     await user.tab();
-    expect(document.activeElement).toBe(screen.getByText('Advanced settings'));
+    expect(document.activeElement).toBe(screen.getByText(SUMMARY));
     // jsdom does not open a summary by keyboard; the Playwright form spec presses Enter on it in a real browser.
     await adjust(user);
     expect(sheet()?.open).toBe(true);

@@ -78,8 +78,8 @@ const WAITING = 'Filing opens once the Department confirms where drafting happen
 const ABOUT =
   'Just for fun: watch a small AI model design ridiculous machines to press one button. A simulator tests each machine, and the AI tries to fix whatever goes wrong.';
 
-// One stage in every phase: Mr. Pending, his bubble and the button in the yellow band, the one board under it, and the
-// Minutes and Form 27B/6 (Advanced settings) folded away under the board. The button files the form; while a build is
+// One stage in every phase: Mr. Pending, his bubble and the button in the yellow band, the one board under it, and
+// Form 27B/6 (Advanced settings) and the Minutes folded away under the board. The button files the form; while a build is
 // on the board it waits, and once the build has ended it files the form again. A build that ends is reported once,
 // however often it is replayed afterwards; onFinished says whether it was kept.
 export function BuildDesk({
@@ -224,8 +224,8 @@ export function BuildDesk({
       }
       folds={
         <>
-          <MinutesFold trial={trial} lines={lines} ended={revealed ? ended.build : undefined} />
           <Form27B6 id={formId} onFile={fileForm} canFile={canFile} />
+          <MinutesFold trial={trial} lines={lines} ended={revealed ? ended.build : undefined} />
         </>
       }
     />

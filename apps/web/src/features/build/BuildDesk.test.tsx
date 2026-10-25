@@ -95,8 +95,9 @@ test('before filing Mr. Pending, his bubble, the one button and the idle board s
   const minutes = screen.getByText('Minutes').closest('details');
   if (minutes === null) throw new Error('no Minutes fold');
   expect(minutes.open).toBe(false);
-  expect(board.compareDocumentPosition(minutes) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  expect(minutes.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  // Advanced settings is the first section under the board, the Minutes after it.
+  expect(board.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(form.compareDocumentPosition(minutes) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
   await user.click(button);
   expect(screen.getByRole('status').textContent).toBe(DESIGNING);
