@@ -72,7 +72,8 @@ export const ndjson = (events: StreamEvent[]) => events.map((e) => `${JSON.strin
 // visitor must.
 export const DEFAULT = { nature: 'Press the blue button. Scenic route, please.', minParts: 3, maxParts: 8 };
 export const FILE = 'Press the button';
-export const adjust = (page: Page) => page.getByText('Advanced settings').click();
+export const ADVANCED = 'Advanced settings - shape the next request: parts, required and forbidden equipment';
+export const adjust = (page: Page) => page.getByText(ADVANCED, { exact: true }).click();
 
 // What the board's Current step note says, label and sentence, in the phases the specs walk through.
 const CHECKING = 'The simulator is checking whether the ball reaches the blue button.';

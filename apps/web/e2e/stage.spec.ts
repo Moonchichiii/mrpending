@@ -119,6 +119,19 @@ for (const { width, height } of SCREENS) {
     await expect(result.locator('[data-stamp]')).toHaveText('PENDING');
     await expect(result.getByText(ROLES)).toBeHidden();
     await look('idle');
+    // Under the board, closed and as wide as it: Advanced settings, then the Minutes, My department and the gallery.
+    const boardBox = await board.boundingBox();
+    const sections = ['Advanced settings - ', 'Minutes', 'My department', 'The gallery'];
+    let below = boardBox ? boardBox.y + boardBox.height : 0;
+    for (const name of sections) {
+      const fold = page.locator('details', { has: page.locator('summary', { hasText: name }) });
+      await expect(fold, name).not.toHaveAttribute('open');
+      const box = await fold.boundingBox();
+      expect(box && box.y, name).toBeGreaterThanOrEqual(below);
+      expect(box && Math.abs(box.x - (boardBox?.x ?? 0)), name).toBeLessThanOrEqual(1);
+      expect(box && Math.abs(box.width - (boardBox?.width ?? 0)), name).toBeLessThanOrEqual(1);
+      below = box ? box.y + box.height : below;
+    }
     if (width === 1440) {
       // The stage fills the desktop screen: the board's steps and result inside it, the sheet a good size.
       const resultBox = await result.boundingBox();

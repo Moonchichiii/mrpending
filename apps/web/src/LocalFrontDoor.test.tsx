@@ -50,7 +50,7 @@ function countBuilds() {
 const fileButton = () => screen.getByRole<HTMLButtonElement>('button', { name: 'Press the button' });
 const nature = () => screen.getByLabelText<HTMLTextAreaElement>('1. Nature of the request');
 const adjust = (user: ReturnType<typeof userEvent.setup>) =>
-  user.click(screen.getByText('Advanced settings'));
+  user.click(screen.getByText(/^Advanced settings - /));
 
 test('filing stays disabled while /api/config has not answered, and opens with the badge', async () => {
   let answer = () => {};
