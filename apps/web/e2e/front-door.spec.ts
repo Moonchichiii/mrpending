@@ -1,7 +1,7 @@
 import { Build } from '@pending/contract';
 import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
-import { FILE } from './build';
+import { FILE, NOTE } from './build';
 import {
   PHONE,
   VIEWPORTS,
@@ -13,6 +13,10 @@ import {
 
 const CLOSED =
   'The Department is closed to new applications. The button plays a recorded build, which this browser checks again with the simulator before it is shown.';
+const PREMISE = 'One snail. One blue button. An extraordinarily unnecessary amount of engineering.';
+const RECORDED =
+  'These machines were designed by Gemma running locally. You are watching a recording of the experiment, replayed and checked by the simulator.';
+const MOTTO = 'Even small things can do great things.';
 // The stylesheet's phone width (40rem at the default 16 px) shows the head alone; wider viewports show the full rig.
 const PHONE_RIG = 640;
 
@@ -26,6 +30,13 @@ test('the static front door makes no API call', async ({ page }) => {
   // Mr. Pending is at the closed counter from the first paint, in the slow mood.
   await expect(page.getByText(CLOSED)).toBeVisible();
   await expect(page.locator('svg[data-variant="desk"]')).toHaveClass(/slow/);
+  // Under the title the site says it is a recording of the local experiment, not a live model, and the footer
+  // carries the motto.
+  await expect(page.getByText(PREMISE, { exact: true })).toBeVisible();
+  await expect(page.getByText(RECORDED, { exact: true })).toBeVisible();
+  await expect(page.getByText(/^Just for fun/)).toHaveCount(0);
+  await expect(page.getByRole('contentinfo').getByText(MOTTO, { exact: true })).toBeVisible();
+  await expect(page.getByRole('status')).toHaveText('The recording waits for the button.');
   expect(api).toEqual([]);
   await expectAxeClean(page, 'static front door');
   await expectFocusVisible(page, 'static front door');
@@ -55,14 +66,14 @@ for (const { width, height } of [
     await expect(file).toBeEnabled();
     const fileBox = await file.boundingBox();
     expect(fileBox && fileBox.y + fileBox.height).toBeLessThanOrEqual(height);
-    await expect(page.getByRole('button')).toHaveText(['Mute', 'Skip voice', FILE, ...CONTROLS]);
+    await expect(page.getByRole('button')).toHaveText(['Voice on', 'Skip voice', FILE, ...CONTROLS]);
     const board = page.getByRole('region', { name: 'The board' });
-    await expect(board.getByText('Gemma 4 E4B · Ollama · recorded', { exact: true })).toBeVisible();
+    await expect(board.getByText('Gemma 4 E4B · Ollama · Recorded', { exact: true })).toBeVisible();
     await expect(board.getByRole('img', { name: 'The empty board' })).toBeVisible();
     await expect(board.getByText('The ridiculous machinery appears here.', { exact: true })).toBeVisible();
-    const level = board.getByText('Gemma designs → Simulator tests → Gemma repairs', { exact: true });
-    const levelBox = await level.boundingBox();
-    if (width === 1440) expect(levelBox && levelBox.y + levelBox.height).toBeLessThanOrEqual(height);
+    const result = board.getByRole('region', { name: 'Simulation result' });
+    const resultBox = await result.boundingBox();
+    if (width === 1440) expect(resultBox && resultBox.y + resultBox.height).toBeLessThanOrEqual(height);
     await expect(page.getByRole('region', { name: 'The gallery' })).toBeHidden();
     await board.locator('svg[role="img"]').evaluate((el) => el.setAttribute('data-stage-mark', ''));
     const idle = await measure(page);
@@ -98,29 +109,36 @@ for (const { width, height } of [
     await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
     await file.click();
     const status = page.getByRole('status');
-    await expect(status).toHaveText('Trial 1 in progress.');
+    await expect(board.getByText('Attempt 1 / 6')).toBeVisible();
     await expect(status).toBeFocused();
-    // The trial selector follows the playhead: the trial in progress is the one shown.
+    // The trial selector follows the playhead: the trial in progress is the one shown, and the note says a revised
+    // machine is being tested, never that a model is working now.
+    const attempt = (n: number) => board.getByText(`Attempt ${n} / 6`, { exact: true });
     const trial = async (n: number) => {
-      await expect(status).toHaveText(`Trial ${n} in progress.`);
-      await expect(board.getByRole('button', { name: `Trial ${n}` })).toHaveAttribute('aria-pressed', 'true');
+      await expect(attempt(n)).toBeVisible();
+      await expect(status).toHaveText(NOTE.retesting);
+      await expect(board.getByRole('button', { name: new RegExp(`^Trial ${n},`) })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
     };
     // The recording's first trial is refused before the ball moves, so the ball runs in trial 2, its first repair.
-    await until(async () => (await status.textContent()) === 'Trial 2 in progress.');
+    await until(async () => (await attempt(2).count()) === 1);
     await page.clock.runFor(STEP * 3);
     await trial(2);
     await hold('simulating');
 
     // Trial 3 is the second repair, marked on its own board.
-    await until(async () => (await status.textContent()) === 'Trial 3 in progress.');
+    await until(async () => (await attempt(3).count()) === 1);
     await trial(3);
     await expect(board.locator('[data-change]').first()).toBeAttached();
     await hold('repair');
 
-    const verdict = board.getByRole('region', { name: 'Verdict' });
-    await until(() => verdict.isVisible());
+    // The ending: at the press's hard cut the pinned result turns PRESSED, with the verdict.
+    const stamp = result.locator('[data-stamp]');
+    await until(async () => (await stamp.textContent()) === 'PRESSED');
+    await expect(status).toHaveText(NOTE.worked);
     await page.clock.resume();
-    await verdict.evaluate((el) => Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)));
     await look('verdict');
     expect(page.url()).toBe(address);
   });

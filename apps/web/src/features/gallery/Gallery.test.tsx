@@ -62,6 +62,9 @@ test('/r/<slug> opens one record with its provenance line and the link to how th
   expect(agent.requests).toBe(0);
 });
 
+const TESTING = 'TESTING THE MACHINE The simulator is checking whether the ball reaches the blue button.';
+const WORKED = "IT WORKED Gemma's machine pressed the button. The simulator verified it.";
+
 test('a record page plays the recording back with the playback controls, its lines and the recomputed verdict', async () => {
   const budget = Build.parse(raw('budget'));
   window.history.pushState({}, '', '/r/budget');
@@ -69,13 +72,16 @@ test('a record page plays the recording back with the playback controls, its lin
   render(<Gallery />);
   const record = await screen.findByRole('article', { name: budget.title });
   expect(within(record).getByRole('group', { name: 'Playback' })).toBeDefined();
-  expect(within(record).getByRole('status').textContent).toBe('Trial 1 in progress.');
+  expect(within(record).getByRole('status').textContent).toBe(TESTING);
 
-  await vi.waitFor(() => expect(within(record).getByRole('status').textContent).toBe(budget.report.verdict));
+  await vi.waitFor(() => expect(within(record).getByRole('status').textContent).toBe(WORKED));
+  expect(within(record).getByRole('region', { name: 'Simulation result' }).textContent).toContain(
+    budget.report.verdict,
+  );
   const last = budget.attempts.at(-1);
   expect(
     within(record)
-      .getByRole('button', { name: `Trial ${last?.n}` })
+      .getByRole('button', { name: new RegExp(`^Trial ${last?.n},`) })
       .getAttribute('aria-pressed'),
   ).toBe('true');
   expect(
@@ -85,7 +91,7 @@ test('a record page plays the recording back with the playback controls, its lin
   ).toEqual(budget.lines.map((l) => (l.source === 'model' ? `Memo: ${l.text}` : l.text)));
 
   await user.click(within(record).getByRole('button', { name: 'Replay' }));
-  expect(within(record).getByRole('status').textContent).toBe('Trial 1 in progress.');
+  expect(within(record).getByRole('status').textContent).toBe(TESTING);
   expect(document.activeElement).toBe(within(record).getByRole('status'));
   expect(agent.requests).toBe(0);
 });

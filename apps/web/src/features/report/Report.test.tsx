@@ -3,7 +3,8 @@ import { report } from '@pending/machine';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, expect, test, vi } from 'vitest';
-import { Verdict } from './Verdict';
+import { EngineeringReport } from './EngineeringReport';
+import { Result } from './Result';
 import { estimate, reportView, wrap } from './model/view';
 import { ReportCard, SHAPES } from './ReportCard';
 
@@ -100,8 +101,8 @@ test('the thumbnail is drawn from the final attempt, not the failed one before i
 });
 
 test('a pressed build is stamped APPROVED; an exhausted one PENDING on the same card, with its failure', () => {
-  const won = render(<Verdict build={repaired} />).container;
-  const lost = render(<Verdict build={exhausted} />).container;
+  const won = render(<EngineeringReport build={repaired} />).container;
+  const lost = render(<EngineeringReport build={exhausted} />).container;
   for (const card of won.querySelectorAll('svg[data-shape]')) {
     expect(card.querySelector('[data-stamp]')?.getAttribute('data-stamp')).toBe('APPROVED');
   }
@@ -113,46 +114,32 @@ test('a pressed build is stamped APPROVED; an exhausted one PENDING on the same 
   expect(won.querySelectorAll('svg[data-shape]')).toHaveLength(2);
 });
 
-test('the verdict stamps the build, says the simulator verdict, tries again and opens the report on demand', async () => {
-  // jsdom has no modal dialogs; opening one sets its open attribute, as a browser does.
-  if (!('showModal' in HTMLDialogElement.prototype))
-    Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
-      configurable: true,
-      value(this: HTMLDialogElement) {
-        this.setAttribute('open', '');
-      },
-    });
-  const onTryAgain = vi.fn<() => void>();
-  const user = userEvent.setup();
-  render(<Verdict build={exhausted} onTryAgain={onTryAgain} />);
-  const verdict = screen.getByRole('region', { name: 'Verdict' });
-  expect(verdict.textContent).toContain('PENDING');
-  expect(screen.getByRole('heading', { name: 'The Scenic Route' })).toBeDefined();
-  expect(verdict.textContent).toContain(exhausted.report.verdict);
-  // The report waits in a closed dialog until it is asked for.
-  expect(screen.queryByRole('dialog')).toBeNull();
-  await user.click(screen.getByRole('button', { name: 'Try again' }));
-  expect(onTryAgain).toHaveBeenCalledTimes(1);
-  await user.click(screen.getByRole('button', { name: 'Open the report' }));
-  const report = screen.getByRole('dialog', { name: 'Engineering Report' });
+test('the Engineering Report is a named section with the card and Save as image, no dialog', () => {
+  render(<EngineeringReport build={exhausted} />);
+  const report = screen.getByRole('region', { name: 'Engineering Report' });
   expect(report.querySelector('svg[data-shape="landscape"] [data-stamp]')?.getAttribute('data-stamp')).toBe(
     'PENDING',
   );
+  expect(screen.getByRole('button', { name: 'Save as image' })).toBeDefined();
+  expect(screen.queryByRole('dialog')).toBeNull();
 });
 
-test('Try again files the form it names', () => {
-  render(<Verdict build={repaired} form="form-27b6" />);
-  const again = screen.getByRole('button', { name: 'Try again' });
-  expect(again.getAttribute('type')).toBe('submit');
-  expect(again.getAttribute('form')).toBe('form-27b6');
-});
-
-test('Save the report says so when this browser cannot make the image', async () => {
+test('Save as image says so when this browser cannot make the image', async () => {
   // jsdom draws no image, so the card cannot be rasterised.
   vi.stubGlobal('matchMedia', () => ({ matches: false }));
-  const { getByRole, findByText } = render(<Verdict build={repaired} />);
-  getByRole('button', { name: 'Save the report' }).click();
-  expect(await findByText(/could not make the image/)).toBeTruthy();
+  const user = userEvent.setup();
+  render(<EngineeringReport build={repaired} />);
+  await user.click(screen.getByRole('button', { name: 'Save as image' }));
+  expect(await screen.findByText(/could not make the image/)).toBeTruthy();
+});
+
+test('the pinned result shows its stamp and its sentences as text', () => {
+  const { rerender } = render(<Result stamp="PENDING" text="The simulator is testing trial 1." />);
+  const result = screen.getByRole('region', { name: 'Simulation result' });
+  expect(result.querySelector('[data-stamp]')?.textContent).toBe('PENDING');
+  rerender(<Result stamp="PRESSED" text={repaired.report.verdict} />);
+  expect(result.querySelector('[data-stamp]')?.textContent).toBe('PRESSED');
+  expect(result.textContent).toContain(repaired.report.verdict);
 });
 
 test.each(['landscape', 'portrait'] as const)(

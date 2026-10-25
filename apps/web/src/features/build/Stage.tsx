@@ -1,42 +1,21 @@
-import type { Config, Model } from '@pending/contract';
 import type { ReactNode } from 'react';
 import { useId } from 'react';
-import { BlueButton } from '../board';
+import { Desk } from './Desk';
 import styles from './Stage.module.css';
 
-const HOST: Record<Model['host'], string> = { ollama: 'Ollama', openrouter: 'OpenRouter' };
-const WHERE: Record<Config['inference'] | 'recorded', string> = {
-  'this-machine': 'this machine',
-  server: 'the Mr. Pending server',
-  hosted: 'hosted',
-  recorded: 'recorded',
-};
-
-// The board's header, from the config or the build header only: an Ollama tag such as gemma4:e2b reads "Gemma 4 E2B",
-// any other id is shown as it is.
-export function source(model: Model, where: Config['inference'] | 'recorded'): string {
-  const name = model.id.replace(
-    /^gemma(\d+):([a-z0-9]+)$/i,
-    (_, major: string, size: string) => `Gemma ${major} ${size.toUpperCase()}`,
-  );
-  return `${name} · ${HOST[model.host]} · ${WHERE[where]}`;
-}
-
-// The one call to action beside Mr. Pending: the board's own button at hero size, which files the form named by
-// `form` or runs `onPress`. It stays in place in every phase, disabled while a build is on the board; the slot under it
-// holds its note or `children` (Withdraw) at a size reserved in every phase.
+// The one call to action: a blue dome on a hazard-striped base, lettered "Press the button", which files the form
+// named by `form` or runs `onPress`. It stays in place in every phase, disabled while a build is on the board; `note`
+// says why it waits when no build is the reason.
 export function Hero({
   form,
   onPress,
   disabled,
   note,
-  children,
 }: {
   form?: string | undefined;
   onPress?: (() => void) | undefined;
   disabled: boolean;
   note?: string | undefined;
-  children?: ReactNode;
 }) {
   const id = useId();
   return (
@@ -49,50 +28,118 @@ export function Hero({
         onClick={onPress}
         aria-describedby={note === undefined ? undefined : `${id}-note`}
       >
-        <BlueButton />
-        <span className={styles.label}>Ask him to press it</span>
+        <span className={styles.lettering}>Press the button</span>
+        <svg className={styles.arrow} viewBox="0 0 80 60" aria-hidden="true">
+          <path d="M74 6C52 8 30 22 14 48" />
+          <path d="M8 34l6 15 15-6" />
+        </svg>
+        <Dome id={id} />
       </button>
-      <div className={styles.slot}>
-        {note !== undefined && (
-          <p id={`${id}-note`} className={styles.note}>
-            {note}
-          </p>
-        )}
-        {children}
-      </div>
+      {note !== undefined && (
+        <p id={`${id}-note`} className={styles.note}>
+          {note}
+        </p>
+      )}
     </>
   );
 }
 
-// The one persistent stage: the name and the inference notice, Mr. Pending large with his bubble and the button beside
-// him, the board under them. Every phase fills the same places, so the page never grows with a build; on a desktop
-// screen the stage fills the viewport and the board takes the height left.
+// The physical button: a dome in its collar on a hazard-striped plinth; the dome sinks while it is held down.
+function Dome({ id }: { id: string }) {
+  return (
+    <svg className={styles.dome} viewBox="0 0 260 196" aria-hidden="true">
+      <defs>
+        <pattern
+          id={`${id}-hazard`}
+          width="26"
+          height="26"
+          patternUnits="userSpaceOnUse"
+          patternTransform="rotate(-40)"
+        >
+          <rect className={styles.hazardLight} width="26" height="26" />
+          <rect className={styles.hazardDark} width="13" height="26" />
+        </pattern>
+      </defs>
+      <g className={styles.sparks}>
+        <path d="M44 34l10 12M24 62l14 6M74 16l4 14" />
+      </g>
+      <path className={styles.plinthSide} fill={`url(#${id}-hazard)`} d="M10 134v28a120 30 0 0 0 240 0v-28" />
+      <ellipse className={styles.plinthTop} cx="130" cy="134" rx="120" ry="30" />
+      <path className={styles.collarSide} d="M38 116v22a92 24 0 0 0 184 0v-22" />
+      <ellipse className={styles.collarTop} cx="130" cy="116" rx="92" ry="24" />
+      <g className={styles.cap}>
+        <path className={styles.capBody} d="M52 112C52 26 208 26 208 112A78 22 0 0 1 52 112Z" />
+        <path className={styles.capShade} d="M58 104A72 18 0 0 0 202 104L208 112A78 22 0 0 1 52 112Z" />
+        <ellipse
+          className={styles.capShine}
+          cx="100"
+          cy="64"
+          rx="24"
+          ry="10"
+          transform="rotate(-22 100 64)"
+        />
+      </g>
+    </svg>
+  );
+}
+
+const PREMISE = 'One snail. One blue button. An extraordinarily unnecessary amount of engineering.';
+
+// The one persistent stage: on the yellow band the name over the Department's paperwork, Mr. Pending with his bubble,
+// and the button with `notice` under it; then the one board, then the closed sections. Every phase fills the same
+// places, so the page never grows with a build; on a desktop screen the stage fills the viewport and the board takes
+// the height left. `heading`, when given, is the page's one h1, with `about` under it saying what the page shows.
 export function Stage({
   heading,
+  about,
   notice,
   engineer,
   action,
   board,
+  folds,
 }: {
-  heading?: ReactNode;
+  heading?: string | undefined;
+  about?: string | undefined;
   notice?: ReactNode;
   engineer: ReactNode;
   action: ReactNode;
   board: ReactNode;
+  folds?: ReactNode;
 }) {
   return (
     <div className={styles.frame}>
-      <div className={styles.stage}>
-        {(heading !== undefined || notice !== undefined) && (
-          <div className={styles.top}>
-            {heading}
-            {notice}
+      <div
+        className={
+          heading === undefined
+            ? `${styles.stage} ${styles.embedded}`
+            : about === undefined
+              ? styles.stage
+              : `${styles.stage} ${styles.told}`
+        }
+      >
+        {heading !== undefined && (
+          <hgroup className={styles.top}>
+            <h1 className={styles.name}>{heading}</h1>
+            <p className={styles.department}>The Department of Unnecessary Engineering</p>
+          </hgroup>
+        )}
+        <div className={styles.desk}>
+          <Desk />
+        </div>
+        {heading !== undefined && about !== undefined && (
+          <div className={styles.about}>
+            <p>{PREMISE}</p>
+            <p>{about}</p>
           </div>
         )}
         <div className={styles.engineer}>{engineer}</div>
-        <div className={styles.action}>{action}</div>
+        <div className={styles.action}>
+          {action}
+          {notice}
+        </div>
         <div className={styles.board}>{board}</div>
       </div>
+      {folds}
     </div>
   );
 }

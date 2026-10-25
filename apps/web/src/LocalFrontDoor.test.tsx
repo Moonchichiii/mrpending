@@ -47,7 +47,7 @@ function countBuilds() {
   return builds;
 }
 
-const fileButton = () => screen.getByRole<HTMLButtonElement>('button', { name: 'Ask him to press it' });
+const fileButton = () => screen.getByRole<HTMLButtonElement>('button', { name: 'Press the button' });
 const nature = () => screen.getByLabelText<HTMLTextAreaElement>('1. Nature of the request');
 const adjust = (user: ReturnType<typeof userEvent.setup>) =>
   user.click(screen.getByText('Advanced settings'));
@@ -77,10 +77,16 @@ test('filing stays disabled while /api/config has not answered, and opens with t
   // The board names no model until the config does.
   const board = screen.getByRole('region', { name: 'The board' });
   expect(within(board).queryByText(/Ollama/)).toBeNull();
+  expect(within(board).getByText('Model not confirmed')).toBeDefined();
+  // Until the config answers, the note says the Department's equipment is being checked.
+  expect(screen.getByRole('status').textContent).toBe(
+    "Checking the Department's equipment Confirming the model on this machine.",
+  );
 
   answer();
   expect(await screen.findByText(BADGE)).toBeDefined();
-  expect(within(board).getByText('Gemma 4 E2B · Ollama · this machine')).toBeDefined();
+  expect(screen.getByRole('status').textContent).toBe('Form 27B/6 awaits filing.');
+  expect(within(board).getByText('Gemma 4 E2B · Ollama · Running locally')).toBeDefined();
   expect(fileButton().disabled).toBe(false);
   await user.click(fileButton());
   await vi.waitFor(() => expect(builds.count).toBe(1));
@@ -152,7 +158,7 @@ test('a build that ends is kept once in My department, with a DUE number and no 
 
   await screen.findByText(BADGE);
   await user.click(fileButton());
-  const verdict = 'One button. An extraordinary amount of paperwork.';
+  const verdict = "IT WORKED Gemma's machine pressed the button. The simulator verified it.";
   await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(verdict));
   const card = await within(department()).findByRole('listitem');
   expect(within(card).getByText('DUE-0001')).toBeDefined();

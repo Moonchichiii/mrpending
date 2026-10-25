@@ -32,7 +32,7 @@ test('a fixed line plays its clip after the press, the indicator moves, and Skip
 
   // Nothing is fetched or played before the visitor presses the button.
   const voice = page.getByRole('region', { name: 'Voice' });
-  const indicator = voice.locator('[data-speaking]');
+  const indicator = voice.locator('[data-speaking="true"]');
   await expect(indicator).toHaveCount(0);
   expect(clips).toEqual([]);
 
@@ -40,7 +40,12 @@ test('a fixed line plays its clip after the press, the indicator moves, and Skip
   await expect(indicator).toBeVisible();
   expect(clips).toEqual(['/voice/intake.mp3']);
   await expect(voice.getByText(INTAKE)).toBeVisible();
-  expect(await indicator.evaluate((el) => getComputedStyle(el).animationName)).not.toBe('none');
+  expect(
+    await indicator
+      .locator('line')
+      .first()
+      .evaluate((el) => getComputedStyle(el).animationName),
+  ).not.toBe('none');
 
   await voice.getByRole('button', { name: 'Skip voice' }).click();
   await expect(indicator).toHaveCount(0);

@@ -3,17 +3,21 @@ import type { ReactNode } from 'react';
 import { useReducer, useRef, useState } from 'react';
 import { lastStep } from '../board';
 import { Engineer } from '../engineer';
-import { Verdict } from '../report';
+import { Result } from '../report';
 import { Voice } from '../voice';
 import { BoardPanel } from './BoardPanel';
 import { Controls } from './Controls';
+import { ModelBadge } from './InferenceBadge';
+import { MinutesFold } from './MinutesFold';
 import { pressLine, pressVoiced, pressing } from './model/press';
+import { currentStep } from './model/note';
+import { progress } from './model/progress';
 import { IDLE, STEP_MS, failedOn, playhead, reduce, said } from './model/session';
 import type { Session, SessionEvent } from './model/session';
-import { Hero, Stage, source } from './Stage';
+import { Hero, Stage } from './Stage';
 import { usePress } from './usePress';
 import { useTicks } from './useTicks';
-import styles from './BuildDesk.module.css';
+import { useTrial } from './useTrial';
 
 // A finished build is replayed by the build session itself: REPLAY turns its ending into playback from step 0.
 const start = (build: Build): Session =>
@@ -27,21 +31,26 @@ const play = (session: Session, event: SessionEvent | { type: 'START'; build: Bu
 // A recorded build played back on the same stage as a live one; nothing here contacts the agent. A front door's stage
 // stands idle until its button is pressed; a record page (`autoplay`) plays at once and has no button of its own, so a
 // page never offers two. `build` is undefined while the recording is fetched, and `blocked` keeps the button waiting
-// with `note` saying why. The button and Try again play the recording again from the start.
+// with `note` saying why. The button and Replay play the recording again from the start; `folds` follow the Minutes.
+// `about`, under the heading, says what the visitor is watching.
 export function Playback({
   build,
   heading,
+  about,
   intro,
   note,
   blocked = false,
   autoplay = true,
+  folds,
 }: {
   build: Build | undefined;
-  heading?: ReactNode;
+  heading?: string | undefined;
+  about?: string | undefined;
   intro?: string | undefined;
   note?: string | undefined;
   blocked?: boolean;
   autoplay?: boolean;
+  folds?: ReactNode;
 }) {
   const [session, dispatch] = useReducer(play, autoplay && build ? start(build) : IDLE);
   useTicks(session, dispatch);
@@ -69,10 +78,18 @@ export function Playback({
   // needs the recorded attempts to show the line's trial failed.
   const line = pressed === undefined ? lines.at(-1) : pressLine(lines, press.beat);
   const run = session.status === 'idle' ? 'idle' : `${session.requestId}:${take}`;
+  const trial = useTrial(
+    session.status === 'running' ? session.attempts : (ended?.build.attempts ?? []),
+    head ?? (last && { attempt: last, step: lastStep(last.events) }),
+    run,
+  );
+  const revealed = ended !== undefined && (ended.status === 'exhausted' || press.beat === 'cut');
+  const now = progress(session, revealed);
 
   return (
     <Stage
       heading={heading}
+      about={about}
       engineer={
         <Engineer status={session.status} line={line} failed={failedOn(build?.attempts ?? [], line)}>
           {/* As on the desk, the voice keeps its queue from playback to the ending; a replay restarts it. */}
@@ -84,30 +101,24 @@ export function Playback({
         </Engineer>
       }
       action={
-        <>
-          <output ref={status} tabIndex={-1} className={styles.status}>
-            {session.status === 'running'
-              ? `Trial ${head?.attempt.n ?? 1} in progress.`
-              : (ended?.build.report.verdict ?? '')}
-          </output>
-          {!autoplay && (
-            <Hero
-              onPress={replay}
-              disabled={build === undefined || blocked || session.status === 'running'}
-              note={note}
-            />
-          )}
-        </>
+        autoplay ? undefined : (
+          <Hero
+            onPress={replay}
+            disabled={build === undefined || blocked || session.status === 'running'}
+            note={note}
+          />
+        )
       }
       board={
         <BoardPanel
-          header={build && source(build.model, 'recorded')}
-          attempts={session.status === 'running' ? session.attempts : (ended?.build.attempts ?? [])}
-          playing={head ?? (last && { attempt: last, step: lastStep(last.events) })}
+          trial={trial}
+          progress={now}
+          badge={<ModelBadge model={build?.model} where={build && 'recorded'} />}
           run={run}
           stepMs={session.status === 'running' ? STEP_MS[session.speed] : undefined}
           pressedAt={press.at}
-          lines={lines}
+          note={currentStep(session, { revealed, replay: true })}
+          statusRef={status}
           // As on the desk, the controls stand on the board in every phase.
           controls={
             <Controls
@@ -122,13 +133,14 @@ export function Playback({
               }
             />
           }
-          // Character sheet section 6: the verdict slides up at the press's hard cut, at once on an exhausted build.
-          overlay={
-            ended && (ended.status === 'exhausted' || press.beat === 'cut') ? (
-              <Verdict build={ended.build} onTryAgain={replay} />
-            ) : undefined
-          }
+          result={<Result stamp={now.stamp} text={now.result} roles={revealed} />}
         />
+      }
+      folds={
+        <>
+          <MinutesFold trial={trial} lines={lines} ended={revealed ? ended.build : undefined} />
+          {folds}
+        </>
       }
     />
   );

@@ -1,13 +1,4 @@
-/* The persistent status region: an output element, block so it keeps the measure, and two lines tall in every phase,
-   which holds the longest phase text and either verdict at a phone's width. */
-.status {
-  display: block;
-  max-width: 22rem;
-  min-height: calc(2em * var(--leading));
-  font-weight: 700;
-}
-
-/* An error in the verdict's place over the board: a level paper panel, the alert in its coral text token. */
+/* An error over the machine: a level paper panel, the alert in its coral text token. */
 .notice {
   display: grid;
   gap: var(--space-3);
@@ -15,6 +6,8 @@
   width: min(100%, 34rem);
   padding: var(--space-4);
   background: var(--paper);
+  color: var(--ink);
+  border: var(--border-paper);
   border-radius: var(--radius-control);
 }
 
@@ -27,15 +20,15 @@
 .action {
   min-height: var(--target);
   padding: var(--space-2) var(--space-4);
-  background: transparent;
+  background: var(--paper);
   color: var(--ink);
   font-weight: 700;
   border: var(--border-control);
-  border-radius: var(--radius-control);
+  border-radius: 999px;
   cursor: pointer;
 }
 
-/* Instruments are level; every control is at least 52 px (character sheet section 8). */
+/* Playback on the board: level paper pills, every control at least 52 px (character sheet section 8). */
 .controls {
   display: flex;
   flex-wrap: wrap;
@@ -46,7 +39,7 @@
   border: 0;
 }
 
-/* The group keeps its name for assistive technology; the toolbar shows what the buttons are. */
+/* The group keeps its name for assistive technology; the buttons say what they are. */
 .legend {
   position: absolute;
   width: 1px;
@@ -59,23 +52,25 @@
 .control {
   min-width: var(--target);
   min-height: var(--target);
-  padding: var(--space-2) var(--space-3);
-  background: transparent;
+  padding: var(--space-1) var(--space-3);
+  background: var(--paper);
   color: var(--ink);
+  font-size: var(--text-small);
   font-weight: 700;
   border: var(--border-control);
-  border-radius: var(--radius-control);
+  border-radius: 999px;
   cursor: pointer;
 }
 
 .control[aria-pressed='true'] {
   background: var(--ink);
   color: var(--paper);
+  border-color: var(--paper);
 }
 
 .control:disabled {
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
 .lines {

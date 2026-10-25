@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
-import { ATTEMPTS, FILE, FORM, adjust, ndjson, open, recorded } from './build';
+import { ATTEMPTS, FILE, FORM, NOTE, adjust, ndjson, open, recorded } from './build';
 import {
   PHONE,
   VIEWPORTS,
@@ -48,18 +48,18 @@ async function walk(page: Page, at: (state: State) => Promise<void>, longest = f
     await pause.click();
   };
 
-  await expect(status).toHaveText('Drafting. Please do not rush the Department.');
+  await expect(status).toHaveText(NOTE.designing);
   await at('drawing');
   await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
   release();
-  await expect(status).toHaveText('Trial 1 in progress.');
+  await expect(status).toHaveText(NOTE.testing);
   await page.clock.runFor(STEP * 2);
   await hold('running');
   await page.clock.runFor(STEP * (LOST_AT - 2));
   await expect(page.locator('[data-failure][data-cell="L3"]')).toHaveCount(1);
   await hold('failure');
   await page.clock.runFor(STEP * 2);
-  await expect(status).toHaveText('Trial 2 in progress.');
+  await expect(status).toHaveText(NOTE.retesting);
   await expect(page.locator('[data-change="removed"]')).toHaveCount(1);
   await hold('diff');
   // Into the press clock's excited beat, 0.90 s after the tick that reaches the button; the press is the last step,
@@ -70,19 +70,15 @@ async function walk(page: Page, at: (state: State) => Promise<void>, longest = f
   await at('press');
   await expect(sequence).toHaveCount(1);
   await page.clock.runFor(1000);
-  const verdict = page.getByRole('region', { name: 'Verdict' });
-  await expect(verdict).toBeVisible();
+  const result = page.getByRole('region', { name: 'Simulation result' });
+  await expect(result.locator('[data-stamp]')).toHaveText('PRESSED');
   await page.clock.resume();
-  // The verdict slides up; it is looked at once it has arrived, not halfway through its slide.
-  await verdict.evaluate((el) => Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)));
   await at('verdict');
-  // The Engineering Report opens on demand over the page, and closes back to it.
-  await verdict.getByRole('button', { name: 'Open the report' }).click();
-  const report = page.getByRole('dialog', { name: 'Engineering Report' });
+  // The Engineering Report waits in the Minutes, folded under the board.
+  await page.getByText('Minutes', { exact: true }).click();
+  const report = page.getByRole('region', { name: 'Engineering Report' });
   await expect(report).toBeVisible();
   await at('report');
-  await report.getByRole('button', { name: 'Close' }).click();
-  await expect(report).toBeHidden();
   await page.getByText('My department').click();
   await page
     .getByRole('region', { name: 'My department' })
@@ -152,14 +148,14 @@ for (const layout of LAYOUTS) {
       async (state) => {
         await expectNoOverflow(page);
         if (layout.width <= PHONE) await expectTargets(page);
-        // A verdict taller than the board scrolls on it, its top reachable: scrolled up, it starts inside the board.
+        // The pinned result stays on the board with the longest text: it ends inside the board's frame.
         if (state === 'verdict')
           expect(
-            await page.getByRole('region', { name: 'Verdict' }).evaluate((el) => {
-              const board = el.parentElement;
-              if (board === null) return false;
-              board.scrollTop = 0;
-              return el.getBoundingClientRect().top >= board.getBoundingClientRect().top;
+            await page.getByRole('region', { name: 'Simulation result' }).evaluate((el) => {
+              const board = el.closest('section[aria-label="The board"]');
+              return (
+                board !== null && el.getBoundingClientRect().bottom <= board.getBoundingClientRect().bottom
+              );
             }),
           ).toBe(true);
       },
@@ -199,8 +195,8 @@ test('a build is filed, watched, paused, saved and filed again with the keyboard
   await page.route('**/api/build', (route) =>
     route.fulfill({ body: ndjson(recorded(route.request().headers()['x-request-id'] ?? '')) }),
   );
-  // After the voice the button is the next stop, then past the board the fold under the stage, which opens by keyboard;
-  // the request is rewritten in item 1.
+  // After the voice the button is the next stop, then past the board and the Minutes the form's fold, which opens by
+  // keyboard; the request is rewritten in item 1.
   const file = page.getByRole('button', { name: FILE });
   await tabTo(page, file);
   await tabTo(page, page.getByText('Advanced settings'));
@@ -215,7 +211,7 @@ test('a build is filed, watched, paused, saved and filed again with the keyboard
   // Focus moves to the status; Space pauses the machine from there, and every control is then walked by Tab.
   const status = page.getByRole('status');
   const pause = page.getByRole('button', { name: 'Pause' });
-  await expect(status).toHaveText('Trial 1 in progress.');
+  await expect(status).toHaveText(NOTE.testing);
   await expect(status).toBeFocused();
   await page.keyboard.press(' ');
   await expect(pause).toHaveAttribute('aria-pressed', 'true');
@@ -228,14 +224,17 @@ test('a build is filed, watched, paused, saved and filed again with the keyboard
   await page.keyboard.press('Enter');
   await expect(impatient).toHaveAttribute('aria-pressed', 'true');
 
-  const verdict = page.getByRole('region', { name: 'Verdict' });
-  await expect(verdict).toBeVisible({ timeout: 20_000 });
+  const result = page.getByRole('region', { name: 'Simulation result' });
+  await expect(result.locator('[data-stamp]')).toHaveText('PRESSED', { timeout: 20_000 });
   await expectFocusVisible(page, 'verdict');
-  await tabTo(page, verdict.getByRole('button', { name: 'Save the report' }));
+  // The Minutes open by keyboard, and Save as image in them saves the Engineering Report.
+  await tabTo(page, page.locator('summary', { hasText: /^Minutes$/ }));
+  await page.keyboard.press('Enter');
+  await tabTo(page, page.getByRole('button', { name: 'Save as image' }));
   const [download] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')]);
   expect(download.suggestedFilename()).toBe('mr-pending-b1.png');
-  // Try again sits before it on the verdict, and files the request as it stands once more.
-  await tabTo(page, verdict.getByRole('button', { name: 'Try again' }), 'Shift+Tab');
+  // The one button, back up the page, files the request as it stands once more.
+  await tabTo(page, file, 'Shift+Tab');
   await page.keyboard.press('Enter');
   await expect(status).toBeFocused();
   await expect(page.getByLabel('1. Nature of the request')).toHaveValue(FORM.nature);

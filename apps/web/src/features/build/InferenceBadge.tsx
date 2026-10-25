@@ -1,4 +1,5 @@
 import { Config } from '@pending/contract';
+import type { Model } from '@pending/contract';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styles from './InferenceBadge.module.css';
 
@@ -8,6 +9,42 @@ const COPY: Record<Config['inference'], string> = {
   server: 'Gemma runs on the Mr. Pending server. Your prompts go to that server, not to a model provider.',
   hosted: 'Gemma runs hosted via OpenRouter. Your request is sent to OpenRouter.',
 };
+
+const HOST: Record<Model['host'], string> = { ollama: 'Ollama', openrouter: 'OpenRouter' };
+const WHERE: Record<Config['inference'] | 'recorded', string> = {
+  'this-machine': 'Running locally',
+  server: 'On the Mr. Pending server',
+  hosted: 'Hosted',
+  recorded: 'Recorded',
+};
+
+// The board's badge, from the config or the build header only: an Ollama tag such as gemma4:e2b reads "Gemma 4 E2B",
+// any other id is shown as it is.
+export function source(model: Model, where: Config['inference'] | 'recorded'): string {
+  const name = model.id.replace(
+    /^gemma(\d+):([a-z0-9]+)$/i,
+    (_, major: string, size: string) => `Gemma ${major} ${size.toUpperCase()}`,
+  );
+  return `${name} · ${HOST[model.host]} · ${WHERE[where]}`;
+}
+
+// The model badge on the board: a green dot while the config confirms a model, an amber one on a recording, and a
+// grey one while no model is confirmed; the dot only repeats what the words say.
+export function ModelBadge({
+  model,
+  where,
+}: {
+  model?: Model | undefined;
+  where?: Config['inference'] | 'recorded' | undefined;
+}) {
+  const known = model !== undefined && where !== undefined;
+  return (
+    <p className={styles.model} data-state={!known ? 'off' : where === 'recorded' ? 'recorded' : 'on'}>
+      <span className={styles.dot} aria-hidden="true" />
+      {known ? source(model, where) : 'Model not confirmed'}
+    </p>
+  );
+}
 
 // A config that has not answered by then counts as unconfirmed; the visitor may ask again.
 export const CONFIG_TIMEOUT_MS = 5000;

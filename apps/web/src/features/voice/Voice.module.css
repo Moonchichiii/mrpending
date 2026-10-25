@@ -1,24 +1,25 @@
 .voice {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-2);
+  justify-items: start;
   min-width: 0;
-  max-width: var(--measure);
+  max-width: 34rem;
 }
 
-/* The one speech bubble: paper with ink text, a wonky outline, one tilt and a tail toward Mr. Pending (character sheet
-   section 5). It keeps two lines of height, its padding and its border, so a short line or none does not move the
-   controls under it. */
+/* The one speech bubble: paper with ink text in the hand-lettered face, a wonky outline, one tilt and a tail toward
+   Mr. Pending (character sheet section 5). It keeps two lines of height, its padding and its border, so a short line
+   or none does not move the controls under it. */
 .bubble {
   position: relative;
-  min-height: calc(2lh + 2 * var(--space-3) + 6px);
-  margin: 0;
-  padding: var(--space-3) var(--space-4);
+  display: grid;
+  gap: var(--space-1);
+  justify-self: stretch;
+  min-width: 0;
+  padding: var(--space-3) var(--space-4) var(--space-2);
   background: var(--paper);
   color: var(--ink);
-  font-size: clamp(1.125rem, 1rem + 0.5vw, 1.5rem);
-  line-height: 1.35;
   border: var(--border-paper);
-  border-radius: var(--radius-paper);
+  border-radius: 34px 26px 38px 22px;
   box-shadow: var(--shadow-paper);
   rotate: var(--tilt-c);
 }
@@ -36,72 +37,133 @@
   rotate: 45deg;
 }
 
-/* Pulses in the bubble's corner padding while a line is heard, so it takes no room from the line. */
-.speaking {
-  position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
-  width: 0.625rem;
-  height: 0.625rem;
-  background: var(--copper);
-  border-radius: 50%;
-  animation: speaking 0.6s ease-in-out infinite alternate;
-}
-
-@keyframes speaking {
-  from {
-    scale: 0.5;
-  }
-
-  to {
-    scale: 1.2;
-  }
+.line {
+  min-height: 2lh;
+  margin: 0;
+  font-family: var(--font-note);
+  font-size: clamp(1.25rem, 0.95rem + 0.85vw, 1.875rem);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 .memo {
   color: var(--copper-text);
-  font-family: var(--font-note);
 }
 
-/* Instruments are level; every control is at least 52 px (character sheet section 8). */
+/* The speaking indicator: the bars rise and fall while a line is spoken, and rest flat otherwise. */
+.speaking {
+  width: 4rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: var(--blue-text);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.speaker {
+  fill: var(--blue-text);
+}
+
+.dot {
+  fill: var(--ink);
+  stroke: none;
+}
+
+.bar {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scaleY(0.35);
+}
+
+.speaking[data-speaking='true'] .bar {
+  animation: talk 700ms ease-in-out infinite alternate;
+}
+
+.speaking[data-speaking='true'] .bar:nth-of-type(2n) {
+  animation-delay: -350ms;
+}
+
+@keyframes talk {
+  from {
+    transform: scaleY(0.35);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .speaking[data-speaking='true'] .bar {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* Two level pills under the bubble; every control is at least 52 px (character sheet section 8). */
 .controls {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   gap: var(--space-2) var(--space-3);
 }
 
 .control {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   min-width: var(--target);
   min-height: var(--target);
-  padding: var(--space-2) var(--space-3);
-  background: transparent;
+  padding: var(--space-2) var(--space-4);
+  background: var(--paper);
   color: var(--ink);
   font-weight: 700;
   border: var(--border-control);
-  border-radius: var(--radius-control);
+  border-radius: 999px;
+  box-shadow: 2px 2px 0 var(--ink);
   cursor: pointer;
 }
 
-.control[aria-pressed='true'] {
-  background: var(--ink);
-  color: var(--paper);
+.icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.fill {
+  fill: currentColor;
+}
+
+/* Voice off: the pill turns ink-on-paper hollow, its speaker crossed out. */
+.control[aria-pressed='false'] {
+  background: transparent;
+  box-shadow: none;
 }
 
 .disclosure {
-  flex: 1 1 14rem;
   margin: 0;
   font-size: var(--text-small);
 }
 
 /* Phones: level under the head, its tail pointing up at him, since a tilt widens it with its height and enlarged text
-   overflowed. Five lines are held in every phase, which a line at its 160-character maximum fits at the full width, so a
-   phone's page does not grow. */
+   overflowed. Four lines are held in every phase, which a line at its 160-character maximum fits at the full width, so
+   a phone's page does not grow. */
 @media (max-width: 40rem) {
+  .voice {
+    max-width: none;
+  }
+
   .bubble {
-    min-height: calc(5lh + 2 * var(--space-3) + 6px);
-    font-size: var(--text-body);
     rotate: none;
+  }
+
+  .line {
+    min-height: 4lh;
+    font-size: 1.25rem;
   }
 
   .bubble::before {

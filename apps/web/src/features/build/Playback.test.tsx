@@ -62,7 +62,10 @@ test('a recorded build is spoken by the voice control, with Skip voice and Escap
 
   expect(within(voice).getByRole('button', { name: 'Skip voice' })).toBeDefined();
 
-  // Esc skips the line being spoken from anywhere on the record page.
+  // Esc skips the line being spoken from anywhere on the record page, once the bubble shows it is being spoken.
+  await vi.waitFor(() =>
+    expect(voice.querySelector('[data-speaking]')?.getAttribute('data-speaking')).toBe('true'),
+  );
   await user.keyboard('{Escape}');
   expect(cancel).toHaveBeenCalledTimes(1);
 });
@@ -136,9 +139,11 @@ test('a recorded cameo line brings the sloth only on the failure the simulator r
   expect(document.querySelector('[data-sloth]')).toBeNull();
 });
 
-const report = () => screen.queryByRole('region', { name: 'Verdict' });
+const result = () => screen.getByRole('region', { name: 'Simulation result' });
+const stamp = () => result().querySelector('[data-stamp]')?.textContent;
+const report = () => screen.queryByRole('region', { name: 'Engineering Report' });
 
-test('the verdict slides up at the hard cut to deadpan, over the board that drew the press from the start', async () => {
+test('the result turns PRESSED at the hard cut to deadpan, on the board that drew the press from the start', async () => {
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
   render(<Playback build={pressedRecord} />);
   const board = () => boardButton()?.closest('svg');
@@ -147,22 +152,26 @@ test('the verdict slides up at the hard cut to deadpan, over the board that drew
   await vi.waitFor(() => expect(board()?.getAttribute('data-press')).toBe('sequence'), { timeout: 5000 });
   // The trial keeps its place from playback to the ending, so the press plays on the board that ran the trial.
   expect(board()).toBe(first);
+  expect(stamp()).toBe('PENDING');
   expect(report()).toBeNull();
   await vi.waitFor(() => expect(mood()).toBe('excited'), { timeout: 1500 });
-  expect(report()).toBeNull();
-  await vi.waitFor(() => expect(report()).not.toBeNull(), { timeout: 1500 });
+  expect(stamp()).toBe('PENDING');
+  await vi.waitFor(() => expect(stamp()).toBe('PRESSED'), { timeout: 1500 });
   expect(mood()).toBe('deadpan');
-  expect(report()?.querySelector('[data-stamp]')?.getAttribute('data-stamp')).toBe('APPROVED');
+  expect(result().textContent).toContain(pressedRecord.report.verdict);
+  // The Engineering Report joins the Minutes at the same cut.
+  expect(report()?.querySelector('svg[data-shape] [data-stamp]')?.getAttribute('data-stamp')).toBe(
+    'APPROVED',
+  );
 });
 
 test('an exhausted record has no press, so its verdict shows at its ending, stamped PENDING', async () => {
   vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
-  render(
-    <Playback
-      build={Build.parse({ ...header([lost(1), lost(2)]), attempts: [lost(1), lost(2)], lines: [] })}
-    />,
-  );
+  const exhausted = Build.parse({ ...header([lost(1), lost(2)]), attempts: [lost(1), lost(2)], lines: [] });
+  render(<Playback build={exhausted} />);
   await vi.waitFor(() => expect(report()).not.toBeNull(), { timeout: 3000 });
   expect(document.querySelector('[data-press]')).toBeNull();
-  expect(report()?.querySelector('[data-stamp]')?.getAttribute('data-stamp')).toBe('PENDING');
+  expect(stamp()).toBe('PENDING');
+  expect(result().textContent).toContain(exhausted.report.verdict);
+  expect(report()?.querySelector('svg[data-shape] [data-stamp]')?.getAttribute('data-stamp')).toBe('PENDING');
 });

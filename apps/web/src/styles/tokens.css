@@ -11,6 +11,8 @@
   --button: #2f6bff;
   --blueprint: #2446b8;
   --blueprint-line: #cfe0ff;
+  /* The board's dark navy frame; paper on it is 14:1, so it carries the board's badge and rail. */
+  --frame: #14215a;
   --coral-text: #8a1f15;
   --teal-text: #0a4e45;
   --copper-text: #6b3a17;

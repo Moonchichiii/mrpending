@@ -15,7 +15,7 @@
 
 .rig {
   display: block;
-  width: clamp(9rem, 14vw, 13rem);
+  width: clamp(9rem, 17vw, 15.5rem);
   height: auto;
   overflow: visible;
   fill: none;

@@ -5,8 +5,9 @@
   height: auto;
 }
 
+/* The cobalt and its continued grid are the board panel's; the sheet's own lines mark the twelve by seven cells on it. */
 .sheet {
-  fill: #2446b8;
+  fill: transparent;
 }
 
 .grid {
@@ -29,36 +30,49 @@
   stroke-linejoin: round;
 }
 
-/* The button sprite on its own, at whatever size its container gives it. */
-.blueButton {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
 /* Ink outline 3 px plus 2 px of paper on each side. */
-.board .halo *,
-.blueButton .halo * {
+.board .halo * {
   fill: #fff8e6;
   stroke: #fff8e6;
   stroke-width: 7;
 }
 
-.belt,
-.plank {
+/* Cartoon engineering: amber timber with a copper grain, steel posts, rollers and pivots with dark rivets. */
+.plank,
+.ramp,
+.arm {
   fill: #f2a33a;
+}
+
+.grain {
+  fill: none;
+  stroke: #b5652f;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.belt,
+.hopper {
+  fill: #cdd3df;
 }
 
 .roller,
 .pivot,
 .frame,
-.arm,
-.ramp {
+.post {
+  fill: #a3abbd;
+}
+
+.rivet {
+  fill: #3d4458;
+  stroke: none;
+}
+
+.cup {
   fill: #b5652f;
 }
 
-.domino,
-.hopper {
+.domino {
   fill: #fff8e6;
 }
 
@@ -102,11 +116,11 @@
 }
 
 .fan {
-  fill: #1fb5a3;
+  fill: #a3abbd;
 }
 
 .blade {
-  fill: #a9e3b5;
+  fill: #fff8e6;
 }
 
 .wind {
@@ -337,23 +351,29 @@
   }
 }
 
+/* The ball's path so far: a dashed white motion line. */
 .trail {
   fill: none;
   stroke: #fff8e6;
-  stroke-width: 4;
+  stroke-width: 3;
   stroke-linecap: round;
-  stroke-dasharray: 0.1 10;
+  stroke-dasharray: 9 8;
 }
 
 .ball {
   fill: #ff5a4e;
 }
 
+.shine {
+  fill: #fff8e6;
+  stroke: none;
+}
+
 .partLabels,
 .moveLabel {
   fill: #fff8e6;
   font-family: Fredoka, sans-serif;
-  font-size: 13px;
+  font-size: 15px;
   text-anchor: middle;
 }
 
