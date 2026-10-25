@@ -16,7 +16,7 @@ import { pressLine, pressVoiced, pressing } from './model/press';
 import { progress } from './model/progress';
 import { STEP_MS, failedOn, playhead, said } from './model/session';
 import type { Session } from './model/session';
-import { Form27B6 } from './Form27B6';
+import { Form27B6, SettingsButton } from './Form27B6';
 import { Hero, Stage } from './Stage';
 import { useBuild } from './useBuild';
 import { usePress } from './usePress';
@@ -79,8 +79,8 @@ const ABOUT =
   'Just for fun: watch a small AI model design ridiculous machines to press one button. A simulator tests each machine, and the AI tries to fix whatever goes wrong.';
 
 // One stage in every phase: Mr. Pending, his bubble and the button in the yellow band, the one board under it, and
-// Form 27B/6 (Advanced settings) and the Minutes folded away under the board. The button files the form; while a build is
-// on the board it waits, and once the build has ended it files the form again.
+// Form 27B/6 (opened by the cog on the board's header) and the Minutes folded away under the board. The button files the
+// form; while a build is on the board it waits, and once the build has ended it files the form again.
 export function BuildDesk({
   canFile,
   connecting = false,
@@ -103,6 +103,7 @@ export function BuildDesk({
     restart();
   };
   const formId = useId();
+  const [settings, setSettings] = useState(false);
   const status = useRef<HTMLOutputElement>(null);
   // The control that was used may be disabled or replaced by the change of phase, so focus moves to the status.
   const then = (action: () => void) => () => {
@@ -169,6 +170,7 @@ export function BuildDesk({
           progress={now}
           // The badge names the model the build reports once it has ended, the configured one before.
           badge={<ModelBadge model={ended?.build.model ?? config?.model} where={config?.inference} />}
+          settings={<SettingsButton form={formId} open={settings} onToggle={() => setSettings((o) => !o)} />}
           run={run}
           stepMs={session.status === 'running' ? STEP_MS[session.speed] : undefined}
           pressedAt={press.at}
@@ -203,7 +205,13 @@ export function BuildDesk({
       }
       folds={
         <>
-          <Form27B6 id={formId} onFile={fileForm} canFile={canFile} />
+          <Form27B6
+            id={formId}
+            open={settings}
+            onOpen={() => setSettings(true)}
+            onFile={fileForm}
+            canFile={canFile}
+          />
           <MinutesFold trial={trial} lines={lines} ended={revealed ? ended.build : undefined} />
         </>
       }

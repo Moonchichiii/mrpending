@@ -5,7 +5,7 @@ import { Lines } from './Lines';
 import type { Trial } from './useTrial';
 import styles from './BoardPanel.module.css';
 
-// The closed section after Advanced settings: Mr. Pending's lines, the correction and the minutes of the trial on the
+// The closed section under the board, after the form when it is open: Mr. Pending's lines, the correction and the minutes of the trial on the
 // board, and once a build has ended its Engineering Report with Save as image.
 export function MinutesFold({
   trial,

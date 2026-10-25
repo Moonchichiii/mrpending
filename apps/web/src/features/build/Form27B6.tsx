@@ -1,6 +1,7 @@
 import { Form, PartKind } from '@pending/contract';
 import type { SyntheticEvent } from 'react';
 import { useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import styles from './Form27B6.module.css';
 
 type Field = 'nature' | 'minParts' | 'maxParts' | 'required' | 'forbidden';
@@ -58,24 +59,56 @@ const contradiction = (c: ReturnType<typeof candidate>): 'forbidden' | 'minParts
   return undefined;
 };
 
+// The cog that opens and closes the form named by `form`; it stands on the board's header, the form under the board.
+export function SettingsButton({
+  form,
+  open,
+  onToggle,
+}: {
+  form: string;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={styles.cog}
+      aria-label="Advanced settings, Form 27B/6"
+      aria-expanded={open}
+      aria-controls={`${form}-sheet`}
+      onClick={onToggle}
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="8.5" strokeWidth="3" strokeDasharray="3.34 3.34" />
+        <circle cx="12" cy="12" r="6" strokeWidth="2.5" />
+        <circle cx="12" cy="12" r="2" strokeWidth="2" />
+      </svg>
+      Settings
+    </button>
+  );
+}
+
 // A submit button elsewhere on the page names this form by `id` and files the pre-filled request at once; the five
-// items stay folded away until a visitor adjusts them. canFile is false until the inference badge is shown: the
-// fields stay editable, nothing leaves the browser.
+// items stay folded away until a visitor opens them with the settings button (`open`). canFile is false until the
+// inference badge is shown: the fields stay editable, nothing leaves the browser.
 export function Form27B6({
   id,
   initial,
+  open,
+  onOpen,
   onFile,
   canFile = true,
 }: {
   id: string;
   initial?: Form | undefined;
+  open: boolean;
+  onOpen: () => void;
   onFile: (form: Form) => void;
   canFile?: boolean;
 }) {
   const [draft, setDraft] = useState(() => toDraft(initial ?? DEFAULT));
   const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
   const [rejection, setRejection] = useState<string>();
-  const sheet = useRef<HTMLDetailsElement>(null);
   const fields = useRef<
     Partial<Record<Field, HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null>>
   >({});
@@ -109,7 +142,7 @@ export function Form27B6({
     setErrors(found);
     setRejection(paradox && REJECTED[paradox]);
     // The fold opens first, so focus can reach the first field to correct; the rejection is announced by its alert role.
-    if (sheet.current) sheet.current.open = true;
+    flushSync(onOpen);
     const first = (['nature', 'minParts', 'maxParts', 'required', 'forbidden'] as const).find(
       (f) => found[f],
     );
@@ -156,10 +189,7 @@ export function Form27B6({
           {rejection}
         </p>
       )}
-      <details ref={sheet} className={styles.sheet}>
-        <summary className={styles.adjust}>
-          Advanced settings - shape the next request: parts, required and forbidden equipment
-        </summary>
+      <div id={`${id}-sheet`} className={styles.sheet} hidden={!open}>
         <h2 id={`${id}-title`} className={styles.title}>
           Form 27B/6
         </h2>
@@ -225,7 +255,7 @@ export function Form27B6({
           {kinds('required', '4. Required equipment')}
           {kinds('forbidden', '5. Forbidden equipment')}
         </div>
-      </details>
+      </div>
     </form>
   );
 }

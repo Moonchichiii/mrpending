@@ -6,25 +6,35 @@
   padding-block: var(--space-3) var(--space-5);
 }
 
+/* One slim line in small type, well below the board's verdict: the motto left, the build on the right; a narrow
+   screen wraps it rather than overflowing. */
 .footer {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
+  align-items: center;
+  justify-content: space-between;
+  gap: 0 var(--space-4);
   width: min(100% - 2 * var(--space-3), 90rem);
   margin-inline: auto;
-  padding-block-end: var(--space-5);
+  padding-block-end: var(--space-3);
+  font-size: var(--text-small);
+  overflow-wrap: anywhere;
 }
 
-/* The motto stays small, and in the footer, well below the board's verdict. */
-.motto {
-  flex-basis: 100%;
-  font-size: var(--text-small);
+.build {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--space-3);
+  min-width: 0;
 }
 
 /* Running-text links on the yellow page are ink, and at least 52 px tall (character sheet sections 5 and 8). */
 .footer a {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  min-width: var(--target);
   min-height: var(--target);
   color: var(--ink);
 }

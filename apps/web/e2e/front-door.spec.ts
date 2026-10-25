@@ -3,6 +3,7 @@ import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
 import { FILE, NOTE } from './build';
 import {
+  LAYOUTS,
   PHONE,
   VIEWPORTS,
   expectAxeClean,
@@ -30,12 +31,23 @@ test('the static front door makes no API call', async ({ page }) => {
   // Mr. Pending is at the closed counter from the first paint, in the slow mood.
   await expect(page.getByText(CLOSED)).toBeVisible();
   await expect(page.locator('svg[data-variant="desk"]')).toHaveClass(/slow/);
-  // Under the title the site says it is a recording of the local experiment, not a live model, and the footer
-  // carries the motto.
+  // Under the title the site says it is a recording of the local experiment, not a live model, and the one-line
+  // footer carries the motto on the left, the board's badge and the source on the right.
   await expect(page.getByText(PREMISE, { exact: true })).toBeVisible();
   await expect(page.getByText(RECORDED, { exact: true })).toBeVisible();
   await expect(page.getByText(/^Just for fun/)).toHaveCount(0);
-  await expect(page.getByRole('contentinfo').getByText(MOTTO, { exact: true })).toBeVisible();
+  const footer = page.getByRole('contentinfo');
+  const motto = footer.getByText(MOTTO, { exact: true });
+  const badge = footer.getByText('Gemma 4 E4B · Ollama · Recorded', { exact: true });
+  const source = footer.getByRole('link', { name: 'Source', exact: true });
+  await expect(motto).toBeVisible();
+  await expect(badge).toBeVisible();
+  await expect(source).toHaveAttribute('href', 'https://github.com/Moonchichiii/mrpending');
+  const [mottoBox, badgeBox, sourceBox] = await Promise.all(
+    [motto, badge, source].map((l) => l.boundingBox()),
+  );
+  expect(mottoBox && badgeBox && mottoBox.x + mottoBox.width).toBeLessThanOrEqual(badgeBox?.x ?? 0);
+  expect(badgeBox && sourceBox && badgeBox.x + badgeBox.width).toBeLessThanOrEqual(sourceBox?.x ?? 0);
   await expect(page.getByRole('status')).toHaveText('The recording waits for the button.');
   expect(api).toEqual([]);
   await expectAxeClean(page, 'static front door');
@@ -157,6 +169,35 @@ test('a gallery record with a one-letter title still links through a 52 px targe
   await expect(page.getByRole('link', { name: 'I', exact: true })).toBeVisible();
   await expectTargets(page);
 });
+
+// Record pages live on the static site only; the local door has no gallery.
+test('a gallery record page is axe clean on desktop and on a phone', async ({ page }) => {
+  for (const width of [1440, PHONE]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/r/scenic');
+    await expect(
+      page.getByRole('heading', { level: 3, name: 'Button Pressing Apparatus Design' }),
+    ).toBeVisible();
+    await expectAxeClean(page, `record page at ${width}`);
+  }
+});
+
+for (const layout of LAYOUTS) {
+  test(`a gallery record page fits at ${layout.name}`, async ({ page, browserName }) => {
+    await page.setViewportSize(layout);
+    if (layout.text !== 16) {
+      test.skip(browserName !== 'chromium', 'the default font size is set through the Chromium protocol');
+      const cdp = await page.context().newCDPSession(page);
+      await cdp.send('Page.setFontSizes', { fontSizes: { standard: layout.text, fixed: layout.text } });
+    }
+    await page.goto('/r/scenic');
+    await expect(
+      page.getByRole('heading', { level: 3, name: 'Button Pressing Apparatus Design' }),
+    ).toBeVisible();
+    await expectNoOverflow(page);
+    if (layout.width <= PHONE) await expectTargets(page);
+  });
+}
 
 for (const viewport of VIEWPORTS) {
   test(`the front door fits at ${viewport.name}`, async ({ page }) => {

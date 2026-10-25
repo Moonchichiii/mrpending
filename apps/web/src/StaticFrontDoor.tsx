@@ -1,19 +1,15 @@
 import type { BuildHeader } from '@pending/contract';
 import { useEffect, useState } from 'react';
-import { Playback } from './features/build';
+import { Playback, badgeText } from './features/build';
 import { Gallery, GalleryShelf, fetchRecord, slugOf } from './features/gallery';
 import type { Replayed } from './features/gallery';
+import { Footer } from './Footer';
 import styles from './FrontDoor.module.css';
 
-const REPO = 'https://github.com/Moonchichiii/mrpending';
-const GUIDE = `${REPO}#readme`;
-// The build info: which commit the host built, so a preview can be matched to its source.
-const COMMIT = import.meta.env.VITE_COMMIT;
 // The record the button plays: a failure, a correction and a press, re-run through the simulator before it is shown.
 const DEMO = 'scenic';
 const RECORDED =
   'These machines were designed by Gemma running locally. You are watching a recording of the experiment, replayed and checked by the simulator.';
-export const MOTTO = 'Even small things can do great things.';
 export const CLOSED =
   'The Department is closed to new applications. The button plays a recorded build, which this browser checks again with the simulator before it is shown.';
 
@@ -66,20 +62,7 @@ export function StaticFrontDoor({ records }: { records?: BuildHeader[] | undefin
           }
         />
       </main>
-      <footer className={styles.footer}>
-        <p className={styles.motto}>{MOTTO}</p>
-        <p>
-          <a href={GUIDE}>Run it on your machine</a>
-        </p>
-        <p>
-          Build{' '}
-          {COMMIT === '' ? (
-            'not from a recorded commit'
-          ) : (
-            <a href={`${REPO}/commit/${COMMIT}`}>{COMMIT.slice(0, 12)}</a>
-          )}
-        </p>
-      </footer>
+      <Footer model={badgeText(demo?.ok ? demo.build.model : undefined, 'recorded')} />
     </>
   );
 }

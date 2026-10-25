@@ -31,6 +31,15 @@ export async function expectNoOverflow(page: Page) {
 
 // On a phone every visible control is at least 52 px each way (character sheet section 8), links in running text too.
 export const PHONE = 390;
+
+// The six widths in both orientations, 400 percent zoom (1280 x 1024 at 400 percent is 320 x 256 CSS px) and 200
+// percent text (the browser's default font size doubled).
+export const LAYOUTS = [
+  ...VIEWPORTS.map((v) => ({ ...v, text: 16 })),
+  { name: '400 percent zoom', width: 320, height: 256, text: 16 },
+  { name: '200 percent text at 1440', width: 1440, height: 900, text: 32 },
+  { name: '200 percent text at 390', width: PHONE, height: 844, text: 32 },
+];
 const CONTROLS = 'a[href], button, input, select, textarea';
 
 export async function expectTargets(page: Page) {

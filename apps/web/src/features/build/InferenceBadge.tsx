@@ -28,6 +28,11 @@ export function source(model: Model, where: Config['inference'] | 'recorded'): s
   return `${name} · ${HOST[model.host]} · ${WHERE[where]}`;
 }
 
+// The badge's words, which the front doors' footers repeat.
+export function badgeText(model?: Model, where?: Config['inference'] | 'recorded'): string {
+  return model !== undefined && where !== undefined ? source(model, where) : 'Model not confirmed';
+}
+
 // The model badge on the board: a green dot while the config confirms a model, an amber one on a recording, and a
 // grey one while no model is confirmed; the dot only repeats what the words say.
 export function ModelBadge({
@@ -41,7 +46,7 @@ export function ModelBadge({
   return (
     <p className={styles.model} data-state={!known ? 'off' : where === 'recorded' ? 'recorded' : 'on'}>
       <span className={styles.dot} aria-hidden="true" />
-      {known ? source(model, where) : 'Model not confirmed'}
+      {badgeText(model, where)}
     </p>
   );
 }

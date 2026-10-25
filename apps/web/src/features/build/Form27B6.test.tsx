@@ -1,40 +1,53 @@
 import type { Form } from '@pending/contract';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import { afterEach, describe, expect, test, vi } from 'vitest';
-import { Form27B6 } from './Form27B6';
+import { Form27B6, SettingsButton } from './Form27B6';
 
 afterEach(cleanup);
 
-// The front door's button stands elsewhere on the page and names the form it files, as it does here.
-const setup = (initial?: Form) => {
-  const onFile = vi.fn<(form: Form) => void>();
-  render(
+// The front door's button stands elsewhere on the page and names the form it files, and the cog that opens the form
+// stands apart from it too, as they do here.
+function Desk({ initial, onFile }: { initial?: Form | undefined; onFile: (form: Form) => void }) {
+  const [open, setOpen] = useState(false);
+  return (
     <>
       <button type="submit" form="form-27b6">
         Ask him to press it
       </button>
-      <Form27B6 id="form-27b6" initial={initial} onFile={onFile} />
-    </>,
+      <SettingsButton form="form-27b6" open={open} onToggle={() => setOpen((o) => !o)} />
+      <Form27B6 id="form-27b6" initial={initial} open={open} onOpen={() => setOpen(true)} onFile={onFile} />
+    </>
   );
+}
+
+const setup = (initial?: Form) => {
+  const onFile = vi.fn<(form: Form) => void>();
+  render(<Desk initial={initial} onFile={onFile} />);
   return { onFile, user: userEvent.setup() };
 };
 
 const DEFAULT = { nature: 'Press the blue button. Scenic route, please.', minParts: 3, maxParts: 8 };
 const fileButton = () => screen.getByRole('button', { name: 'Ask him to press it' });
-const SUMMARY = 'Advanced settings - shape the next request: parts, required and forbidden equipment';
-const sheet = () => screen.getByText(SUMMARY).closest('details');
+const cog = () => screen.getByRole('button', { name: 'Advanced settings, Form 27B/6' });
+// Open is said by the cog and shown by the five items, never one without the other.
+const isOpen = () => {
+  const expanded = cog().getAttribute('aria-expanded') === 'true';
+  expect(document.getElementById(cog().getAttribute('aria-controls') ?? '')?.hidden).toBe(!expanded);
+  return expanded;
+};
 // The visitor opens the folded form, as they must before any item can be changed.
-const adjust = (user: ReturnType<typeof userEvent.setup>) => user.click(screen.getByText(SUMMARY));
+const adjust = (user: ReturnType<typeof userEvent.setup>) => user.click(cog());
 
 describe('Form 27B/6', () => {
   test('files the pre-filled default request in one click, with the five items folded away', async () => {
     const { onFile, user } = setup();
-    expect(sheet()?.open).toBe(false);
+    expect(isOpen()).toBe(false);
     expect(screen.queryByText(/^File it as it stands/)).toBeNull();
     await user.click(fileButton());
     expect(onFile).toHaveBeenCalledWith(DEFAULT);
-    expect(sheet()?.open).toBe(false);
+    expect(isOpen()).toBe(false);
   });
 
   test('can be completed with the keyboard alone, the button first and then the items in reading order', async () => {
@@ -42,10 +55,10 @@ describe('Form 27B/6', () => {
     await user.tab();
     expect(document.activeElement).toBe(fileButton());
     await user.tab();
-    expect(document.activeElement).toBe(screen.getByText(SUMMARY));
-    // jsdom does not open a summary by keyboard; the Playwright form spec presses Enter on it in a real browser.
-    await adjust(user);
-    expect(sheet()?.open).toBe(true);
+    expect(document.activeElement).toBe(cog());
+    expect(cog().textContent).toBe('Settings');
+    await user.keyboard('{Enter}');
+    expect(isOpen()).toBe(true);
     await user.tab();
     expect(document.activeElement).toBe(screen.getByLabelText('1. Nature of the request'));
     await user.keyboard('{Control>}a{/Control}A scenic route, please.');
@@ -60,7 +73,7 @@ describe('Form 27B/6', () => {
     expect(document.activeElement).toBe(screen.getByLabelText('4. Required equipment'));
     await user.tab();
     expect(document.activeElement).toBe(screen.getByLabelText('5. Forbidden equipment'));
-    // Back past the five items and the fold to the button above them.
+    // Back past the five items and the cog to the button above them.
     for (let i = 0; i < 6; i += 1) await user.tab({ shift: true });
     expect(document.activeElement).toBe(fileButton());
     await user.keyboard('{Enter}');
@@ -83,9 +96,9 @@ describe('Form 27B/6', () => {
     await adjust(user);
     await user.clear(screen.getByLabelText('3. Most parts'));
     await adjust(user);
-    expect(sheet()?.open).toBe(false);
+    expect(isOpen()).toBe(false);
     await user.click(fileButton());
-    expect(sheet()?.open).toBe(true);
+    expect(isOpen()).toBe(true);
     expect(document.activeElement).toBe(screen.getByLabelText('3. Most parts'));
     expect(onFile).not.toHaveBeenCalled();
   });

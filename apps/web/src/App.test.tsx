@@ -37,8 +37,9 @@ test('the static front door is the local one screen with a recording behind its 
   const user = userEvent.setup();
   render(<App />);
   expect(screen.getByRole('heading', { level: 1, name: 'Mr. Pending' })).toBeDefined();
-  expect(screen.getByRole('link', { name: 'Run it on your machine' }).getAttribute('href')).toMatch(
-    /README|#readme/i,
+  const footer = screen.getByRole('contentinfo');
+  expect(within(footer).getByRole('link', { name: 'Source' }).getAttribute('href')).toBe(
+    'https://github.com/Moonchichiii/mrpending',
   );
   // Mr. Pending stands at the closed counter from the first render, saying so in his bubble, both rig variants drawn
   // for the stylesheet to pick.
@@ -53,6 +54,7 @@ test('the static front door is the local one screen with a recording behind its 
   expect(play.disabled).toBe(true);
   const board = screen.getByRole('region', { name: 'The board' });
   expect(await within(board).findByText('Gemma 4 E4B · Ollama · Recorded')).toBeDefined();
+  expect(within(footer).getByText('Gemma 4 E4B · Ollama · Recorded')).toBeDefined();
   expect(play.disabled).toBe(false);
   await user.click(play);
   // Reduced motion: the recording jumps to its ending on the same board, its result stamped PRESSED.
