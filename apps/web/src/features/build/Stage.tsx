@@ -83,8 +83,6 @@ function Dome({ id }: { id: string }) {
   );
 }
 
-const PREMISE = 'One snail. One blue button. An extraordinarily unnecessary amount of engineering.';
-
 // The one persistent stage: on the yellow band the name over the Department's paperwork, Mr. Pending with his bubble,
 // and the button with `notice` under it; then the one board, then the closed sections. Every phase fills the same
 // places, so the page never grows with a build; on a desktop screen the stage fills the viewport and the board takes
@@ -99,7 +97,7 @@ export function Stage({
   folds,
 }: {
   heading?: string | undefined;
-  about?: string | undefined;
+  about?: ReactNode;
   notice?: ReactNode;
   engineer: ReactNode;
   action: ReactNode;
@@ -126,12 +124,7 @@ export function Stage({
         <div className={styles.desk}>
           <Desk />
         </div>
-        {heading !== undefined && about !== undefined && (
-          <div className={styles.about}>
-            <p>{PREMISE}</p>
-            <p>{about}</p>
-          </div>
-        )}
+        {heading !== undefined && about !== undefined && <div className={styles.about}>{about}</div>}
         <div className={styles.engineer}>{engineer}</div>
         <div className={styles.action}>
           {action}

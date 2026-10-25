@@ -95,6 +95,13 @@ test('the front door plays a recording, folds the gallery away, names its commit
   const strays = watch(page, new URL(baseURL ?? '').origin);
   await page.goto('/');
   await expect(page.getByRole('button', { name: 'Press the button' })).toBeEnabled();
+  // The page says it is a replay, with no AI running here, and where to run it live.
+  await expect(page.getByText(/^This is a recording\. .* no AI runs here\./)).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Run it live on your machine' })).toHaveAttribute(
+    'href',
+    'https://github.com/Moonchichiii/mrpending#how-to-run-it-locally',
+  );
+  await expect(page.getByRole('status')).toHaveText('REPLAY Press the button to replay a recorded run.');
   await page.getByText('The gallery', { exact: true }).click();
   await expect(page.getByRole('region', { name: 'The gallery' }).getByRole('listitem')).toHaveCount(5);
   // The one-line footer: the motto, the board's badge in words, the short commit and the source.

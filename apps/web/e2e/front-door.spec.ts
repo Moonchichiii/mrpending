@@ -16,7 +16,7 @@ const CLOSED =
   'The Department is closed to new applications. The button plays a recorded build, which this browser checks again with the simulator before it is shown.';
 const PREMISE = 'One snail. One blue button. An extraordinarily unnecessary amount of engineering.';
 const RECORDED =
-  'These machines were designed by Gemma running locally. You are watching a recording of the experiment, replayed and checked by the simulator.';
+  "This is a recording. Gemma, a small open-weight AI model, ran on the author's laptop and designed these machines; a simulator tested each one and Gemma repaired what failed. The site replays those runs and re-checks every result in your browser; no AI runs here. Run it live on your machine";
 const MOTTO = 'Even small things can do great things.';
 // The stylesheet's phone width (40rem at the default 16 px) shows the head alone; wider viewports show the full rig.
 const PHONE_RIG = 640;
@@ -31,10 +31,19 @@ test('the static front door makes no API call', async ({ page }) => {
   // Mr. Pending is at the closed counter from the first paint, in the slow mood.
   await expect(page.getByText(CLOSED)).toBeVisible();
   await expect(page.locator('svg[data-variant="desk"]')).toHaveClass(/slow/);
-  // Under the title the site says it is a recording of the local experiment, not a live model, and the one-line
-  // footer carries the motto on the left, the board's badge and the source on the right.
-  await expect(page.getByText(PREMISE, { exact: true })).toBeVisible();
-  await expect(page.getByText(RECORDED, { exact: true })).toBeVisible();
+  // Under the title one paragraph, at the voice caption's size, says it is a recording, with no AI running here, and
+  // links to running it live; the local door's two lines are not shown. The one-line footer carries the motto on the
+  // left, the board's badge and the source on the right.
+  const recorded = page.getByText(RECORDED, { exact: true });
+  await expect(recorded).toBeVisible();
+  const caption = page.getByRole('region', { name: 'Voice' }).locator('p').last();
+  const size = (el: Element) => getComputedStyle(el).fontSize;
+  expect(await recorded.evaluate(size)).toBe(await caption.evaluate(size));
+  await expect(recorded.getByRole('link', { name: 'Run it live on your machine' })).toHaveAttribute(
+    'href',
+    'https://github.com/Moonchichiii/mrpending#how-to-run-it-locally',
+  );
+  await expect(page.getByText(PREMISE, { exact: true })).toHaveCount(0);
   await expect(page.getByText(/^Just for fun/)).toHaveCount(0);
   const footer = page.getByRole('contentinfo');
   const motto = footer.getByText(MOTTO, { exact: true });
@@ -48,7 +57,7 @@ test('the static front door makes no API call', async ({ page }) => {
   );
   expect(mottoBox && badgeBox && mottoBox.x + mottoBox.width).toBeLessThanOrEqual(badgeBox?.x ?? 0);
   expect(badgeBox && sourceBox && badgeBox.x + badgeBox.width).toBeLessThanOrEqual(sourceBox?.x ?? 0);
-  await expect(page.getByRole('status')).toHaveText('The recording waits for the button.');
+  await expect(page.getByRole('status')).toHaveText('REPLAY Press the button to replay a recorded run.');
   expect(api).toEqual([]);
   await expectAxeClean(page, 'static front door');
   await expectFocusVisible(page, 'static front door');
@@ -78,6 +87,11 @@ for (const { width, height } of [
     await expect(file).toBeEnabled();
     const fileBox = await file.boundingBox();
     expect(fileBox && fileBox.y + fileBox.height).toBeLessThanOrEqual(height);
+    // The paragraph under the title is at the voice caption's size; under 720 px at the 13 px the intro had.
+    const fontSize = (el: Element) => getComputedStyle(el).fontSize;
+    const recorded = await page.getByText(RECORDED, { exact: true }).evaluate(fontSize);
+    const caption = await page.getByRole('region', { name: 'Voice' }).locator('p').last().evaluate(fontSize);
+    expect(recorded).toBe(width < 720 ? '13px' : caption);
     await expect(page.getByRole('button')).toHaveText(['Voice on', 'Skip voice', FILE, ...CONTROLS]);
     const board = page.getByRole('region', { name: 'The board' });
     await expect(board.getByText('Gemma 4 E4B · Ollama · Recorded', { exact: true })).toBeVisible();

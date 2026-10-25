@@ -45,7 +45,7 @@ export function Playback({
 }: {
   build: Build | undefined;
   heading?: string | undefined;
-  about?: string | undefined;
+  about?: ReactNode;
   intro?: string | undefined;
   note?: string | undefined;
   blocked?: boolean;
