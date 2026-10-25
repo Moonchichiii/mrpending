@@ -118,10 +118,9 @@ test('the front door is one screen: Mr. Pending, the blue button and the idle bo
       expect(resultBox && resultBox.y + resultBox.height).toBeLessThanOrEqual(height);
     }
 
-    // Everything else is folded: the five items, the department and the gallery; no guide.
+    // Everything else is folded: the five items and the gallery; no guide.
     await expect(page.getByText(ADVANCED, { exact: true })).toBeAttached();
     await expect(page.getByLabel('1. Nature of the request')).toBeHidden();
-    await expect(page.getByRole('region', { name: 'My department' })).toBeHidden();
     await expect(page.getByRole('region', { name: 'The gallery' })).toBeHidden();
     await expect(page.getByText(/^File it as it stands/)).toHaveCount(0);
     await expect(page.getByRole('list', { name: 'How to file' })).toHaveCount(0);

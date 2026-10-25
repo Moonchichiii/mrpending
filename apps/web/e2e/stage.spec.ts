@@ -119,9 +119,9 @@ for (const { width, height } of SCREENS) {
     await expect(result.locator('[data-stamp]')).toHaveText('PENDING');
     await expect(result.getByText(ROLES)).toBeHidden();
     await look('idle');
-    // Under the board, closed and as wide as it: Advanced settings, then the Minutes, My department and the gallery.
+    // Under the board, closed and as wide as it: Advanced settings, then the Minutes and the gallery.
     const boardBox = await board.boundingBox();
-    const sections = ['Advanced settings - ', 'Minutes', 'My department', 'The gallery'];
+    const sections = ['Advanced settings - ', 'Minutes', 'The gallery'];
     let below = boardBox ? boardBox.y + boardBox.height : 0;
     for (const name of sections) {
       const fold = page.locator('details', { has: page.locator('summary', { hasText: name }) });

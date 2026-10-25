@@ -5,7 +5,6 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, beforeEach, expect, test, vi } from 'vitest';
 import { Gallery } from './Gallery';
-import { MyDepartment } from './MyDepartment';
 
 const files = import.meta.glob<unknown>('../../../public/gallery/*.json', { eager: true, import: 'default' });
 const raw = (slug: string) => files[`../../../public/gallery/${slug}.json`];
@@ -25,7 +24,6 @@ const server = setupServer(
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 beforeEach(() => {
   agent.requests = 0;
-  localStorage.clear();
   // Reduced motion: each playback tick jumps to the end of the next trial, so a record plays through quickly.
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
 });
@@ -100,33 +98,4 @@ test('an unknown slug is not fetched as a record; the gallery itself is shown', 
   window.history.pushState({}, '', '/r/elsewhere');
   render(<Gallery />);
   expect(await screen.findAllByRole('listitem')).toHaveLength(5);
-});
-
-test('My department imports a forged record as the rules tell it, with a DUE number and no link', async () => {
-  const forged = structuredClone(raw('scenic'));
-  if (typeof forged !== 'object' || forged === null || !('report' in forged))
-    throw new Error('scenic is no build');
-  forged.report = { attempts: 1, parts: 1, pressed: false, verdict: 'Forged.' };
-  render(<MyDepartment />);
-  await userEvent.upload(
-    screen.getByLabelText('Import a build (JSON, up to 512 KB)'),
-    new File([JSON.stringify(forged)], 'scenic.json', { type: 'application/json' }),
-  );
-  const card = await screen.findByRole('listitem');
-  expect(within(card).getByText('DUE-0001')).toBeDefined();
-  expect(within(card).queryByText('Forged.')).toBeNull();
-  expect(within(card).getByRole('button', { name: 'Export DUE-0001 as JSON' })).toBeDefined();
-  expect(screen.queryAllByRole('link')).toEqual([]);
-});
-
-test('My department refuses a record under other rules with a plain message', async () => {
-  const other = structuredClone(raw('scenic'));
-  if (typeof other !== 'object' || other === null) throw new Error('scenic is no build');
-  render(<MyDepartment />);
-  await userEvent.upload(
-    screen.getByLabelText('Import a build (JSON, up to 512 KB)'),
-    new File([JSON.stringify({ ...other, rulesVersion: 'r1' })], 'old.json', { type: 'application/json' }),
-  );
-  expect((await screen.findByRole('alert')).textContent).toMatch(/filed under rules r1/);
-  expect(screen.queryByRole('listitem')).toBeNull();
 });

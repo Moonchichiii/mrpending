@@ -37,7 +37,7 @@ function trial(n: number, blueprint: Blueprint, violations: string[], patch?: Pa
   }
 }
 
-// Every opened or imported record is untrusted: schema, current rules, each patch checked against the blueprint it
+// Every opened record is untrusted: schema, current rules, each patch checked against the blueprint it
 // claims to produce, every attempt re-simulated and the report recomputed; what is shown is the rules' account.
 export function replay(raw: unknown): Replayed {
   const parsed = Build.safeParse(raw);

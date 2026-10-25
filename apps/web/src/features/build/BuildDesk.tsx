@@ -1,6 +1,6 @@
-import type { Attempt, Build, Config, Form, Line } from '@pending/contract';
+import type { Attempt, Config, Form, Line } from '@pending/contract';
 import type { ReactNode } from 'react';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { assertNever } from '../../shared/assertNever';
 import { Engineer } from '../engineer';
 import { lastStep } from '../board';
@@ -80,34 +80,22 @@ const ABOUT =
 
 // One stage in every phase: Mr. Pending, his bubble and the button in the yellow band, the one board under it, and
 // Form 27B/6 (Advanced settings) and the Minutes folded away under the board. The button files the form; while a build is
-// on the board it waits, and once the build has ended it files the form again. A build that ends is reported once,
-// however often it is replayed afterwards; onFinished says whether it was kept.
+// on the board it waits, and once the build has ended it files the form again.
 export function BuildDesk({
   canFile,
   connecting = false,
-  onFinished,
   config,
   notice,
   heading,
 }: {
   canFile: boolean;
   connecting?: boolean;
-  onFinished?: ((build: Build) => boolean) | undefined;
   config?: Pick<Config, 'inference' | 'model'> | undefined;
   notice?: ReactNode;
   heading?: string | undefined;
 }) {
   const { session, file, cancel, reset, pause, replay: restart, setSpeed } = useBuild();
   const ended = session.status === 'pressed' || session.status === 'exhausted' ? session : undefined;
-  const finishedFor = useRef<string>(undefined);
-  // The request whose build this browser refused to keep; its ending says so instead of failing silently.
-  const [unkept, setUnkept] = useState<string>();
-  useEffect(() => {
-    if (ended === undefined || onFinished === undefined || finishedFor.current === ended.requestId) return;
-    finishedFor.current = ended.requestId;
-    // oxlint-disable-next-line react/set-state-in-effect -- the state reports the outcome of writing to localStorage
-    if (!onFinished(ended.build)) setUnkept(ended.requestId);
-  }, [ended, onFinished]);
   // Replay rewinds the playhead without changing the trial, so each replay is counted to give the board a new run.
   const [take, setTake] = useState(0);
   const replay = () => {
@@ -209,16 +197,7 @@ export function BuildDesk({
               </button>
             </>
           }
-          result={
-            <Result stamp={now.stamp} text={now.result} roles={revealed}>
-              {revealed && unkept === ended.requestId && (
-                <p role="alert" className={styles.error}>
-                  This browser would not keep the build; its storage is full or switched off. It is not in My
-                  department.
-                </p>
-              )}
-            </Result>
-          }
+          result={<Result stamp={now.stamp} text={now.result} roles={revealed} />}
           overlay={overlay()}
         />
       }
