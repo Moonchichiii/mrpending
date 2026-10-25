@@ -82,7 +82,7 @@ The target is WCAG 2.2 AA in full plus every applicable AAA criterion. No AAA co
 - axe (WCAG 2.0, 2.1 and 2.2 A and AA tags plus `wcag2aaa`) reports zero violations on these states:
   - static front door, with the gallery and longest-legal gallery records
   - Form 27B/6: empty, with field errors and the rejection, with the config unconfirmed, and after filing with the model unavailable
-  - drawing, a running trial, the failure frame, the correction diff, the press (its excited beat), the Engineering Report and My department, each on desktop and at 390 px
+  - drawing, a running trial, the failure frame, the correction diff, the press (its excited beat) and the Engineering Report, each on desktop and at 390 px
   - a gallery record page at 1440 and 390 px
 - axe leaves `color-contrast` and `color-contrast-enhanced` *incomplete* on board and card nodes it cannot resolve (SVG text and text over graphics). Those nodes are not tested by axe; see the manual items.
 - Keyboard: a build is filed, paused with Space, sped up, its report saved as an image and a new form filed with the keyboard alone. Tab walks every stop of the form, the paused board, the report and the static front door, and each stop shows an outline of at least 2 px.

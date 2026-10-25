@@ -3,38 +3,21 @@
   max-width: var(--measure);
 }
 
-.record,
-.department {
+/* The record's provenance and stamp use *-text tokens, which reach AAA on paper only, never on the yellow page. */
+.record {
   display: grid;
   gap: var(--space-3);
   min-width: 0;
-}
-
-/* The record's provenance and stamp use *-text tokens, which reach AAA on paper only, never on the yellow page. */
-.record {
   padding: var(--space-3);
   background: var(--paper);
   border-radius: var(--radius-control);
 }
 
 /* Provenance names the recording; it wraps rather than overflowing on a long model id. */
-.provenance,
-.due {
+.provenance {
   font-size: var(--text-small);
   color: var(--copper-text);
   overflow-wrap: anywhere;
-}
-
-.import {
-  font-weight: 700;
-}
-
-/* A native file input is as wide as its button and filename; on a phone it shrinks to the column instead. */
-.file {
-  max-width: 100%;
-  min-width: 0;
-  min-height: var(--target);
-  font: inherit;
 }
 
 /* Links are targets too, at least 52 px tall, the one inside the provenance line as well (character sheet section 8). */
@@ -43,17 +26,4 @@
   align-items: center;
   justify-self: start;
   min-height: var(--target);
-}
-
-.action {
-  justify-self: start;
-  min-height: var(--target);
-  padding: var(--space-2) var(--space-4);
-  font: inherit;
-  font-weight: 700;
-  color: var(--ink);
-  background: transparent;
-  border: var(--border-control);
-  border-radius: var(--radius-control);
-  cursor: pointer;
 }

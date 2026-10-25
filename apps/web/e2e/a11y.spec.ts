@@ -15,10 +15,10 @@ const STEP = 120;
 const LOST_AT = Math.max(...(ATTEMPTS[0]?.events.map((e) => e.step) ?? [0]));
 const PRESS_AT = ATTEMPTS[1]?.events.find((e) => e.type === 'button.pressed')?.step ?? 0;
 
-const STATES = ['drawing', 'running', 'failure', 'diff', 'press', 'verdict', 'report', 'department'] as const;
+const STATES = ['drawing', 'running', 'failure', 'diff', 'press', 'verdict', 'report'] as const;
 type State = (typeof STATES)[number];
 
-// One build from filing to My department on the page clock, held still on each state while `at` looks at it.
+// One build from filing to its Engineering Report on the page clock, held still on each state while `at` looks at it.
 // The agent's answer waits until the drawing state has been seen; the playback is paused on each running state.
 async function walk(page: Page, at: (state: State) => Promise<void>, longest = false) {
   await page.clock.install();
@@ -79,13 +79,6 @@ async function walk(page: Page, at: (state: State) => Promise<void>, longest = f
   const report = page.getByRole('region', { name: 'Engineering Report' });
   await expect(report).toBeVisible();
   await at('report');
-  await page.getByText('My department').click();
-  await page
-    .getByRole('region', { name: 'My department' })
-    .getByRole('heading', { level: 3 })
-    .first()
-    .scrollIntoViewIfNeeded();
-  await at('department');
 }
 
 // axe drives its checks with timers. Only the press is held by a stopped page clock, so there the clock is stepped a

@@ -1,5 +1,5 @@
 import { Attempt } from '@pending/contract';
-import type { Build, Line, StreamEvent } from '@pending/contract';
+import type { Line, StreamEvent } from '@pending/contract';
 import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { delay, http, HttpResponse } from 'msw';
@@ -166,42 +166,6 @@ const stream = (events: ((requestId: string) => StreamEvent)[]) =>
       return new HttpResponse(events.map((e) => `${JSON.stringify(e(requestId))}\n`).join(''));
     }),
   );
-
-test('a build that ends is reported once with its build, however often it is replayed', async () => {
-  prefersReduced(true);
-  stream([
-    (requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }),
-    (requestId) => ({ type: 'done', requestId, header: header([pressed(1)]) }),
-  ]);
-  const onFinished = vi.fn<(build: Build) => boolean>(() => true);
-  const user = userEvent.setup();
-  render(<BuildDesk canFile onFinished={onFinished} />);
-  await user.click(screen.getByRole('button', { name: 'Press the button' }));
-
-  await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(WORKED));
-  await vi.waitFor(() => expect(onFinished).toHaveBeenCalledTimes(1));
-  expect(onFinished.mock.calls[0]?.[0].title).toBe('The Scenic Route');
-  expect(screen.queryByRole('alert')).toBeNull();
-
-  await user.click(screen.getByRole('button', { name: 'Replay' }));
-  await vi.waitFor(() => expect(screen.getByRole('status').textContent).toBe(WORKED));
-  expect(onFinished).toHaveBeenCalledTimes(1);
-});
-
-test('a build the callback did not keep says so at its ending instead of vanishing from My department', async () => {
-  prefersReduced(true);
-  stream([
-    (requestId) => ({ type: 'attempt', requestId, attempt: pressed(1) }),
-    (requestId) => ({ type: 'done', requestId, header: header([pressed(1)]) }),
-  ]);
-  const user = userEvent.setup();
-  render(<BuildDesk canFile onFinished={() => false} />);
-  await user.click(screen.getByRole('button', { name: 'Press the button' }));
-
-  const alert = await screen.findByRole('alert');
-  expect(alert.textContent).toMatch(/would not keep the build/);
-  expect(screen.getByRole('region', { name: 'Simulation result' }).contains(alert)).toBe(true);
-});
 
 test('every playback control is a button operated from the keyboard, and speed sets the step duration', async () => {
   prefersReduced(false);
