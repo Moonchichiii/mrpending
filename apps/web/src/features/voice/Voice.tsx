@@ -5,8 +5,9 @@ import type { Mute } from './useSpeaker';
 import styles from './Voice.module.css';
 
 // The voice control discloses its provider in one sentence (ARCHITECTURE section 3).
-const ON_DEVICE = "Mr. Pending speaks with your browser's on-device voice; no line leaves this device.";
-const CAPTIONS_ONLY = 'This device has no voice for Mr. Pending, so his lines are captioned only.';
+// The two sentences wrap alike, since one replaces the other once the voices are listed.
+const ON_DEVICE = 'Mr. Pending speaks from recordings or on-device voice; no line leaves this device.';
+const CAPTIONS_ONLY = "This device has no voice, so only Mr. Pending's recorded lines are spoken aloud.";
 
 // Mr. Pending's one speech bubble: the line being spoken, which the next one replaces, with Mute and Skip under it.
 // The bubble is the live announcement of his lines; the full list stays folded away with the minutes.
