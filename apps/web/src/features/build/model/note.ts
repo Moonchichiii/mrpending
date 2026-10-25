@@ -21,11 +21,8 @@ export function currentStep(session: Session, { revealed, replay, connecting = f
     case 'idle':
       if (connecting)
         return say("Checking the Department's equipment", 'Confirming the model on this machine.');
-      return {
-        text: replay ? 'The recording waits for the button.' : 'Form 27B/6 awaits filing.',
-        waiting: false,
-        alert: false,
-      };
+      if (replay) return say('REPLAY', 'Press the button to replay a recorded run.');
+      return { text: 'Form 27B/6 awaits filing.', waiting: false, alert: false };
     case 'designing':
       return replay
         ? say("REPLAYING GEMMA'S DESIGN", 'A recorded blueprint from Gemma is replayed on the board.')

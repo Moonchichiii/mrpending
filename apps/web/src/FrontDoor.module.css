@@ -29,6 +29,24 @@
   min-width: 0;
 }
 
+/* The static site's one paragraph under the title, at the size of the voice's caption; under 720 px it keeps the
+   13 px the stage's intro had, so the button stays on the first screen. */
+.recorded {
+  font-size: var(--text-small);
+}
+
+@media (max-width: 45rem) {
+  .recorded {
+    font-size: 0.8125rem;
+  }
+}
+
+/* Its link stays inline, so the paragraph keeps its line height; the padding makes the 52 px target around it. */
+.recorded a {
+  padding-block: calc((var(--target) - 1em) / 2);
+  color: var(--ink);
+}
+
 /* Running-text links on the yellow page are ink, and at least 52 px tall (character sheet sections 5 and 8). */
 .footer a {
   display: inline-flex;

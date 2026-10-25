@@ -75,6 +75,7 @@ function playing(session: Session): Playing | undefined {
 export const INTRODUCTION =
   'Chief Engineer of the Department of Unnecessary Engineering. One job: press one blue button.';
 const WAITING = 'Filing opens once the Department confirms where drafting happens.';
+const PREMISE = 'One snail. One blue button. An extraordinarily unnecessary amount of engineering.';
 const ABOUT =
   'Just for fun: watch a small AI model design ridiculous machines to press one button. A simulator tests each machine, and the AI tries to fix whatever goes wrong.';
 
@@ -149,7 +150,12 @@ export function BuildDesk({
   return (
     <Stage
       heading={heading}
-      about={ABOUT}
+      about={
+        <>
+          <p>{PREMISE}</p>
+          <p>{ABOUT}</p>
+        </>
+      }
       notice={notice}
       // One element in every phase, so the rig is not remounted between phases and the cameo's looks play once.
       engineer={

@@ -36,15 +36,15 @@ const ended = (attempts: Attempt[]): Session => ({
 });
 const designing = reduce({ status: 'idle' }, { type: 'FILE', requestId: 'r', form, startedAt: 0 });
 
-test('idle says the form waits, and while the config is asked for, that the equipment is being checked', () => {
+test('idle says the form waits or that the button replays a recording, and while the config is asked for, that the equipment is being checked', () => {
   expect(said(currentStep({ status: 'idle' }, LIVE))).toEqual([undefined, 'Form 27B/6 awaits filing.']);
   expect(said(currentStep({ status: 'idle' }, { ...LIVE, connecting: true }))).toEqual([
     "Checking the Department's equipment",
     'Confirming the model on this machine.',
   ]);
   expect(said(currentStep({ status: 'idle' }, REPLAY))).toEqual([
-    undefined,
-    'The recording waits for the button.',
+    'REPLAY',
+    'Press the button to replay a recorded run.',
   ]);
 });
 

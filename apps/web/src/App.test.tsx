@@ -74,7 +74,10 @@ test('the static front door is the local one screen with a recording behind its 
       .getAllByRole('link')
       .map((a) => a.getAttribute('href')),
   ).toEqual(expect.arrayContaining(['/r/budget', '/r/scenic']));
-  expect(screen.queryByText(/live/i)).toBeNull();
+  // The only mention of live is the link to the README's section on running it locally.
+  const live = screen.getByRole('link', { name: 'Run it live on your machine' });
+  expect(live.getAttribute('href')).toBe('https://github.com/Moonchichiii/mrpending#how-to-run-it-locally');
+  expect(screen.getAllByText(/live/i)).toEqual([live]);
   expect(agent.requests).toBe(0);
 });
 
