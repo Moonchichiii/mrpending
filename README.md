@@ -2,7 +2,7 @@
 
 Mr. Pending is a very slow snail, Chief Engineer of the Department of Unnecessary Engineering, with one job: press one blue button. A local open-weight model (Gemma 4 through Ollama) designs an absurd machine for it, a deterministic simulator runs the machine and reports exactly where it stopped, the model repairs its own design, and Mr. Pending narrates the whole affair before issuing an Engineering Report. The public site replays machines recorded from local inference; live generation runs only on your own machine.
 
-Status: first release. The local installation designs, simulates and repairs machines live with gemma4:e2b through Ollama; the public site is static and replays recorded builds with zero inference. Specifications: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/MACHINE-RULES.md`](docs/MACHINE-RULES.md), [`docs/SECURITY-AND-FAILURE-CONTRACT.md`](docs/SECURITY-AND-FAILURE-CONTRACT.md), [`docs/MR-PENDING-CHARACTER-SHEET.md`](docs/MR-PENDING-CHARACTER-SHEET.md); the schemas themselves are in [`packages/contract/src`](packages/contract/src).
+Status: release v1.2.0. The local installation designs, simulates and repairs machines live with gemma4:e2b through Ollama; the public site, https://mrpending-preview.onrender.com, is static and replays recorded builds with zero inference. It is a Render static site defined in [`render.yaml`](render.yaml), deployed by hand from a tagged commit. Specifications: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/MACHINE-RULES.md`](docs/MACHINE-RULES.md), [`docs/SECURITY-AND-FAILURE-CONTRACT.md`](docs/SECURITY-AND-FAILURE-CONTRACT.md), [`docs/MR-PENDING-CHARACTER-SHEET.md`](docs/MR-PENDING-CHARACTER-SHEET.md); the schemas themselves are in [`packages/contract/src`](packages/contract/src).
 
 ## How to run it locally
 
@@ -27,7 +27,9 @@ Open `http://127.0.0.1:5173`: Mr. Pending, the button and the board are the fron
 - **E4B needs more memory.** `gemma4:e4b` runs, but on the 16 GB eval laptop it left 393 MiB of RAM free at the lowest (n 97 samples, see How we measured), against 2253 MiB for the shipping `gemma4:e2b`. Close other programs before trying it.
 - **Model terms.** The Gemma 4 weights are not part of this repository; Ollama downloads them from their publisher under the publisher's terms. See [`NOTICES.md`](NOTICES.md).
 
-Without an agent, build the static site (`bun run build`, which defaults to `VITE_SITE_MODE=static`) or run step 3 without `VITE_SITE_MODE=local`. That is the public site: it opens on the gallery and replays recorded builds with zero inference. It has no form, no build client and no `/api` call in its bundle, so it never needs a model.
+Without an agent, build the static site (`bun run build`, which defaults to `VITE_SITE_MODE=static`) or run step 3 without `VITE_SITE_MODE=local`. That is the public site: it opens on the stage, Mr. Pending, the button and the board, and the button replays a recorded build with zero inference; the gallery is folded under the board. It has no form, no build client and no `/api` call in its bundle, so it never needs a model.
+
+**Voice.** Mr. Pending's 20 fixed lines are pre-recorded ElevenLabs clips (the voice Alistair) in [`apps/web/public/voice`](apps/web/public/voice), listed in its `manifest.json`. The maintainer generated them once with `ELEVENLABS_API_KEY=… bun apps/agent/scripts/voice-clips.ts`, from table lines only; nothing calls ElevenLabs at runtime and there is no `/api/tts`. Each line plays its clip when the manifest has one, otherwise an on-device English browser voice, otherwise captions only; clips are paced at 0.75 or 1.15 with the pitch preserved, and none plays before you have pressed something on the page. Both sites serve the same clips from their own origin and make no request to ElevenLabs.
 
 ## How we measured
 
@@ -97,16 +99,14 @@ The target is WCAG 2.2 AA in full plus every applicable AAA criterion. No AAA co
 
 **Intentional internal scrolling:** none. Every state reflows into the page's own vertical scroll.
 
-**Manual checklist** (to be completed and dated by a person):
+**Manual checklist**, performed by the maintainer on 25 October 2026 on the local installation at v1.2.0 (`3d7e3d2`), Chromium on Debian 13:
 
-The maintainer performs and dates this checklist before the production release in #23, which is gated on it.
-
-- [ ] Screen reader through one build (filing, the trials, the correction, the press, the report)
-- [ ] Keyboard-only through one build in a real browser, focus visible throughout
-- [ ] 400 percent browser zoom and 200 percent text-only zoom in a real browser
-- [ ] Reduced motion switched on: every state legible, the press shown at rest
-- [ ] Captions shown for every spoken line
-- [ ] Board, diff, press and rig checked by eye at phone and desktop widths, including the contrast nodes axe left incomplete. An agent's look at screenshots of these at 390 and 1440 px found the Minutes numbers outgrowing their gutter, which is now fixed; it is not a substitute for this check.
+- [ ] Screen reader through one build (filing, the trials, the correction, the press, the report): not run (Orca is installed but was not used for this release)
+- [x] Keyboard-only through one build in a real browser, focus visible throughout
+- [x] 400 percent browser zoom and 200 percent text-only zoom in a real browser
+- [x] Reduced motion switched on: every state legible, the press shown at rest
+- [x] Captions shown for every spoken line
+- [x] Board, diff, press and rig checked by eye at phone (390 px) and desktop widths, including the contrast nodes axe left incomplete
 
 ## Limits
 
