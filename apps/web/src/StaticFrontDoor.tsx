@@ -9,7 +9,9 @@ import styles from './FrontDoor.module.css';
 // The record the button plays: a failure, a correction and a press, re-run through the simulator before it is shown.
 const DEMO = 'scenic';
 const RECORDED =
-  'These machines were designed by Gemma running locally. You are watching a recording of the experiment, replayed and checked by the simulator.';
+  "This is a recording. Gemma, a small open-weight AI model, ran on the author's laptop and designed these machines; a simulator tested each one and Gemma repaired what failed. The site replays those runs and re-checks every result in your browser; no AI runs here.";
+// The README section that runs the experiment live.
+const RUN_LOCALLY = 'https://github.com/Moonchichiii/mrpending#how-to-run-it-locally';
 export const CLOSED =
   'The Department is closed to new applications. The button plays a recorded build, which this browser checks again with the simulator before it is shown.';
 
@@ -45,7 +47,11 @@ export function StaticFrontDoor({ records }: { records?: BuildHeader[] | undefin
         <Playback
           build={demo?.ok ? demo.build : undefined}
           heading="Mr. Pending"
-          about={RECORDED}
+          about={
+            <p className={styles.recorded}>
+              {RECORDED} <a href={RUN_LOCALLY}>Run it live on your machine</a>
+            </p>
+          }
           intro={CLOSED}
           note={note}
           blocked={record}
