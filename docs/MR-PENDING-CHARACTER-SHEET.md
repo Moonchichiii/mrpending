@@ -43,7 +43,7 @@ Verdicts are a two-entry table keyed by `pressed`; the report card prints the ve
 
 2D only: one inline SVG rig, `viewBox 0 0 360 320`, flat colour, 4 px ink outlines, no gradients, no filters. Groups in draw order: `shadow`, `shell` (circle at (258, 186) r 86 amber, copper spiral, a hinged hatch at (292, 146) 34 × 27), `legs`, `sneakers` (coral, cream soles), `torso` (mint), `shirt` (cream), `tie` (coral), `shorts` (teal), `blueprint` (navy sheet with grid and one blue dot, tilted −6°), `arms` and hands, `stalks` (bases at (186, 80) and (204, 80)), `eyes` (r 13 at (168, 30) and (204, 30), pupils r 5), `lids` (mint rects clipped by the eye circles, with an ink lid line), `spectacles` (two r 17 circles, 16 % teal, tilted −8°), `pencil` (behind the right stalk, 32°), `mouth`.
 
-Four tells: spectacles always slightly askew; a pencil he never uses; the hatch on the shell that opens when he is excited; the coral tie and sneakers, the only coral on him. He is small on the page and never overlaps the board.
+Four tells: spectacles always slightly askew; a pencil he never uses; the hatch on the shell that opens when he is excited; the coral tie and sneakers, the only coral on him. He stands in the top band beside his line card, at illustration size, and never overlaps the board.
 
 The sloth (§3, `cameo`) is a second small flat-colour SVG in the same hand, 4 px ink outlines, no gradients, no filters, copper fur with a cream face, hanging by both arms from the top edge of the line card, about a third of Mr. Pending's size; its only motion is one slow blink. Decorative only: no mood system, no lines of its own, nothing on the board.
 
@@ -93,4 +93,4 @@ Head, stalks and spectacles only, 72 px, in the corner of the line card; the boa
 
 ## 9. Not in scope
 
-3D, lip sync, a walk cycle, idle variations, props beyond the pencil and blueprint, other characters (the decorative sloth of §3 is the one exception, and it never speaks), generated images, and open-ended conversation: he speaks the beats and his memos, he does not chat.
+3D, lip sync, a walk cycle, idle variations, props on the rig beyond the pencil and blueprint (the paper stacks and the mug are stage dressing beside him, not part of the rig), other characters (the decorative sloth of §3 is the one exception, and it never speaks), generated images, and open-ended conversation: he speaks the beats and his memos, he does not chat.
