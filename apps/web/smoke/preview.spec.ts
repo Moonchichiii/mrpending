@@ -78,6 +78,11 @@ test('the browser enforces the policy: another origin and an inline script are r
   await expect.poll(() => refusals.length).toBeGreaterThanOrEqual(2);
 });
 
+test('the favicon and the web manifest are served from this origin', async ({ request }) => {
+  for (const path of ['/favicon.svg', '/site.webmanifest'])
+    expect((await request.get(path)).status(), path).toBe(200);
+});
+
 test('the static deployment has no agent behind it', async ({ request }) => {
   for (const path of ['/api/config', '/api/build'])
     expect((await request.get(path)).status(), path).toBe(404);
